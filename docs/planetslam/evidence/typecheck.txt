@@ -1,0 +1,2 @@
+> world-monitor@2.11.7 typecheck
+> tsc --noEmit

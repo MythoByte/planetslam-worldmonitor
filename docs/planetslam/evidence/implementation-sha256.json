@@ -1,0 +1,10 @@
+{
+  "src/config/brand.ts": "e618bc889cc6ea1652393ffa2f632e29463a634d4248427a25159c1c16d93d4c",
+  "src/styles/planetslam.css": "a8045d12dbe5f6691ffb581649ba1682fe37fd6f22ad54536d584223c72813d2",
+  "src/app/panel-layout.ts": "40ce50778f08f4e9eabca59f3bf07a6cd7729027bf3cd1e4715e62965df07c00",
+  "src/config/variants/base.ts": "98997027556554cef997107cfcbda38b2a41a16229cf57001e7b3bbaec3e7a9c",
+  "src/main.ts": "3eb15d123f89ee8dc3c6f720abb061cf4ce42945ccc280ea073957b7b308dfc4",
+  "vite.config.ts": "05fa1632a0d6500c1fa84d07e3e7fe9dc72f97ee693cdde4a6d25052fbb833d4",
+  "branding/vite-plugin.ts": "44c2bee13eda7ead2181e26f86f25bf6f85dbd60e25369969f3da486b17d6253",
+  "public/branding/planetslam/mark.svg": "ad399110fbbcd360d676f7ff4eea7cf91ed2b32c6c44226dd5a3860579a6e7ad"
+}

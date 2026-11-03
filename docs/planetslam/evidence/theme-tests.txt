@@ -1,0 +1,11 @@
+> world-monitor@2.11.7 test:dom
+> vitest run --config vitest.dom.config.mts tests/dom/theme-preference.test.mts
+
+
+ RUN  v4.1.12 /home/mythobyte/dev/planetslam/worldmonitor
+
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  20:39:35
+   Duration  344ms (transform 35ms, setup 0ms, import 46ms, tests 11ms, environment 196ms)

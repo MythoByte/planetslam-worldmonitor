@@ -1,0 +1,23 @@
+# Local disposable upstream cache only. No web deployment, no persistent volume.
+name: planetslam-foundation
+services:
+  redis:
+    image: redis:7-alpine
+    command: [redis-server, --requirepass, "${REDIS_PASSWORD:?required}", --save, "", --appendonly, "no", --maxmemory, 128mb, --maxmemory-policy, allkeys-lru]
+    restart: "no"
+  redis-rest:
+    build:
+      context: ../docker
+      dockerfile: Dockerfile.redis-rest
+    environment:
+      SRH_TOKEN: "${REDIS_TOKEN:?required}"
+      SRH_CONNECTION_STRING: "redis://:${REDIS_PASSWORD:?required}@redis:6379"
+    ports: ["127.0.0.1:18079:80"]
+    depends_on: [redis]
+    mem_limit: 256m
+    restart: "no"
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: "${PS_CACHE_SUBNET:-10.203.81.0/28}"

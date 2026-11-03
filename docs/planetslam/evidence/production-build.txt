@@ -1,0 +1,791 @@
+> world-monitor@2.11.7 prebuild
+> npm run docs:dates -- --fetch-history && npm run product:facts && npm run build:openapi && npm run build:agent-skills
+
+
+> world-monitor@2.11.7 docs:dates
+> node scripts/generate-docs-page-dates.mjs --fetch-history
+
+docs page dates unchanged (553 pages)
+
+> world-monitor@2.11.7 product:facts
+> node --import tsx scripts/generate-product-config.mjs && node --import tsx scripts/generate-public-product-facts.mjs && npm run inventory:facts && npm run build:ai-search
+
+  ✓ /home/mythobyte/dev/planetslam/worldmonitor/src/config/products.generated.ts
+  ✓ /home/mythobyte/dev/planetslam/worldmonitor/src/config/product-ids.generated.ts
+  ✓ /home/mythobyte/dev/planetslam/worldmonitor/pro-test/src/generated/tiers.json
+
+Done. Rebuild /pro to exercise its built-output tests: npm run build:pro
+
+> world-monitor@2.11.7 inventory:facts
+> node scripts/generate-inventory-facts.mjs
+
+
+> world-monitor@2.11.7 build:ai-search
+> node --import tsx scripts/build-ai-search.mjs
+
+Unchanged public/ai-search.md
+
+> world-monitor@2.11.7 build:openapi
+> node -e "require('fs').cpSync('docs/api/worldmonitor.openapi.yaml', 'public/openapi.yaml')" && node scripts/build-openapi-json.mjs
+
+build-openapi-json: wrote /home/mythobyte/dev/planetslam/worldmonitor/public/openapi.json (OpenAPI 3.1.0, 246 paths, 949244 bytes; hoisted 11 shared error responses into 1492 $refs; hoisted 4 shared response headers into 41 $refs; hoisted 42 fleet-wide parameters into 361 $refs; reused 53 generated int64 schemas (+160 described int64 fields); restored 78 inline typed parameters for JSON-only scanners; reused 17/17 shared China provenance schemas; reused 131 byte-identical schema subtrees across 71 groups; hoisted 759 deep repeated subtrees into 140 shared components (17991 bytes); reused 9 China date-precision schemas; dropped 329 unreachable schemas worth 138760 bytes)
+
+> world-monitor@2.11.7 build:agent-skills
+> node scripts/build-agent-skills-index.mjs
+
+Wrote /home/mythobyte/dev/planetslam/worldmonitor/public/.well-known/agent-skills/index.json, /home/mythobyte/dev/planetslam/worldmonitor/api/mcp/skill-extension/generated.ts, and 29 skills/*/SKILL.md files
+
+> world-monitor@2.11.7 build
+> npm run security:vite-env-secrets -- --strict-local && npm run build:blog:raw && npm run build:pro && npm run build:crawlable-corpus && npm run build:sitemap && tsc && vite build
+
+
+> world-monitor@2.11.7 security:vite-env-secrets
+> node scripts/check-vite-env-secrets.mjs --strict-local
+
+
+> world-monitor@2.11.7 build:blog:raw
+> cross-env npm_config_allow_scripts= npm --prefix blog-site ci --prefer-offline && cd blog-site && npm run build && rm -rf ../public/blog && mkdir -p ../public/blog && cp -r dist/* ../public/blog/
+
+
+added 229 packages, and audited 230 packages in 2s
+
+78 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+> blog-site@0.0.1 build
+> npm run generate:og && astro build
+
+
+> blog-site@0.0.1 generate:og
+> node scripts/generate-og-images.mjs
+
+  skip 72-hour-geopolitical-event-retro-template-worldmonitor (committed cover)
+  skip ai-forecast-accuracy-brier-scorecard-worldmonitor (committed cover)
+  skip ai-intelligence-summary-reliability (committed cover)
+  skip ai-powered-intelligence-without-the-cloud (committed cover)
+  skip ais-vessel-tracking-accuracy (committed cover)
+  skip alerts-notification-channels-worldmonitor (committed cover)
+  skip ask-claude-whats-happening-worldmonitor-mcp (committed cover)
+  skip aviation-intelligence-airports-airspace-flight-prices (committed cover)
+  skip best-global-conflict-trackers-2026 (committed cover)
+  skip build-geopolitical-risk-agent-worldmonitor-mcp (committed cover)
+  skip build-on-worldmonitor-developer-api-open-source (committed cover)
+  skip build-supply-chain-early-warning-system-api (committed cover)
+  skip command-palette-search-everything-instantly (committed cover)
+  skip country-instability-index-methodology-explained (committed cover)
+  skip country-resilience-index-methodology-explained (committed cover)
+  skip country-risk-monitoring-due-diligence-worldmonitor (committed cover)
+  skip country-risk-monitoring-workflow-for-analysts (committed cover)
+  skip country-risk-with-a-memory (committed cover)
+  skip critical-minerals-hhi-supply-risk-explained (committed cover)
+  skip cyber-threat-intelligence-for-security-teams (committed cover)
+  skip daily-intelligence-briefing-workflow-15-minutes (committed cover)
+  skip disease-outbreak-air-quality-monitoring-health-signals (committed cover)
+  skip embed-live-global-map-worldmonitor (committed cover)
+  skip energy-security-dashboard-worldmonitor (committed cover)
+  skip energy-shock-monitoring-chokepoints-worldmonitor (committed cover)
+  skip five-dashboards-one-platform-worldmonitor-variants (committed cover)
+  skip free-geopolitical-data-apis-2026 (committed cover)
+  skip free-vs-paid-real-time-intelligence-dashboards (committed cover)
+  skip geopolitical-risk-alerts-slack-teams-worldmonitor-api (committed cover)
+  skip geopolitics-to-markets-pipeline-macro-traders-worldmonitor (committed cover)
+  skip government-tenders-procurement-intelligence-worldmonitor (committed cover)
+  skip ground-truth-inflation-shelf-price-tracking-worldmonitor (committed cover)
+  skip hormuz-tanker-reports-awareness-gap (committed cover)
+  skip humanitarian-situational-awareness-ngo-security-monitoring-worldmonitor (committed cover)
+  skip live-webcams-from-geopolitical-hotspots (committed cover)
+  skip military-flight-tracking-osint (committed cover)
+  skip monitor-global-sanctions-pressure-worldmonitor (committed cover)
+  skip monitor-global-supply-chains-and-commodity-disruptions (committed cover)
+  skip natural-disaster-monitoring-earthquakes-fires-volcanoes (committed cover)
+  skip osint-for-everyone-open-source-intelligence-democratized (committed cover)
+  skip positive-news-dashboard-happy-worldmonitor (committed cover)
+  skip prediction-markets-ai-forecasting-geopolitics (committed cover)
+  skip real-time-intelligence-data-freshness (committed cover)
+  skip real-time-market-intelligence-for-traders-and-analysts (committed cover)
+  skip real-time-radiation-monitoring-radnet-safecast (committed cover)
+  skip satellite-imagery-orbital-surveillance (committed cover)
+  skip self-host-worldmonitor-open-source-osint-dashboard (committed cover)
+  skip stress-test-supply-chain-scenario-engine-worldmonitor (committed cover)
+  skip supply-chain-early-warning-dashboard-worldmonitor-api (committed cover)
+  skip tariff-tracker-trade-policy-monitoring-worldmonitor (committed cover)
+  skip track-global-conflicts-in-real-time (committed cover)
+  skip track-refugee-displacement-flows-unhcr-worldmonitor (committed cover)
+  skip tracking-global-trade-routes-chokepoints-freight-costs (committed cover)
+  skip verify-breaking-news-osint-workflow-journalists (committed cover)
+  skip what-is-a-maritime-chokepoint (committed cover)
+  skip what-is-worldmonitor-real-time-global-intelligence (committed cover)
+  skip worldmonitor-in-21-languages-global-intelligence-for-everyone (committed cover)
+  skip worldmonitor-is-not-palantir (committed cover)
+  skip worldmonitor-mcp-server-ai-agents-real-time-intelligence (committed cover)
+  skip worldmonitor-vs-traditional-intelligence-tools (committed cover)
+
+OG images: 0 generated, 60 skipped
+20:36:06 [content] Syncing content
+20:36:06 [content] Synced content
+20:36:06 [types] Generated 1.23s
+20:36:06 [build] output: "static"
+20:36:06 [build] mode: "static"
+20:36:06 [build] directory: /home/mythobyte/dev/planetslam/worldmonitor/blog-site/dist/
+20:36:06 [build] Collecting build info...
+20:36:06 [build] ✓ Completed in 1.27s.
+20:36:06 [build] Building static entrypoints...
+20:36:07 [vite] ✓ built in 384ms
+20:36:07 [vite] ✓ built in 52ms
+20:36:07 [build] Rearranging server assets...
+
+ generating static routes
+20:36:07   ├─ /authors/elie-habib/index.html (+17ms)
+20:36:07   ├─ /glossary/country-instability-index/index.html (+4ms)
+20:36:07   ├─ /glossary/country-resilience-index/index.html (+2ms)
+20:36:07   ├─ /glossary/strategic-risk/index.html (+2ms)
+20:36:07   ├─ /glossary/dimension-coverage/index.html (+13ms)
+20:36:07   ├─ /glossary/pentagon-pizza-index/index.html (+2ms)
+20:36:07   ├─ /glossary/focal-point-detection/index.html (+1ms)
+20:36:07   ├─ /glossary/geographic-convergence/index.html (+1ms)
+20:36:07   ├─ /glossary/infrastructure-cascade/index.html (+1ms)
+20:36:07   ├─ /glossary/hotspot/index.html (+1ms)
+20:36:07   ├─ /glossary/threat-classification/index.html (+1ms)
+20:36:07   ├─ /glossary/maritime-chokepoint/index.html (+1ms)
+20:36:07   ├─ /glossary/strait-of-hormuz/index.html (+1ms)
+20:36:07   ├─ /glossary/strait-of-malacca/index.html (+1ms)
+20:36:07   ├─ /glossary/suez-canal/index.html (+1ms)
+20:36:07   ├─ /glossary/ais/index.html (+1ms)
+20:36:07   ├─ /glossary/chokepoint-congestion/index.html (+1ms)
+20:36:07   ├─ /glossary/osint/index.html (+1ms)
+20:36:07   ├─ /glossary/provenance/index.html (+1ms)
+20:36:07   ├─ /glossary/world-brief/index.html (+1ms)
+20:36:07   ├─ /glossary/prediction-market/index.html (+1ms)
+20:36:07   ├─ /glossary/index.html (+2ms)
+20:36:07   ├─ /guides/index.html (+2ms)
+20:36:07   ├─ /llms.txt (+1ms)
+20:36:07   ├─ /posts/72-hour-geopolitical-event-retro-template-worldmonitor/index.html (+3ms)
+20:36:07   ├─ /posts/ai-forecast-accuracy-brier-scorecard-worldmonitor/index.html (+2ms)
+20:36:07   ├─ /posts/ai-intelligence-summary-reliability/index.html (+1ms)
+20:36:07   ├─ /posts/ai-powered-intelligence-without-the-cloud/index.html (+1ms)
+20:36:07   ├─ /posts/ais-vessel-tracking-accuracy/index.html (+1ms)
+20:36:07   ├─ /posts/alerts-notification-channels-worldmonitor/index.html (+1ms)
+20:36:07   ├─ /posts/ask-claude-whats-happening-worldmonitor-mcp/index.html (+1ms)
+20:36:07   ├─ /posts/aviation-intelligence-airports-airspace-flight-prices/index.html (+1ms)
+20:36:07   ├─ /posts/best-global-conflict-trackers-2026/index.html (+1ms)
+20:36:07   ├─ /posts/build-geopolitical-risk-agent-worldmonitor-mcp/index.html (+1ms)
+20:36:07   ├─ /posts/build-on-worldmonitor-developer-api-open-source/index.html (+1ms)
+20:36:07   ├─ /posts/build-supply-chain-early-warning-system-api/index.html (+1ms)
+20:36:07   ├─ /posts/command-palette-search-everything-instantly/index.html (+1ms)
+20:36:07   ├─ /posts/country-instability-index-methodology-explained/index.html (+1ms)
+20:36:07   ├─ /posts/country-resilience-index-methodology-explained/index.html (+1ms)
+20:36:07   ├─ /posts/country-risk-monitoring-due-diligence-worldmonitor/index.html (+1ms)
+20:36:07   ├─ /posts/country-risk-monitoring-workflow-for-analysts/index.html (+1ms)
+20:36:07   ├─ /posts/country-risk-with-a-memory/index.html (+1ms)
+20:36:07   ├─ /posts/critical-minerals-hhi-supply-risk-explained/index.html (+1ms)
+20:36:07   ├─ /posts/cyber-threat-intelligence-for-security-teams/index.html (+1ms)
+20:36:07   ├─ /posts/daily-intelligence-briefing-workflow-15-minutes/index.html (+1ms)
+20:36:07   ├─ /posts/disease-outbreak-air-quality-monitoring-health-signals/index.html (+1ms)
+20:36:07   ├─ /posts/embed-live-global-map-worldmonitor/index.html (+1ms)
+20:36:07   ├─ /posts/energy-security-dashboard-worldmonitor/index.html (+1ms)
+20:36:07   ├─ /posts/energy-shock-monitoring-chokepoints-worldmonitor/index.html (+1ms)
+20:36:07   ├─ /posts/five-dashboards-one-platform-worldmonitor-variants/index.html (+1ms)
+20:36:07   ├─ /posts/free-geopolitical-data-apis-2026/index.html (+1ms)
+20:36:07   ├─ /posts/free-vs-paid-real-time-intelligence-dashboards/index.html (+1ms)
+20:36:07   ├─ /posts/geopolitical-risk-alerts-slack-teams-worldmonitor-api/index.html (+1ms)
+20:36:07   ├─ /posts/geopolitics-to-markets-pipeline-macro-traders-worldmonitor/index.html (+1ms)
+20:36:07   ├─ /posts/government-tenders-procurement-intelligence-worldmonitor/index.html (+1ms)
+20:36:07   ├─ /posts/ground-truth-inflation-shelf-price-tracking-worldmonitor/index.html (+1ms)
+20:36:07   ├─ /posts/hormuz-tanker-reports-awareness-gap/index.html (+1ms)
+20:36:07   ├─ /posts/humanitarian-situational-awareness-ngo-security-monitoring-worldmonitor/index.html (+1ms)
+20:36:07   ├─ /posts/live-webcams-from-geopolitical-hotspots/index.html (+1ms)
+20:36:07   ├─ /posts/military-flight-tracking-osint/index.html (+1ms)
+20:36:07   ├─ /posts/monitor-global-sanctions-pressure-worldmonitor/index.html (+1ms)
+20:36:07   ├─ /posts/monitor-global-supply-chains-and-commodity-disruptions/index.html (+1ms)
+20:36:07   ├─ /posts/natural-disaster-monitoring-earthquakes-fires-volcanoes/index.html (+1ms)
+20:36:07   ├─ /posts/osint-for-everyone-open-source-intelligence-democratized/index.html (+1ms)
+20:36:07   ├─ /posts/positive-news-dashboard-happy-worldmonitor/index.html (+1ms)
+20:36:07   ├─ /posts/prediction-markets-ai-forecasting-geopolitics/index.html (+1ms)
+20:36:07   ├─ /posts/real-time-intelligence-data-freshness/index.html (+1ms)
+20:36:07   ├─ /posts/real-time-market-intelligence-for-traders-and-analysts/index.html (+1ms)
+20:36:07   ├─ /posts/real-time-radiation-monitoring-radnet-safecast/index.html (+1ms)
+20:36:07   ├─ /posts/satellite-imagery-orbital-surveillance/index.html (+1ms)
+20:36:07   ├─ /posts/self-host-worldmonitor-open-source-osint-dashboard/index.html (+1ms)
+20:36:07   ├─ /posts/stress-test-supply-chain-scenario-engine-worldmonitor/index.html (+1ms)
+20:36:07   ├─ /posts/supply-chain-early-warning-dashboard-worldmonitor-api/index.html (+1ms)
+20:36:07   ├─ /posts/tariff-tracker-trade-policy-monitoring-worldmonitor/index.html (+1ms)
+20:36:07   ├─ /posts/track-global-conflicts-in-real-time/index.html (+1ms)
+20:36:07   ├─ /posts/track-refugee-displacement-flows-unhcr-worldmonitor/index.html (+1ms)
+20:36:07   ├─ /posts/tracking-global-trade-routes-chokepoints-freight-costs/index.html (+1ms)
+20:36:07   ├─ /posts/verify-breaking-news-osint-workflow-journalists/index.html (+1ms)
+20:36:07   ├─ /posts/what-is-a-maritime-chokepoint/index.html (+1ms)
+20:36:07   ├─ /posts/what-is-worldmonitor-real-time-global-intelligence/index.html (+1ms)
+20:36:07   ├─ /posts/worldmonitor-in-21-languages-global-intelligence-for-everyone/index.html (+1ms)
+20:36:07   ├─ /posts/worldmonitor-is-not-palantir/index.html (+1ms)
+20:36:07   ├─ /posts/worldmonitor-mcp-server-ai-agents-real-time-intelligence/index.html (+1ms)
+20:36:07   ├─ /posts/worldmonitor-vs-traditional-intelligence-tools/index.html (+1ms)
+20:36:07   ├─ /rss.xml (+27ms)
+20:36:07   ├─ /alternatives/acled/index.html (+2ms)
+20:36:07   ├─ /alternatives/crisis24/index.html (+1ms)
+20:36:07   ├─ /alternatives/dataminr/index.html (+1ms)
+20:36:07   ├─ /alternatives/factal/index.html (+1ms)
+20:36:07   ├─ /alternatives/liveuamap/index.html (+1ms)
+20:36:07   ├─ /alternatives/recorded-future/index.html (+1ms)
+20:36:07   ├─ /best/conflict-data-platforms-for-researchers/index.html (+1ms)
+20:36:07   ├─ /best/conflict-monitoring-tools-for-humanitarian-teams/index.html (+1ms)
+20:36:07   ├─ /best/geopolitical-monitoring-tools-for-energy-analysts/index.html (+1ms)
+20:36:07   ├─ /best/geopolitical-monitoring-tools-for-journalists/index.html (+1ms)
+20:36:07   ├─ /best/geopolitical-risk-tools-for-supply-chain-teams/index.html (+1ms)
+20:36:07   ├─ /best/global-intelligence-dashboards-for-macro-analysts/index.html (+1ms)
+20:36:07   ├─ /best/intelligence-apis-for-developers/index.html (+1ms)
+20:36:07   ├─ /best/osint-dashboards-for-students/index.html (+1ms)
+20:36:07   ├─ /best/risk-intelligence-platforms-for-corporate-security-teams/index.html (+1ms)
+20:36:07   ├─ /best/travel-risk-tools-for-travel-managers/index.html (+1ms)
+20:36:07   ├─ /vs/acled/index.html (+1ms)
+20:36:07   ├─ /vs/crisis24/index.html (+1ms)
+20:36:07   ├─ /vs/dataminr/index.html (+1ms)
+20:36:07   ├─ /vs/factal/index.html (+1ms)
+20:36:07   ├─ /vs/liveuamap/index.html (+1ms)
+20:36:07   ├─ /vs/recorded-future/index.html (+2ms)
+20:36:07   ├─ /index.html (+11ms)
+20:36:07 ✓ Completed in 257ms.
+
+20:36:07 [build] ✓ Completed in 722ms.
+20:36:07 [@astrojs/sitemap] `sitemap-index.xml` created at `dist`
+20:36:07 [build] 106 page(s) built in 2.02s
+20:36:07 [build] Complete!
+
+> world-monitor@2.11.7 build:pro
+> cross-env npm_config_allow_scripts= npm --prefix pro-test ci --prefer-offline && npm --prefix pro-test run build
+
+
+added 522 packages, and audited 523 packages in 7s
+
+69 packages are looking for funding
+  run `npm fund` for details
+
+16 moderate severity vulnerabilities
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+> worldmonitor-pro@0.1.0 build
+> vite build && node prerender.mjs
+
+vite v7.3.7 building client environment for production...
+transforming...
+✓ 2486 modules transformed.
+rendering chunks...
+computing gzip size...
+../public/pro/assets/worldmonitor-7-mar-2026-640-DPiezBWs.avif      18.04 kB
+../public/pro/index.html                                            23.12 kB │ gzip:   5.81 kB
+../public/pro/assets/worldmonitor-7-mar-2026-640-D5Z2rRd6.webp      31.42 kB
+../public/pro/welcome.html                                          31.77 kB │ gzip:   9.00 kB
+../public/pro/assets/worldmonitor-7-mar-2026-960-ChXrKkCn.avif      35.45 kB
+../public/pro/assets/worldmonitor-7-mar-2026-1280-DPT55fI_.avif     54.53 kB
+../public/pro/assets/worldmonitor-7-mar-2026-960-CmI-I9MT.webp      59.56 kB
+../public/pro/assets/worldmonitor-7-mar-2026-1280-CkhqvNeA.webp     92.17 kB
+../public/pro/assets/worldmonitor-7-mar-2026-hYopMeTD.jpg          154.91 kB
+../public/pro/assets/index-ByX90GeF.css                             48.80 kB │ gzip:   9.20 kB
+../public/pro/assets/zh-DZi1ylw6.js                                 40.20 kB │ gzip:  18.15 kB
+../public/pro/assets/zh-TW-DdzNLw7G.js                              40.26 kB │ gzip:  18.19 kB
+../public/pro/assets/nl-CThBmDQj.js                                 44.28 kB │ gzip:  17.20 kB
+../public/pro/assets/sv-8hcceUfA.js                                 44.30 kB │ gzip:  17.17 kB
+../public/pro/assets/hr-CwwOn-3B.js                                 45.07 kB │ gzip:  17.89 kB
+../public/pro/assets/it-CIsg9eWr.js                                 45.57 kB │ gzip:  17.33 kB
+../public/pro/assets/de-leyAJudy.js                                 45.73 kB │ gzip:  17.89 kB
+../public/pro/assets/cs-xRKf3bjC.js                                 45.86 kB │ gzip:  18.55 kB
+../public/pro/assets/pl-B0JdUv_A.js                                 46.52 kB │ gzip:  18.54 kB
+../public/pro/assets/sw-CeVqVowQ.js                                 46.67 kB │ gzip:  17.63 kB
+../public/pro/assets/pt-M_65crU-.js                                 46.82 kB │ gzip:  17.37 kB
+../public/pro/assets/tr-fpfNaftQ.js                                 47.00 kB │ gzip:  17.86 kB
+../public/pro/assets/ro-DzDWsfwQ.js                                 47.50 kB │ gzip:  17.85 kB
+../public/pro/assets/ko-CjGrUTGK.js                                 47.75 kB │ gzip:  18.21 kB
+../public/pro/assets/es-Bov9wagD.js                                 47.76 kB │ gzip:  17.49 kB
+../public/pro/assets/fr-Ch7ziNWQ.js                                 49.73 kB │ gzip:  18.06 kB
+../public/pro/assets/hu-C28GO5se.js                                 49.81 kB │ gzip:  19.16 kB
+../public/pro/assets/welcome-CNz-xRvF.js                            53.38 kB │ gzip:  15.03 kB
+../public/pro/assets/ja-yEm-WSMo.js                                 54.44 kB │ gzip:  19.74 kB
+../public/pro/assets/vi-Dg5CB3zh.js                                 56.22 kB │ gzip:  18.20 kB
+../public/pro/assets/ar-CKJFB8LP.js                                 62.05 kB │ gzip:  19.40 kB
+../public/pro/assets/fa-BkdYWgAn.js                                 67.01 kB │ gzip:  19.83 kB
+../public/pro/assets/uk-CO01nPFh.js                                 70.80 kB │ gzip:  21.37 kB
+../public/pro/assets/bg-eFt0TcNK.js                                 71.69 kB │ gzip:  20.91 kB
+../public/pro/assets/ru-C5NazWWC.js                                 72.76 kB │ gzip:  21.63 kB
+../public/pro/assets/el-Ba-Kt6hL.js                                 74.58 kB │ gzip:  22.09 kB
+../public/pro/assets/hi-mmgOYF-l.js                                 82.82 kB │ gzip:  21.24 kB
+../public/pro/assets/sentry-BCD7T6Eu.js                             86.68 kB │ gzip:  29.98 kB
+../public/pro/assets/th-DFKLKOGy.js                                 91.98 kB │ gzip:  21.04 kB
+../public/pro/assets/index-DEaSDBQ5.js                             107.07 kB │ gzip:  27.32 kB
+../public/pro/assets/index-_JjZlPFo.js                             440.60 kB │ gzip: 145.15 kB
+../public/pro/assets/clerk-BFsXHhEQ.js                           2,997.34 kB │ gzip: 997.95 kB
+✓ built in 5.66s
+🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+[prerender] Injected critical CSS and visible content into public/pro/index.html
+[prerender] Injected critical CSS and visible content into public/pro/welcome.html
+[prerender] Wrote localized welcome landing public/es/index.html
+[prerender] Wrote localized welcome landing public/pt/index.html
+[prerender] Wrote localized welcome landing public/ru/index.html
+[prerender] Wrote localized welcome landing public/fr/index.html
+[prerender] Wrote localized welcome landing public/de/index.html
+[prerender] Wrote localized welcome landing public/ar/index.html
+
+> world-monitor@2.11.7 build:crawlable-corpus
+> npm run corpus:country-slugs && node --import tsx scripts/build-crawlable-corpus.mjs
+
+
+> world-monitor@2.11.7 corpus:country-slugs
+> node --import tsx scripts/generate-country-corpus-slugs.mjs
+
+  = api/_country-corpus-slugs.generated.js is fresh
+Wrote crawlable corpus: 196 countries, 1 CII ranking page, 13 chokepoints, 14 crisis trackers, 9 live tools, 1 research reports, 14 changelog pages, 13 comparison pages, 19 source catalog page. Glossary manifest references 20 existing blog pages.
+
+> world-monitor@2.11.7 build:sitemap
+> node --import tsx scripts/build-sitemap.mjs
+
+[sitemap] checked public/sitemap.xml index (3 members) and public/sitemap-main.xml (304 canonical URL(s))
+vite v6.4.5 building for production...
+transforming...
+node_modules/zod/v4/core/regexes.js (74:0): A comment
+
+"/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+ * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+ * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+
+in "node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/zod/v4/core/util.js (400:0): A comment
+
+"// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+
+in "node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+✓ 3092 modules transformed.
+Circular chunk: App -> checkout -> App. Consider disabling the "output.onlyExplicitManualChunks" option, as enabling it causes the static dependencies of the manual chunk "checkout" to be bundled into the chunk "App".
+rendering chunks...
+[plugin vite:reporter]
+(!) /home/mythobyte/dev/planetslam/worldmonitor/src/services/checkout-error-toast.ts is dynamically imported by /home/mythobyte/dev/planetslam/worldmonitor/src/components/ProPreviewSection.ts, /home/mythobyte/dev/planetslam/worldmonitor/src/components/ResilienceWidget.ts but also statically imported by /home/mythobyte/dev/planetslam/worldmonitor/src/services/checkout.ts, dynamic import will not move module into another chunk.
+
+[plugin vite:reporter]
+(!) /home/mythobyte/dev/planetslam/worldmonitor/src/services/stock-analysis.ts is dynamically imported by /home/mythobyte/dev/planetslam/worldmonitor/src/services/stock-analysis-history.ts, /home/mythobyte/dev/planetslam/worldmonitor/src/services/stock-backtest.ts but also statically imported by /home/mythobyte/dev/planetslam/worldmonitor/src/app/data-loader.ts, /home/mythobyte/dev/planetslam/worldmonitor/src/components/StockAnalysisPanel.ts, dynamic import will not move module into another chunk.
+
+[plugin vite:reporter]
+(!) /home/mythobyte/dev/planetslam/worldmonitor/src/services/resilience.ts is dynamically imported by /home/mythobyte/dev/planetslam/worldmonitor/src/components/CountryDeepDivePanel.ts, /home/mythobyte/dev/planetslam/worldmonitor/src/components/CountryDeepDivePanel.ts, /home/mythobyte/dev/planetslam/worldmonitor/src/components/RouteExplorer/RouteExplorer.ts, /home/mythobyte/dev/planetslam/worldmonitor/src/services/country-brief-source.ts, /home/mythobyte/dev/planetslam/worldmonitor/src/services/country-brief-source.ts, /home/mythobyte/dev/planetslam/worldmonitor/src/services/country-brief-source.ts but also statically imported by /home/mythobyte/dev/planetslam/worldmonitor/src/app/data-loader.ts, /home/mythobyte/dev/planetslam/worldmonitor/src/components/ResilienceWidget.ts, dynamic import will not move module into another chunk.
+
+[plugin vite:reporter]
+(!) /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three/build/three.module.js is dynamically imported by /home/mythobyte/dev/planetslam/worldmonitor/src/components/GlobeMap.ts, /home/mythobyte/dev/planetslam/worldmonitor/src/components/GlobeMap.ts but also statically imported by /home/mythobyte/dev/planetslam/worldmonitor/node_modules/globe.gl/dist/globe.gl.mjs, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three-conic-polygon-geometry/dist/three-conic-polygon-geometry.mjs, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three-geojson-geometry/dist/three-geojson-geometry.mjs, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three-globe/dist/three-globe.mjs, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three-render-objects/dist/three-render-objects.mjs, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three-slippy-map-globe/dist/three-slippy-map-globe.mjs, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three/examples/jsm/controls/FlyControls.js, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three/examples/jsm/controls/OrbitControls.js, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three/examples/jsm/controls/TrackballControls.js, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three/examples/jsm/geometries/TextGeometry.js, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three/examples/jsm/lines/LineMaterial.js, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three/examples/jsm/lines/LineSegments2.js, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three/examples/jsm/lines/LineSegmentsGeometry.js, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three/examples/jsm/loaders/FontLoader.js, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three/examples/jsm/postprocessing/EffectComposer.js, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three/examples/jsm/postprocessing/Pass.js, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three/examples/jsm/postprocessing/RenderPass.js, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three/examples/jsm/postprocessing/ShaderPass.js, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three/examples/jsm/renderers/CSS2DRenderer.js, /home/mythobyte/dev/planetslam/worldmonitor/node_modules/three/examples/jsm/utils/BufferGeometryUtils.js, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/build-hash.txt                                            0.00 kB │ gzip:   0.02 kB
+dist/manifest.webmanifest                                      0.74 kB
+dist/live-channels.html                                        2.88 kB │ gzip:   0.86 kB
+dist/embed.html                                                3.97 kB │ gzip:   1.03 kB
+dist/desktop-sign-in.html                                      4.55 kB │ gzip:   1.86 kB
+dist/settings.html                                             5.22 kB │ gzip:   1.68 kB
+dist/assets/nunito-vietnamese-700-normal-Ch8EUCfz.woff2        5.96 kB
+dist/assets/nunito-vietnamese-400-normal-BHkVbP3T.woff2        6.12 kB
+dist/assets/nunito-vietnamese-600-normal-BY8O6Cug.woff2        6.20 kB
+dist/assets/nunito-vietnamese-400-italic-B2PI3A8Y.woff2        6.58 kB
+dist/assets/nunito-vietnamese-700-normal-C9SQsXvj.woff         8.07 kB
+dist/assets/nunito-vietnamese-400-normal-DtOtW02z.woff         8.25 kB
+dist/assets/nunito-vietnamese-600-normal-DO1RqFw5.woff         8.27 kB
+dist/assets/nunito-cyrillic-400-normal-xAOo5cBP.woff2          8.47 kB
+dist/assets/nunito-cyrillic-700-normal-DP36NgGt.woff2          8.52 kB
+dist/assets/nunito-cyrillic-600-normal-DJGQ2h05.woff2          8.54 kB
+dist/mcp-grant.html                                            8.59 kB │ gzip:   3.04 kB
+dist/assets/nunito-vietnamese-400-italic-DKD9zHau.woff         8.82 kB
+dist/assets/tajawal-arabic-400-normal-CyCXRvzh.woff2           8.93 kB
+dist/assets/tajawal-arabic-500-normal-BZ8ojJNu.woff2           8.94 kB
+dist/assets/nunito-cyrillic-400-italic-ZssV-nwQ.woff2          8.98 kB
+dist/assets/tajawal-arabic-700-normal-D2-eand5.woff2           9.02 kB
+dist/verify.html                                               9.80 kB │ gzip:   3.24 kB
+dist/assets/tajawal-latin-500-normal-CoYeBiSI.woff2            9.90 kB
+dist/assets/tajawal-latin-700-normal-BypgxfGb.woff2           10.00 kB
+dist/assets/tajawal-latin-400-normal-BVNSOH3d.woff2           10.26 kB
+dist/assets/nunito-cyrillic-700-normal-DfHRUDv-.woff          10.40 kB
+dist/assets/nunito-cyrillic-400-normal-D1j0u8EH.woff          10.46 kB
+dist/assets/nunito-cyrillic-600-normal-BUjmtIuu.woff          10.54 kB
+dist/assets/nunito-cyrillic-ext-700-normal-BuR0mlCG.woff2     10.99 kB
+dist/assets/nunito-cyrillic-ext-400-normal-CuPM9foi.woff2     11.16 kB
+dist/assets/nunito-cyrillic-ext-600-normal-CWPPjBOD.woff2     11.20 kB
+dist/assets/nunito-cyrillic-400-italic-kLw1qHb7.woff          11.21 kB
+dist/assets/nunito-cyrillic-ext-400-italic-B76xxBNn.woff2     11.86 kB
+dist/assets/tajawal-arabic-500-normal-CbVEaYEW.woff           11.88 kB
+dist/assets/tajawal-arabic-400-normal-DCQxawbB.woff           12.01 kB
+dist/assets/tajawal-arabic-700-normal-9L7Zusdl.woff           12.16 kB
+dist/assets/tajawal-latin-500-normal-DU9v6xgj.woff            13.02 kB
+dist/assets/tajawal-latin-700-normal-CV3bxpHe.woff            13.16 kB
+dist/assets/tajawal-latin-400-normal-BdYcZznU.woff            13.46 kB
+dist/assets/nunito-cyrillic-ext-700-normal-DfoqN4Gs.woff      13.87 kB
+dist/assets/nunito-cyrillic-ext-600-normal-vnfu4DTE.woff      14.10 kB
+dist/assets/nunito-cyrillic-ext-400-normal-xaE7D4Sw.woff      14.11 kB
+dist/assets/nunito-cyrillic-ext-400-italic-CEz18L3t.woff      15.07 kB
+dist/assets/nunito-latin-ext-700-normal-BWeMsAzO.woff2        15.82 kB
+dist/assets/nunito-latin-ext-400-normal-i-8OOpdj.woff2        15.89 kB
+dist/assets/nunito-latin-ext-600-normal-Dd9Zuxh1.woff2        16.09 kB
+dist/assets/nunito-latin-700-normal-Dort48En.woff2            16.23 kB
+dist/assets/nunito-latin-400-normal-r8SDr6Up.woff2            16.32 kB
+dist/assets/nunito-latin-600-normal-Br8yIETf.woff2            16.56 kB
+dist/assets/nunito-latin-ext-400-italic--NHIeDzu.woff2        16.86 kB
+dist/assets/nunito-latin-400-italic-BnrCcHbg.woff2            17.14 kB
+dist/assets/nunito-latin-700-normal-OcDqTBcA.woff             19.99 kB
+dist/assets/nunito-latin-400-normal-DKg4f3fz.woff             20.33 kB
+dist/assets/nunito-latin-600-normal-Cd0eNu1l.woff             20.49 kB
+dist/assets/nunito-latin-ext-700-normal-D4woHhbd.woff         21.01 kB
+dist/assets/nunito-latin-ext-400-normal-CjMJVfGn.woff         21.29 kB
+dist/assets/nunito-latin-ext-600-normal-BKUpuB78.woff         21.30 kB
+dist/assets/nunito-latin-400-italic-CDISnx4K.woff             21.43 kB
+dist/assets/nunito-latin-ext-400-italic-k9EPGpCk.woff         22.45 kB
+dist/dashboard-happy.html                                     46.04 kB │ gzip:  10.80 kB
+dist/dashboard-tech.html                                      46.22 kB │ gzip:  10.89 kB
+dist/dashboard-finance.html                                   46.23 kB │ gzip:  10.85 kB
+dist/dashboard-commodity.html                                 46.54 kB │ gzip:  10.88 kB
+dist/dashboard-energy.html                                    46.74 kB │ gzip:  10.99 kB
+dist/dashboard.html                                           47.69 kB │ gzip:  11.22 kB
+dist/assets/analysis.worker-DpZv4Gf7.js                       88.63 kB
+dist/assets/maplibre-gl-worker-f8y1rt1E.js                   509.44 kB
+dist/assets/ml.worker-DlH2JHQu.js                            827.03 kB
+dist/assets/ukmto-incidents-BdwVJN9m.css                       0.79 kB │ gzip:   0.40 kB
+dist/assets/400-CLlbYveQ.css                                   1.21 kB │ gzip:   0.52 kB
+dist/assets/500-0ssR2RCH.css                                   1.21 kB │ gzip:   0.51 kB
+dist/assets/700-j49vq0yq.css                                   1.21 kB │ gzip:   0.51 kB
+dist/assets/400-q1oScHLn.css                                   1.80 kB │ gzip:   0.57 kB
+dist/assets/600-C6AwBqtE.css                                   1.80 kB │ gzip:   0.57 kB
+dist/assets/700-Ckf_Wdne.css                                   1.80 kB │ gzip:   0.57 kB
+dist/assets/400-italic-BxiRhXbr.css                            1.80 kB │ gzip:   0.58 kB
+dist/assets/main-DPI3pyOB.css                                  1.99 kB │ gzip:   0.80 kB
+dist/assets/embed-D0F0H5sk.css                                 5.54 kB │ gzip:   1.46 kB
+dist/assets/settings-BSFTnkGa.css                             20.90 kB │ gzip:   3.95 kB
+dist/assets/happy-theme-Dh6abF3X.css                          26.23 kB │ gzip:   5.40 kB
+dist/assets/maplibre-DvulA2N7.css                             83.04 kB │ gzip:  10.52 kB
+dist/assets/main-CFPAfhUB.css                                604.72 kB │ gzip:  91.89 kB
+dist/assets/dashboard-styles-IPzJC1y2.css                    684.98 kB │ gzip: 104.35 kB
+dist/assets/rpc-client-cyber-v1-l0sNRNKZ.js                    0.12 kB │ gzip:   0.10 kB
+dist/assets/d3-CffRDQfv.js                                     0.13 kB │ gzip:   0.12 kB
+dist/assets/ciss-staleness-BTjV3-Om.js                         0.14 kB │ gzip:   0.13 kB
+dist/assets/ports-KIa07DNw.js                                  0.17 kB │ gzip:   0.15 kB
+dist/assets/array-2GBN5xbU.js                                  0.24 kB │ gzip:   0.19 kB
+dist/assets/tier-docs-BPIEJW3T.js                              0.24 kB │ gzip:   0.20 kB
+dist/assets/desktop-cloud-access-hint-TQ-8ttKZ.js              0.26 kB │ gzip:   0.21 kB
+dist/assets/investments-focus-kn7WiKLY.js                      0.26 kB │ gzip:   0.20 kB
+dist/assets/china-factory-clusters-CnArIcnt.js                 0.28 kB │ gzip:   0.22 kB
+dist/assets/max-DBeXZoyG.js                                    0.30 kB │ gzip:   0.23 kB
+dist/assets/cii-score-changes-Cz8doaSe.js                      0.34 kB │ gzip:   0.26 kB
+dist/assets/extent-Ccx1MofX.js                                 0.35 kB │ gzip:   0.25 kB
+dist/assets/storage-quota-BtyHkWgJ.js                          0.36 kB │ gzip:   0.27 kB
+dist/assets/hormuz-tracker-BOxIFsGU.js                         0.38 kB │ gzip:   0.28 kB
+dist/assets/wsb-tickers-CMS7MbW5.js                            0.38 kB │ gzip:   0.29 kB
+dist/assets/news-context-CvrWW5B9.js                           0.39 kB │ gzip:   0.31 kB
+dist/assets/activation-DdoRK80V.js                             0.41 kB │ gzip:   0.32 kB
+dist/assets/_cii-panel-partition-Dvh5P0rP.js                   0.43 kB │ gzip:   0.27 kB
+dist/assets/disruption-timeline-rn1TsGcA.js                    0.52 kB │ gzip:   0.36 kB
+dist/assets/panel-display-name-7b3WAZsP.js                     0.53 kB │ gzip:   0.38 kB
+dist/assets/cross-domain-storage-DupNm9c7.js                   0.54 kB │ gzip:   0.38 kB
+dist/assets/globe-marker-probe-CYyPnhKX.js                     0.54 kB │ gzip:   0.36 kB
+dist/assets/auth-state-g63dXW5w.js                             0.54 kB │ gzip:   0.34 kB
+dist/assets/pointer-Drloq0xg.js                                0.55 kB │ gzip:   0.35 kB
+dist/assets/font-settings-B6XmwZwl.js                          0.57 kB │ gzip:   0.35 kB
+dist/assets/audience-profile-urgLNiEm.js                       0.60 kB │ gzip:   0.39 kB
+dist/assets/chokepoint-coverage-D-0xKofT.js                    0.64 kB │ gzip:   0.42 kB
+dist/assets/pipeline-live-paint-Dgd4ffP6.js                    0.70 kB │ gzip:   0.39 kB
+dist/assets/shortage-evidence-CwhDyV8K.js                      0.77 kB │ gzip:   0.47 kB
+dist/assets/storage-evidence-DthMONVc.js                       0.78 kB │ gzip:   0.47 kB
+dist/assets/map-interaction-guard-CvL7V2q2.js                  0.78 kB │ gzip:   0.40 kB
+dist/assets/liveChannels-BWwytCBR.js                           0.85 kB │ gzip:   0.50 kB
+dist/assets/web-origin-Bn2mj9x1.js                             0.87 kB │ gzip:   0.50 kB
+dist/assets/hormuz-crisis-CfvRrZfh.js                          0.99 kB │ gzip:   0.46 kB
+dist/assets/imagery-Cl4yrMSi.js                                1.02 kB │ gzip:   0.60 kB
+dist/assets/correlation-runtime-mode-Pm4YqLB1.js               1.03 kB │ gzip:   0.62 kB
+dist/assets/stack-DSObyWpB.js                                  1.07 kB │ gzip:   0.56 kB
+dist/assets/api-BgSsc8iN.js                                    1.10 kB │ gzip:   0.57 kB
+dist/assets/fuel-shortage-registry-store-DQnwLEsq.js           1.10 kB │ gzip:   0.60 kB
+dist/assets/country-map-focus-DqEL3zx5.js                      1.18 kB │ gzip:   0.67 kB
+dist/assets/sparkline-B3e4nvqm.js                              1.20 kB │ gzip:   0.61 kB
+dist/assets/safe-storage-C8abQvnW.js                           1.21 kB │ gzip:   0.48 kB
+dist/assets/desktop-sign-in-waiting-DBWo-9Vh.js                1.23 kB │ gzip:   0.73 kB
+dist/assets/pipeline-evidence-CqE_XO-h.js                      1.26 kB │ gzip:   0.64 kB
+dist/assets/sanitize-D7dx0cA1.js                               1.28 kB │ gzip:   0.70 kB
+dist/assets/insights-loader-r58srYqE.js                        1.38 kB │ gzip:   0.74 kB
+dist/assets/no2-activity-style-CrgPzXtI.js                     1.40 kB │ gzip:   0.77 kB
+dist/assets/humanity-counters-CrHtjc1-.js                      1.41 kB │ gzip:   0.73 kB
+dist/assets/rpc-client-positive-events-v1-Cz97LCCM.js          1.42 kB │ gzip:   0.72 kB
+dist/assets/premium-denial-Bmwsb3GZ.js                         1.43 kB │ gzip:   0.67 kB
+dist/assets/live-stream-settings-C1CRzkO1.js                   1.47 kB │ gzip:   0.77 kB
+dist/assets/board-time-DR5erZBz.js                             1.47 kB │ gzip:   0.64 kB
+dist/assets/deduction-probability-BjdSoRov.js                  1.47 kB │ gzip:   0.71 kB
+dist/assets/audience-profile-DqR00--Z.js                       1.48 kB │ gzip:   0.68 kB
+dist/assets/rpc-client-natural-v1-CmqX9tZ-.js                  1.52 kB │ gzip:   0.78 kB
+dist/assets/referral-D-nTData.js                               1.53 kB │ gzip:   0.80 kB
+dist/assets/desktop-cloud-auth-8Y7uWo7q.js                     1.53 kB │ gzip:   0.83 kB
+dist/assets/rpc-client-thermal-v1-3QpqpyG8.js                  1.54 kB │ gzip:   0.79 kB
+dist/assets/rpc-client-radiation-v1-Biwoaels.js                1.55 kB │ gzip:   0.79 kB
+dist/assets/world-happiness-BxMJ6f_1.js                        1.59 kB │ gzip:   0.92 kB
+dist/assets/scorecard-BHIbZfQb.js                              1.61 kB │ gzip:   0.91 kB
+dist/assets/theme-manager-CZYNc9pC.js                          1.62 kB │ gzip:   0.75 kB
+dist/assets/rpc-client-giving-v1-D1R0d-8x.js                   1.64 kB │ gzip:   0.81 kB
+dist/assets/tauri-bridge-CDOUxP2F.js                           1.64 kB │ gzip:   0.88 kB
+dist/assets/topojson-BwRznoQ3.js                               1.66 kB │ gzip:   0.79 kB
+dist/assets/basemap-BP84121A.js                                1.70 kB │ gzip:   0.80 kB
+dist/assets/rpc-client-health-v1-D4iujQ_e.js                   1.70 kB │ gzip:   0.74 kB
+dist/assets/desktop-browser-sign-in-DWvtASwo.js                1.77 kB │ gzip:   0.83 kB
+dist/assets/index-CbRphUu4.js                                  1.78 kB │ gzip:   0.94 kB
+dist/assets/rpc-client-seismology-v1-BMJf2N2O.js               1.80 kB │ gzip:   0.87 kB
+dist/assets/rpc-client-prediction-v1-Bo7cgx8A.js               1.83 kB │ gzip:   0.87 kB
+dist/assets/panel-storage-tBgv39vh.js                          1.86 kB │ gzip:   0.80 kB
+dist/assets/rpc-client-safety-v1-xzWE5NBH.js                   1.87 kB │ gzip:   0.87 kB
+dist/assets/global-tenders-DI3xg_E9.js                         1.89 kB │ gzip:   1.04 kB
+dist/assets/mcp-clients-jvjRQRN8.js                            1.94 kB │ gzip:   0.90 kB
+dist/assets/rpc-client-wildfire-v1-t_BtnRfS.js                 1.95 kB │ gzip:   0.90 kB
+dist/assets/index-BozgJWW2.js                                  1.96 kB │ gzip:   1.11 kB
+dist/assets/analyst-denial-DINTxg7G.js                         1.96 kB │ gzip:   1.04 kB
+dist/assets/stock-fundamentals-display-BdKFnC_N.js             1.98 kB │ gzip:   0.80 kB
+dist/assets/index-Zt4BwSlo.js                                  2.03 kB │ gzip:   1.02 kB
+dist/assets/rpc-client-sanctions-v1-DUDkwRop.js                2.05 kB │ gzip:   0.85 kB
+dist/assets/keyword-spike-core-BWusyCkZ.js                     2.08 kB │ gzip:   1.05 kB
+dist/assets/live-tankers-BlWB3zTC.js                           2.09 kB │ gzip:   1.09 kB
+dist/assets/rpc-client-unrest-v1-B1JfjmHO.js                   2.12 kB │ gzip:   0.96 kB
+dist/assets/rpc-client-scenario-v1-Dd26pYsa.js                 2.15 kB │ gzip:   0.87 kB
+dist/assets/imagery-preview-B8I6xi8l.js                        2.15 kB │ gzip:   1.11 kB
+dist/assets/ai-flow-settings-7ToT_WnK.js                       2.16 kB │ gzip:   0.96 kB
+dist/assets/pinned-webcams-BupNXo_I.js                         2.18 kB │ gzip:   1.06 kB
+dist/assets/china-signal-labels-CZYAk87Z.js                    2.19 kB │ gzip:   1.12 kB
+dist/assets/rpc-client-webcam-v1-CO81zj9I.js                   2.20 kB │ gzip:   0.88 kB
+dist/assets/clerk-desktop-relay-Bsjf__XD.js                    2.20 kB │ gzip:   1.12 kB
+dist/assets/attribution-footer-hF73mMPH.js                     2.26 kB │ gzip:   1.11 kB
+dist/assets/aircraft-emergencies-CLfH9pjF.js                   2.29 kB │ gzip:   1.07 kB
+dist/assets/fx-rates-CeS5uvx2.js                               2.31 kB │ gzip:   0.96 kB
+dist/assets/globe-render-settings-CVDtCLs4.js                  2.33 kB │ gzip:   0.89 kB
+dist/assets/rpc-client-scorecard-v1-CV7Xy4nP.js                2.40 kB │ gzip:   0.92 kB
+dist/assets/base-DaKk58gd.js                                   2.41 kB │ gzip:   1.05 kB
+dist/assets/followed-only-chip-DBBo6Jby.js                     2.48 kB │ gzip:   1.23 kB
+dist/assets/nq-catalysts-content-Crir7Ouo.js                   2.50 kB │ gzip:   0.95 kB
+dist/assets/nq-pulse-content-DR-fFQlR.js                       2.54 kB │ gzip:   0.92 kB
+dist/assets/entitlements-CiSYIB15.js                           2.64 kB │ gzip:   1.15 kB
+dist/assets/mcp-grant-about-you-YJxdsZxQ.js                    2.69 kB │ gzip:   1.33 kB
+dist/assets/pinned-store-DtH0WfyL.js                           2.72 kB │ gzip:   1.27 kB
+dist/assets/index-DgRYJRhv.js                                  2.74 kB │ gzip:   1.19 kB
+dist/assets/rpc-client-maritime-v1-C_QPz7M4.js                 2.74 kB │ gzip:   1.02 kB
+dist/assets/publisher-roster-BZD2RFrs.js                       2.74 kB │ gzip:   1.14 kB
+dist/assets/products-9Kd9dXQ1.js                               2.75 kB │ gzip:   0.71 kB
+dist/assets/prediction-country-language-PpjO8ydQ.js            2.85 kB │ gzip:   1.11 kB
+dist/assets/sensitive-url-params-Dm2Hyc4a.js                   2.89 kB │ gzip:   1.39 kB
+dist/assets/forecast-D5bJgVWa.js                               2.90 kB │ gzip:   1.40 kB
+dist/assets/toronto-safety-BfOo7HPN.js                         2.93 kB │ gzip:   1.09 kB
+dist/assets/settings-window-D5V09P_M.js                        2.96 kB │ gzip:   1.42 kB
+dist/assets/dom-utils-5uN3j1RV.js                              2.98 kB │ gzip:   1.42 kB
+dist/assets/format-intel-brief-BvfL44z2.js                     3.02 kB │ gzip:   1.47 kB
+dist/assets/decision-brief-CVj53VrY.js                         3.03 kB │ gzip:   1.31 kB
+dist/assets/threat-classifier-UZlG3ywC.js                      3.07 kB │ gzip:   1.57 kB
+dist/assets/rpc-client-forecast-v1-DnNeMFOq.js                 3.10 kB │ gzip:   0.94 kB
+dist/assets/monotone-804fPAVO.js                               3.11 kB │ gzip:   1.22 kB
+dist/assets/desktopSignIn-CGhDkoTS.js                          3.19 kB │ gzip:   1.53 kB
+dist/assets/FrameworkSelector-BU8vaR5-.js                      3.32 kB │ gzip:   1.31 kB
+dist/assets/rpc-client-displacement-v1-Dx6H5gkJ.js             3.33 kB │ gzip:   1.01 kB
+dist/assets/index-CPP1pB9P.js                                  3.35 kB │ gzip:   1.20 kB
+dist/assets/happy-share-renderer-Dw3vvLby.js                   3.38 kB │ gzip:   1.60 kB
+dist/assets/rpc-client-climate-v1-CPt9u37w.js                  3.44 kB │ gzip:   1.01 kB
+dist/assets/country-signal-projection-Cf8WmQcZ.js              3.45 kB │ gzip:   1.70 kB
+dist/assets/upgrade-flow-BSqGTboh.js                           3.51 kB │ gzip:   1.67 kB
+dist/assets/rpc-client-research-v1-CHwGWYnp.js                 3.55 kB │ gzip:   1.03 kB
+dist/assets/rpc-client-conflict-v1-CG5yfZk-.js                 3.58 kB │ gzip:   1.02 kB
+dist/assets/rpc-client-resilience-v1-BrGAGIko.js               3.67 kB │ gzip:   0.95 kB
+dist/assets/arc-CGlAFq2g.js                                    3.67 kB │ gzip:   1.59 kB
+dist/assets/news-market-correlation-CaMZ0E_r.js                3.70 kB │ gzip:   1.60 kB
+dist/assets/push-notifications-DFJ91yWh.js                     3.70 kB │ gzip:   1.75 kB
+dist/assets/line-DEDRnOn1.js                                   3.71 kB │ gzip:   1.56 kB
+dist/assets/ollama-models-DOnCKoFI.js                          3.74 kB │ gzip:   1.62 kB
+dist/assets/persistent-cache-PTur9_-j.js                       3.94 kB │ gzip:   1.50 kB
+dist/assets/acquisition-source-B4gSHgjc.js                     3.97 kB │ gzip:   1.73 kB
+dist/assets/country-coverage-BY-sAtjA.js                       4.00 kB │ gzip:   2.04 kB
+dist/assets/chokepoint-registry-CilVW4BJ.js                    4.06 kB │ gzip:   1.16 kB
+dist/assets/debugbear-rum-B0lMkAI6.js                          4.09 kB │ gzip:   1.86 kB
+dist/assets/panel-gating-CnV5yDW6.js                           4.19 kB │ gzip:   1.65 kB
+dist/assets/renewable-energy-data-BTuIPPKd.js                  4.24 kB │ gzip:   1.83 kB
+dist/assets/agent-bus-actions-G9mr2IYl.js                      4.35 kB │ gzip:   1.99 kB
+dist/assets/threat-timeline-utils-BgwkyzMF.js                  4.42 kB │ gzip:   1.88 kB
+dist/assets/browser-DWXVHamS.js                                4.54 kB │ gzip:   2.31 kB
+dist/assets/continuous-p2aHrHyA.js                             4.61 kB │ gzip:   1.93 kB
+dist/assets/rpc-client-consumer-prices-v1-K8EM9w0G.js          4.64 kB │ gzip:   1.01 kB
+dist/assets/user-location-COl7Kgwy.js                          4.73 kB │ gzip:   1.99 kB
+dist/assets/country-code-resolve-BZE_QfKQ.js                   4.87 kB │ gzip:   2.79 kB
+dist/assets/convex-client-BrSXR-zQ.js                          4.94 kB │ gzip:   2.31 kB
+dist/assets/correlation-snapshots-B3eVa39I.js                  5.01 kB │ gzip:   2.20 kB
+dist/assets/geo-convergence-DLG9Avfc.js                        5.04 kB │ gzip:   2.25 kB
+dist/assets/FoodPricesCard-Cr394VtT.js                         5.07 kB │ gzip:   2.10 kB
+dist/assets/trade-routes-DPsnPPyA.js                           5.16 kB │ gzip:   1.50 kB
+dist/assets/index-CnuhJBlB.js                                  5.28 kB │ gzip:   2.10 kB
+dist/assets/new-since-visit-CWO8dEic.js                        5.31 kB │ gzip:   2.32 kB
+dist/assets/analysis-constants-zpwClgiA.js                     5.32 kB │ gzip:   2.05 kB
+dist/assets/ProActivationChip-C3n50BAq.js                      5.46 kB │ gzip:   2.50 kB
+dist/assets/country-names-CcW7ij-o.js                          5.50 kB │ gzip:   2.63 kB
+dist/assets/rpc-client-trade-v1-iV9UUZ9C.js                    5.68 kB │ gzip:   1.22 kB
+dist/assets/rpc-client-infrastructure-v1-CiDVoFys.js           5.89 kB │ gzip:   1.34 kB
+dist/assets/tech-activity-Cs_u4Cs8.js                          6.04 kB │ gzip:   2.55 kB
+dist/assets/panel-support-GPmFRKMP.js                          6.05 kB │ gzip:   2.67 kB
+dist/assets/linear-BKxNRX5E.js                                 6.10 kB │ gzip:   2.74 kB
+dist/assets/cable-activity-Cvao3eh7.js                         6.12 kB │ gzip:   3.04 kB
+dist/assets/rpc-client-military-v1-D2lp1ENb.js                 6.40 kB │ gzip:   1.42 kB
+dist/assets/follow-button-OzFtDQVA.js                          6.58 kB │ gzip:   2.97 kB
+dist/assets/index-CsY7gybW.js                                  6.76 kB │ gzip:   2.38 kB
+dist/assets/giving-renderer-DC39bfxC.js                        6.89 kB │ gzip:   2.18 kB
+dist/assets/cloud-prefs-sync-Cov1KXIz.js                       6.96 kB │ gzip:   3.07 kB
+dist/assets/notification-channels-Df8DbXse.js                  7.19 kB │ gzip:   2.28 kB
+dist/assets/rpc-client-news-v1-C-0j_lgx.js                     7.36 kB │ gzip:   1.44 kB
+dist/assets/widget-sanitizer-Bbytq5J8.js                       7.88 kB │ gzip:   3.45 kB
+dist/assets/settings-persistence-D5Bm4mY-.js                   7.91 kB │ gzip:   3.24 kB
+dist/assets/market-chart-modal-B7B0300X.js                     8.04 kB │ gzip:   3.20 kB
+dist/assets/yielding-work-queue-DGtWUpOO.js                    8.49 kB │ gzip:   2.93 kB
+dist/assets/transit-chart-DDbmeR89.js                          8.66 kB │ gzip:   3.49 kB
+dist/assets/rss-CjsNfSnT.js                                    8.94 kB │ gzip:   4.02 kB
+dist/assets/tab-store-D7UjH17Z.js                              8.98 kB │ gzip:   3.61 kB
+dist/assets/signal-quality-BINBH-WC.js                         9.07 kB │ gzip:   3.82 kB
+dist/assets/conservation-wins-MzDjHl1n.js                      9.11 kB │ gzip:   2.85 kB
+dist/assets/irradiators-DPwq6d5a.js                            9.23 kB │ gzip:   3.15 kB
+dist/assets/live-channels-DEOXvCGl.js                          9.37 kB │ gzip:   3.09 kB
+dist/assets/news-credibility-Bjj9TGu6.js                       9.39 kB │ gzip:   4.05 kB
+dist/assets/markets-DAj2UmR6.js                                9.52 kB │ gzip:   2.95 kB
+dist/assets/cross-strait-activity-summary-Bon5dt45.js          9.52 kB │ gzip:   3.36 kB
+dist/assets/mcpGrant-Cbv1YtVu.js                               9.58 kB │ gzip:   3.74 kB
+dist/assets/agent-bus-applier-BSuGyTwu.js                      9.74 kB │ gzip:   3.58 kB
+dist/assets/analysis-framework-store-DslWRhXG.js               9.75 kB │ gzip:   4.37 kB
+dist/assets/rpc-client-aviation-v1-CVNwLFUZ.js                 9.78 kB │ gzip:   1.95 kB
+dist/assets/trending-keywords-f-VCmqdG.js                     10.02 kB │ gzip:   4.27 kB
+dist/assets/country-qualified-military-Bjodmucm.js            10.15 kB │ gzip:   3.86 kB
+dist/assets/runtime-config-CP-87jOK.js                        10.34 kB │ gzip:   3.82 kB
+dist/assets/story-renderer-CLpXz38G.js                        10.79 kB │ gzip:   3.78 kB
+dist/assets/confetti.module-C2jkTI5u.js                       10.81 kB │ gzip:   4.35 kB
+dist/assets/web-vitals.attribution-CgS4vrHl.js                11.34 kB │ gzip:   4.53 kB
+dist/assets/index-B3-9GzR9.js                                 11.52 kB │ gzip:   3.83 kB
+dist/assets/signal-aggregator-DWpF2eu5.js                     11.72 kB │ gzip:   3.96 kB
+dist/assets/rpc-client-market-v1-BV70MU1H.js                  11.76 kB │ gzip:   1.65 kB
+dist/assets/supply-vulnerability-commodities-CfVmQxko.js      11.76 kB │ gzip:   2.79 kB
+dist/assets/country-codes-BmgPB_Qr.js                         11.80 kB │ gzip:   4.54 kB
+dist/assets/AboutYouCard-DanQtakg.js                          12.40 kB │ gzip:   4.49 kB
+dist/assets/StoryModal-D7-uBsKb.js                            12.85 kB │ gzip:   4.89 kB
+dist/assets/daily-market-brief-DYfLV97a.js                    12.98 kB │ gzip:   5.24 kB
+dist/assets/WatchlistTableView-1a-FUv51.js                    13.05 kB │ gzip:   4.07 kB
+dist/assets/rpc-client-supply-chain-v1-nhe0EVdX.js            13.44 kB │ gzip:   1.79 kB
+dist/assets/McpConnectModal-B6n8mP-f.js                       14.04 kB │ gzip:   4.80 kB
+dist/assets/protomaps-B9iJs_a_.js                             14.19 kB │ gzip:   5.24 kB
+dist/assets/corroboration-DlrqjrCD.js                         14.25 kB │ gzip:   5.35 kB
+dist/assets/regional-intelligence-board-utils-DqjliHgX.js     14.31 kB │ gzip:   3.55 kB
+dist/assets/watchlist-modal-CPoUMGng.js                       14.40 kB │ gzip:   4.97 kB
+dist/assets/map-layer-definitions-C-2PAYlW.js                 14.57 kB │ gzip:   4.46 kB
+dist/assets/live-channels-window-DTu07soh.js                  14.57 kB │ gzip:   4.57 kB
+dist/assets/airports-data-DOsqCvUs.js                         14.74 kB │ gzip:   4.71 kB
+dist/assets/military-vessels-DTVzggz5.js                      14.89 kB │ gzip:   6.42 kB
+dist/assets/checkout-DQcDcM9b.js                              14.91 kB │ gzip:   5.93 kB
+dist/assets/renewable-installations-CuB42DHj.js               15.13 kB │ gzip:   3.20 kB
+dist/assets/cross-module-integration-WBsRgnaU.js              15.19 kB │ gzip:   5.52 kB
+dist/assets/passkey-offer-controller-BX2ogjuT.js              15.20 kB │ gzip:   5.00 kB
+dist/assets/finance-geo-DWBqM0zf.js                           15.31 kB │ gzip:   4.37 kB
+dist/assets/WidgetChatModal-DPglfXzc.js                       15.31 kB │ gzip:   5.34 kB
+dist/assets/storage-facility-registry-store-zsLOJu5F.js       15.40 kB │ gzip:   5.05 kB
+dist/assets/cached-risk-scores-DuZT61S-.js                    15.48 kB │ gzip:   5.60 kB
+dist/assets/live-media-idle-notice-Dby8FXxp.js                15.67 kB │ gzip:   5.98 kB
+dist/assets/country-port-clusters-BZwuKcKc.js                 15.76 kB │ gzip:   2.35 kB
+dist/assets/country-signal-observations-DWp0xWc2.js           17.06 kB │ gzip:   7.40 kB
+dist/assets/model-CJcNI43p.js                                 17.12 kB │ gzip:   6.29 kB
+dist/assets/layout-batch-B9PC4ceT.js                          17.47 kB │ gzip:   6.08 kB
+dist/assets/rpc-client-economic-v1-DR3G-X_t.js                17.51 kB │ gzip:   2.26 kB
+dist/assets/index-CzneDn61.js                                 17.79 kB │ gzip:   6.36 kB
+dist/assets/embed-C3pylJnd.js                                 17.92 kB │ gzip:   6.25 kB
+dist/assets/rpc-client-intelligence-v1-kgZ4GehY.js            18.81 kB │ gzip:   2.41 kB
+dist/assets/forecast-record-aaICKdmI.js                       19.89 kB │ gzip:   7.50 kB
+dist/assets/macro-tiles-china-Cm47YWFL.js                     20.03 kB │ gzip:   6.36 kB
+dist/assets/globe-marker-budget-sJhVubOa.js                   20.06 kB │ gzip:   8.20 kB
+dist/assets/AviationCommandBar-Bh3s1Nzn.js                    20.06 kB │ gzip:   7.11 kB
+dist/assets/IntelligenceGapBadge-BWWmPQXN.js                  20.08 kB │ gzip:   6.17 kB
+dist/assets/sentry-init-Bbe6kECT.js                           20.58 kB │ gzip:   7.73 kB
+dist/assets/gulf-fdi-Brj4tDHY.js                              20.76 kB │ gzip:   5.51 kB
+dist/assets/SignalModal-CB6kGBUv.js                           20.77 kB │ gzip:   5.94 kB
+dist/assets/string-B04_ldoR.js                                20.93 kB │ gzip:   7.53 kB
+dist/assets/correlation-engine-EriubMaZ.js                    21.14 kB │ gzip:   7.98 kB
+dist/assets/clerk-ByY3RpuZ.js                                 21.86 kB │ gzip:   8.42 kB
+dist/assets/startup-ecosystems-CHD9ZmW2.js                    22.05 kB │ gzip:   6.12 kB
+dist/assets/verify-BlgwhHt2.js                                22.51 kB │ gzip:   9.04 kB
+dist/assets/widget-store-CUoMoTOy.js                          23.32 kB │ gzip:   8.69 kB
+dist/assets/satellite.es-DES7etDd.js                          24.71 kB │ gzip:  11.94 kB
+dist/assets/export-BETWJMIh.js                                25.92 kB │ gzip:   9.80 kB
+dist/assets/china-activity-nowcast-view-BRA67M7k.js           26.72 kB │ gzip:   8.31 kB
+dist/assets/geo-distance-Cdu7s8wf.js                          28.61 kB │ gzip:  10.71 kB
+dist/assets/ai-regulations-f_E3s7zr.js                        28.99 kB │ gzip:   8.70 kB
+dist/assets/settings-C6sF6zgR.js                              30.05 kB │ gzip:   9.48 kB
+dist/assets/purify.es-DowdsyMd.js                             30.57 kB │ gzip:  11.79 kB
+dist/assets/ProActivationInterstitial-BBDlY2kL.js             34.48 kB │ gzip:  11.14 kB
+dist/assets/index-BwcBhHpm.js                                 37.42 kB │ gzip:  12.15 kB
+dist/assets/panels-CKcEIIRF.js                                37.76 kB │ gzip:   6.83 kB
+dist/assets/Panel-PZacnvDF.js                                 37.82 kB │ gzip:   9.17 kB
+dist/assets/regional-energy-presentation-BtLEyevA.js          41.12 kB │ gzip:  15.16 kB
+dist/assets/military-surge-C-Yz-NEi.js                        41.81 kB │ gzip:  13.74 kB
+dist/assets/marked.esm-BrAPT9WN.js                            42.07 kB │ gzip:  12.81 kB
+dist/assets/military-bases-data-DMCTREwx.js                   43.60 kB │ gzip:   9.40 kB
+dist/assets/analytics-CatgVRol.js                             46.61 kB │ gzip:  15.57 kB
+dist/assets/oref-locations-EKm8gxKt.js                        46.87 kB │ gzip:  16.87 kB
+dist/assets/tech-geo-data-JQrgiAY7.js                         51.04 kB │ gzip:  11.22 kB
+dist/assets/i18n-qlunRAMb.js                                  52.56 kB │ gzip:  16.67 kB
+dist/assets/RouteExplorer-BmXOvFDx.js                         56.53 kB │ gzip:  15.29 kB
+dist/assets/MapContainer-5aRQk0nl.js                          60.02 kB │ gzip:  14.13 kB
+dist/assets/decision-brief-B1hcxKhI.js                        62.73 kB │ gzip:  19.47 kB
+dist/assets/ai-datacenters-data-B8Ka8FcE.js                   63.53 kB │ gzip:  11.27 kB
+dist/assets/theme-colors-CpBk83ST.js                          71.55 kB │ gzip:  26.60 kB
+dist/assets/panels-defense-DmDW5mit.js                        76.59 kB │ gzip:  19.25 kB
+dist/assets/apt-groups-laWf6_8G.js                            79.11 kB │ gzip:  18.11 kB
+dist/assets/schemas-B1saH-qV.js                               82.53 kB │ gzip:  23.37 kB
+dist/assets/source-provenance-DR76O_7J.js                     90.34 kB │ gzip:  20.88 kB
+dist/assets/panels-news-CbYjO5Sr.js                           92.00 kB │ gzip:  24.18 kB
+dist/assets/feeds-D9mQ8SJa.js                                100.35 kB │ gzip:  23.92 kB
+dist/assets/CountryBriefOutput-B56E3L1R.js                   104.48 kB │ gzip:  23.41 kB
+dist/assets/conflict-zone-cull-D4UTsV9J.js                   105.63 kB │ gzip:  34.61 kB
+dist/assets/Map-CIGXJqsa.js                                  109.25 kB │ gzip:  28.06 kB
+dist/assets/panels-energy-BpCcHfeS.js                        115.47 kB │ gzip:  26.86 kB
+dist/assets/panels-risk-Cp6nz41T.js                          122.80 kB │ gzip:  31.65 kB
+dist/assets/gdelt-intel-Uc8mUnkY.js                          123.68 kB │ gzip:  37.94 kB
+dist/assets/search-manager-D_Q_YCGX.js                       131.24 kB │ gzip:  34.96 kB
+dist/assets/main-BL2cVsTA.js                                 134.77 kB │ gzip:  40.88 kB
+dist/assets/layer-explanation-card-CuYUEJbg.js               143.84 kB │ gzip:  29.97 kB
+dist/assets/geo-map-data-0UhwEhQ7.js                         167.08 kB │ gzip:  33.80 kB
+dist/assets/locale-zh-kQMbfguG.js                            171.07 kB │ gzip:  68.61 kB
+dist/assets/zh-TW-r_UqXJ1L.js                                171.42 kB │ gzip:  68.68 kB
+dist/assets/UnifiedSettings-DKSC8rwP.js                      179.31 kB │ gzip:  45.71 kB
+dist/assets/en-DVMGKiyw.js                                   180.49 kB │ gzip:  62.65 kB
+dist/assets/panels-markets-CqCDLd_e.js                       185.30 kB │ gzip:  44.59 kB
+dist/assets/panels-economy-CAZDaYu-.js                       185.90 kB │ gzip:  48.56 kB
+dist/assets/locale-sv-CLX3GA7F.js                            192.95 kB │ gzip:  69.52 kB
+dist/assets/locale-ko-CtBLgORx.js                            195.16 kB │ gzip:  69.52 kB
+dist/assets/h3-js-CJ4YL9qJ.js                                195.52 kB │ gzip:  58.38 kB
+dist/assets/locale-tr-CoQz4iKd.js                            198.17 kB │ gzip:  71.38 kB
+dist/assets/locale-nl-Dt_GM3wn.js                            198.18 kB │ gzip:  70.27 kB
+dist/assets/locale-hr-BlkYsuu7.js                            198.28 kB │ gzip:  72.60 kB
+dist/assets/locale-sw-D6pccFPk.js                            200.65 kB │ gzip:  69.60 kB
+dist/assets/locale-de-RbuHuNa_.js                            200.74 kB │ gzip:  71.47 kB
+dist/assets/locale-cs-PLqbkql3.js                            204.02 kB │ gzip:  74.59 kB
+dist/assets/locale-it-CjULiDnL.js                            204.04 kB │ gzip:  70.30 kB
+dist/assets/locale-pl-B10CsTCW.js                            206.34 kB │ gzip:  75.08 kB
+dist/assets/locale-pt-CI0M31Fb.js                            206.45 kB │ gzip:  71.38 kB
+dist/assets/locale-ro-CbYYYJNp.js                            207.38 kB │ gzip:  72.38 kB
+dist/assets/locale-es-CMJBXmyC.js                            209.50 kB │ gzip:  71.42 kB
+dist/assets/locale-ja-DyI5bHVg.js                            212.15 kB │ gzip:  74.52 kB
+dist/assets/locale-hu-CBHFI6qH.js                            212.34 kB │ gzip:  75.92 kB
+dist/assets/locale-fr-C97V8ZlJ.js                            214.45 kB │ gzip:  72.68 kB
+dist/assets/locale-vi-B2MqYDO6.js                            228.96 kB │ gzip:  72.32 kB
+dist/assets/locale-ar-DUQ-dpz2.js                            259.28 kB │ gzip:  76.26 kB
+dist/assets/locale-fa-BFbtbfcJ.js                            262.97 kB │ gzip:  74.45 kB
+dist/assets/locale-uk-hx_XOddS.js                            299.05 kB │ gzip:  86.90 kB
+dist/assets/locale-bg-DKq0dptj.js                            300.05 kB │ gzip:  84.94 kB
+dist/assets/locale-ru-DjPcOm9K.js                            305.65 kB │ gzip:  87.59 kB
+dist/assets/locale-el-T8H0cqAm.js                            311.62 kB │ gzip:  88.71 kB
+dist/assets/locale-hi-DE7jgKGE.js                            344.36 kB │ gzip:  81.86 kB
+dist/assets/panels-intel-BCJoaESa.js                         347.68 kB │ gzip:  94.55 kB
+dist/assets/locale-th-BTnn53bg.js                            371.77 kB │ gzip:  81.72 kB
+dist/assets/sentry-DMxp_zBn.js                               431.81 kB │ gzip: 142.60 kB
+dist/assets/hls-jw_vZdHi.js                                  523.91 kB │ gzip: 162.12 kB
+dist/assets/App-D8WgM_5y.js                                  944.81 kB │ gzip: 276.91 kB
+dist/assets/maplibre-yZQKdQBk.js                           1,018.70 kB │ gzip: 278.04 kB
+dist/assets/deck-stack-eBoGDKyc.js                         1,135.88 kB │ gzip: 308.19 kB
+dist/assets/GlobeMap-B_ztSQpS.js                           1,832.30 kB │ gzip: 509.04 kB
+✓ built in 23.98s
+
+PWA v1.3.0
+mode      generateSW
+precache  30 entries (1117.33 KiB)
+files generated
+  dist/sw.js
+  dist/workbox-3663fd56.js

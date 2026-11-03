@@ -1,3 +1,4 @@
+import { planetslamBrandPlugin } from './branding/vite-plugin';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -1035,6 +1036,7 @@ export default defineConfig(({ mode }) => {
       // which is always the 'full' build (variant selection is runtime by
       // hostname). Desktop and dedicated VITE_VARIANT builds skip it.
       !isDesktopBuild && activeVariant === 'full' && variantDashboardHtmlPlugin(),
+      planetslamBrandPlugin(env.VITE_BRAND === 'planetslam'),
       webMcpDevSecurityHeadersPlugin(),
       polymarketPlugin(),
       rssProxyPlugin(),

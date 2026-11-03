@@ -1,0 +1,26 @@
+▶ default map mode
+  ✔ defaults fresh sessions to the new 2D map preference at runtime (1.169661ms)
+  ✔ preserves an explicit globe preference but normalizes unknown values to the new 2D map (0.142898ms)
+  ✔ routes App and PanelLayout through the shared preference helper (1.618895ms)
+  ✔ routes the default desktop flat preference to DeckGL when supported, not the SVG fallback (0.814071ms)
+  ✔ does not require the stricter deck.gl WebGL2 gate before selecting globe mode (0.72211ms)
+  ✔ falls back to SVG if asynchronous GlobeMap initialization fails (0.930631ms)
+✔ default map mode (7.139249ms)
+▶ loadVariantThemeStylesheet
+  ✔ never leaks an unhandled rejection when the stylesheet fails to preload (11.546801ms)
+  ✔ handles an importer that throws synchronously (10.864682ms)
+  ✔ does not resurrect the leak when the reporter itself throws (10.707799ms)
+  ✔ reports nothing when the stylesheet loads (10.585404ms)
+✔ loadVariantThemeStylesheet (44.900968ms)
+▶ main.ts variant stylesheet call site
+  ✔ routes the variant stylesheet through the guarded loader (0.212567ms)
+  ✔ has no bare fire-and-forget variant stylesheet import left (0.134071ms)
+✔ main.ts variant stylesheet call site (0.479042ms)
+ℹ tests 12
+ℹ suites 3
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 183.030649

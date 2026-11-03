@@ -1,0 +1,18 @@
+{
+  "outcome": "passed",
+  "label": "planetslam-live",
+  "step": "/home/mythobyte/dev/planetslam/worldmonitor/branding/live-acceptance.mjs",
+  "base": "http://127.0.0.1:4480",
+  "instance": {
+    "pid": 3024834,
+    "port": 4480,
+    "baseUrl": "http://127.0.0.1:4480",
+    "variant": "full",
+    "startedAt": "2026-11-03T20:30:19.236Z",
+    "log": "/home/mythobyte/dev/planetslam/worldmonitor/.claude/verify-evidence/dev-server.log"
+  },
+  "failure": null,
+  "consoleErrorCount": 33,
+  "consoleWarningCount": 14,
+  "failedRequestCount": 21
+}

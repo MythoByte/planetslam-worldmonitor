@@ -1,0 +1,81 @@
+/* PlanetSlam Deep Space. All overrides are scoped; upstream remains the default. */
+html[data-brand="planetslam"] {
+  --ps-void: #060d19;
+  --ps-navy: #0a1628;
+  --ps-panel: #101f34;
+  --ps-raised: #182c44;
+  --ps-line: #29415d;
+  --ps-ink: #ecf5ff;
+  --ps-muted: #a6b9cf;
+  --ps-cyan: #39d9f5;
+  --ps-amber: #ffbd59;
+  --ps-red: #ff707c;
+  --ps-radius: 6px;
+}
+html[data-brand="planetslam"]:not([data-theme="light"]) {
+  --bg: var(--ps-void);
+  --bg-secondary: var(--ps-navy);
+  --surface: var(--ps-panel);
+  --surface-hover: var(--ps-raised);
+  --surface-active: #17364d;
+  --border: var(--ps-line);
+  --border-strong: #56728f;
+  --border-subtle: #20334a;
+  --text: var(--ps-ink);
+  --text-secondary: #c5d5e6;
+  --text-dim: var(--ps-muted);
+  --text-muted: var(--ps-muted);
+  --text-faint: #98adc5;
+  --accent: var(--ps-cyan);
+  --input-bg: var(--ps-navy);
+  --panel-bg: var(--ps-panel);
+  --panel-border: var(--ps-line);
+  --map-bg: var(--ps-void);
+  --map-grid: #1b3a56;
+  --map-country: #102b43;
+  --map-stroke: #3c7893;
+  --semantic-critical: var(--ps-red);
+  --semantic-high: var(--ps-amber);
+  --semantic-elevated: var(--ps-amber);
+  --threat-critical: var(--ps-red);
+  --threat-high: var(--ps-amber);
+  --status-cached: var(--ps-amber);
+  --status-unavailable: var(--ps-red);
+  --scrollbar-thumb: #35506b;
+}
+html[data-brand="planetslam"][data-theme="light"] {
+  --accent: #00647c;
+  --semantic-critical: #b51e39;
+  --semantic-high: #925000;
+  --semantic-elevated: #925000;
+}
+html[data-brand="planetslam"] .logo,
+html[data-brand="planetslam"] .logo-mobile {
+  color: var(--accent);
+  letter-spacing: .08em;
+}
+html[data-brand="planetslam"] .logo::before {
+  content: '';
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  margin-right: 8px;
+  vertical-align: middle;
+  background: url('/branding/planetslam/mark.svg') center / contain no-repeat;
+}
+html[data-brand="planetslam"] .panel { border-radius: var(--ps-radius); }
+html[data-brand="planetslam"] :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+html[data-brand="planetslam"] .site-footer-name { color: var(--accent); }
+
+@media (min-width: 769px) {
+  html[data-brand="planetslam"] .logo {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    font-size: 11px;
+  }
+  html[data-brand="planetslam"] .logo::before { width: 22px; height: 22px; }
+}

@@ -1,0 +1,4 @@
+> world-monitor@2.11.7 lint:safe-html
+> node scripts/enforce-safe-html.mjs
+
+Safe HTML guard passed (0 legacy HTML sinks tracked).
