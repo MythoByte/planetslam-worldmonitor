@@ -1,0 +1,10 @@
+{
+  "freshVisit": "2D",
+  "bannerAbsent": true,
+  "noDismissalSeeded": true,
+  "explicit3DChoicePersists": true,
+  "viewports": [
+    1440,
+    390
+  ]
+}

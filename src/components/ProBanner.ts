@@ -1,3 +1,4 @@
+import { IS_PLANETSLAM } from '@/config/brand';
 import { trackGateHit } from '@/services/analytics';
 import { onEntitlementChange, getEntitlementState, isEntitlementActive } from '@/services/entitlements';
 import { getSubscription, onSubscriptionChange } from '@/services/billing';
@@ -208,6 +209,10 @@ function resolveEffectiveBannerPremium(): EffectiveBannerPremium {
 }
 
 export function showProBanner(container: HTMLElement): void {
+  if (IS_PLANETSLAM) {
+    setReservation(false);
+    return;
+  }
   // Cache container even on early-return paths so the entitlement-change
   // listener can re-mount on a downgrade. App.ts calls this once at init
   // regardless of premium state, so caching here covers both "initially

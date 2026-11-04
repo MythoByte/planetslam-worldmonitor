@@ -12,6 +12,8 @@ for (const width of [1440, 768, 390]) {
         'worldmonitor-panels': JSON.stringify({ politics: { name: 'World News', enabled: true, priority: 0 } }),
       } },
     });
+    // Exercise the brand policy with no remembered dismissal.
+    await page.addInitScript(() => localStorage.removeItem('wm-pro-banner-launched-dismissed'));
     // Controlled UI acceptance, deliberately separate from live-feed validation.
     await page.route('**/api/**', route => route.fulfill({ json: {} }));
     await page.route('**/api/bootstrap*', route => route.fulfill({ json: { missing: [], data: {} } }));
@@ -23,9 +25,13 @@ for (const width of [1440, 768, 390]) {
     await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready', 'true', { timeout: 60_000 });
     await expect(page.locator('#panelsGrid .panel').first()).toBeVisible();
     await expect(page.locator(width <= 768 ? '.logo-mobile' : '.logo')).toHaveText(branded ? (width <= 768 ? 'PlanetSlam' : 'PLANETSLAM') : (width <= 768 ? 'World Monitor' : 'MONITOR'));
+    if (branded) {
+      await expect(page.locator('.pro-banner')).toHaveCount(0);
+      await expect(page.locator('html')).not.toHaveClass(/wm-pro-banner-reserved/);
+    }
     if (branded) await expect(page.locator('html')).toHaveAttribute('data-brand', 'planetslam');
     else expect(await page.locator('html').getAttribute('data-brand')).toBeNull();
-    await expect(page.locator('#mapContainer')).toHaveClass(branded ? /globe-mode/ : /deckgl-mode|svg-mode/, { timeout: 60_000 });
+    await expect(page.locator('#mapContainer')).toHaveClass(/deckgl-mode|svg-mode/, { timeout: 60_000 });
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
     await page.screenshot({ path: `docs/planetslam/evidence/${branded ? 'planetslam' : 'upstream'}-${width}-dark.png` });
     const openSettings = async () => {
