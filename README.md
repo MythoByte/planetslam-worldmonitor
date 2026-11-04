@@ -1,3 +1,5 @@
+> MythoByte PlanetSlam foundation: [architecture, local prototype, source audit and validation](docs/planetslam/README.md). Opt in with `VITE_BRAND=planetslam`; default World Monitor remains available.
+
 # World Monitor
 
 [简体中文](README.zh-CN.md) | [日本語](README.ja-JP.md) | [Русский](README.ru.md)

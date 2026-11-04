@@ -1,0 +1,8 @@
+base=http://127.0.0.1:4480 step=/home/mythobyte/dev/planetslam/worldmonitor/branding/live-acceptance.mjs
+live-earthquake-rpc {"status":200,"records":124,"sources":["usgs"],"mocked":false}
+shot -> /home/mythobyte/dev/planetslam/worldmonitor/.claude/verify-evidence/2026-11-03_20-37-20-planetslam-live/01-live-desktop-globe.png
+map-toggle {"globeToFlatAndBack":true,"persisted":true}
+shot -> /home/mythobyte/dev/planetslam/worldmonitor/.claude/verify-evidence/2026-11-03_20-37-20-planetslam-live/02-live-mobile.png
+
+[drive] passed — evidence: /home/mythobyte/dev/planetslam/worldmonitor/.claude/verify-evidence/2026-11-03_20-37-20-planetslam-live
+[drive] console errors: 33, warnings: 14, responses >=400: 21

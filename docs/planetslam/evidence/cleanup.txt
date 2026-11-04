@@ -1,0 +1,12 @@
+[wm-verify] stopped pid 3024834
+[wm-verify] evidence kept in /home/mythobyte/dev/planetslam/worldmonitor/.claude/verify-evidence (run directories are never deleted by cleanup)
+ Container planetslam-foundation-redis-rest-1 Stopping
+ Container planetslam-foundation-redis-rest-1 Stopped
+ Container planetslam-foundation-redis-rest-1 Removing
+ Container planetslam-foundation-redis-rest-1 Removed
+ Container planetslam-foundation-redis-1 Stopping
+ Container planetslam-foundation-redis-1 Stopped
+ Container planetslam-foundation-redis-1 Removing
+ Container planetslam-foundation-redis-1 Removed
+ Network planetslam-foundation_default Removing
+ Network planetslam-foundation_default Removed

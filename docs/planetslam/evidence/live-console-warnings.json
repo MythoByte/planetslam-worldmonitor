@@ -1,0 +1,16 @@
+[
+  "Error with Permissions-Policy header: Origin trial controlled feature not enabled: 'tools'.",
+  "[PWA] Service worker registration failed: SecurityError: Failed to register a ServiceWorker for scope ('http://127.0.0.1:4480/') with script ('http://127.0.0.1:4480/sw.js'): The script has an unsupported MIME type ('text/html').",
+  "[PanelLayoutManager] Boot shell footprint drift during skeleton->app swap: main dx=0, dy=0, dw=0, dh=-73; map dx=0, dy=0, dw=-512, dh=207; grid dx=774, dy=-360, dw=-774, dh=-589. Keep index.html skeleton dimensions in parity with the first hydrated dashboard frame.",
+  "THREE.THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "THREE.THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+  "[.WebGL-0x3e400194a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+  "[.WebGL-0x3e400194a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+  "[.WebGL-0x3e400194a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+  "[.WebGL-0x3e400194a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
+  "[NWS + ECCC + WMO SWIC Weather] On cooldown for 300s after 2 failures",
+  "[Sanctions Pressure] On cooldown for 300s after 2 failures",
+  "[Canada alerts] On cooldown for 300s after 2 failures",
+  "[CorrelationRuntimeMode] control-plane read failed; using legacy: SyntaxError: Unexpected token 'i', \"import { g\"... is not valid JSON",
+  "THREE.THREE.Clock: This module has been deprecated. Please use THREE.Timer instead."
+]

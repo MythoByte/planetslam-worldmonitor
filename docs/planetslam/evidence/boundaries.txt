@@ -1,0 +1,4 @@
+> world-monitor@2.11.7 lint:boundaries
+> node scripts/lint-boundaries.mjs
+
+✓ No architectural boundary violations found.

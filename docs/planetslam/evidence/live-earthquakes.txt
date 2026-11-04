@@ -1,0 +1,10 @@
+=== seismology:earthquakes Seed ===
+  Run ID:  1793737817051-0d40wz
+  Key:     seismology:earthquakes:v1
+  Mode:    contract (envelope dual-write)
+{"event":"source_request_diagnostic","requestId":"4b561555-25a1-4e27-aa34-42602363e47c","source":"nrcan","stage":null,"route":"direct","attempt":0,"phase":"response_headers","createdMs":1,"writeStartedMs":242,"sentMs":242,"headersMs":590,"status":200,"remoteAddress":"162.159.142.223","localPort":47760,"server":"cloudflare","contentType":"application/atom+xml","cfRay":"a54e22ce7ca480b1-IAD","challenge":false,"elapsedMs":889,"outcome":"response"}
+  Extra key seismology:earthquakes:providers:v1: written
+{"event":"seed_complete","domain":"seismology","recordCount":124,"durationMs":971,"timestamp":"2026-11-03T20:30:18.023Z","runId":"1793737817051-0d40wz","canonicalKey":"seismology:earthquakes:v1","fetchedAt":1793737818000,"newestItemAt":1793737770000,"oldestItemAt":1791176741000,"maxContentAgeMin":2880,"payloadBytes":32613,"contractMode":true,"state":"OK"}
+  Verified: data present in Redis
+
+=== Done (971ms) ===

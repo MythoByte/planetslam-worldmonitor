@@ -1,0 +1,44 @@
+[WebServer] (node:3059951) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 1 worker
+
+(node:3060016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [CII] ACLED returned 0 events for both windows — if auth is unconfigured set ACLED_EMAIL/ACLED_PASSWORD (or ACLED_ACCESS_TOKEN) on the api project, else check for an upstream ACLED API error/rate-limit. CII conflict realtime signal-density coverage is falling back to UCDP only.
+[WebServer] [cii] daily history write unconfirmed
+[WebServer] [CII] ACLED returned 0 events for both windows — if auth is unconfigured set ACLED_EMAIL/ACLED_PASSWORD (or ACLED_ACCESS_TOKEN) on the api project, else check for an upstream ACLED API error/rate-limit. CII conflict realtime signal-density coverage is falling back to UCDP only.
+[WebServer] [cii] daily history write unconfirmed
+[WebServer] [digest] publisher-link-gate blank feed="Hacker News" variant=full host="vinipsmaker.github.io"
+[WebServer] [digest] publisher-link-gate blank feed="Hacker News" variant=full host="flipper.net"
+[WebServer] [digest] publisher-link-gate blank feed="Hacker News" variant=full host="ats-lang.sourceforge.net"
+[WebServer] [digest] publisher-link-gate blank feed="Hacker News" variant=full host="posthog.com"
+[WebServer] [digest] publisher-link-gate blank feed="Hacker News" variant=full host="simonwillison.net"
+[WebServer] [digest] publisher-link-gate drop feed="Hacker News" variant=full hosts="news.ycombinator.com:2,arstechnica.com:1,arxiv.org:1,ashbyhq.com:1,dilshan.github.io:1,floooh.github.io:1,github.com:1,hissingkitty.com:1,honnibal.dev:1,jivx.com:1,namespace.so:1,nbcnews.com:1,neufangled.com:1,nytimes.com:1" count=15
+[WebServer] [digest] publisher-link-gate blank feed="HaitiLibre English" variant=full host="icihaiti.com"
+[WebServer] [digest] publisher-link-gate drop feed="HaitiLibre English" variant=full hosts="icihaiti.com:3" count=3
+[WebServer] [digest] publisher-link-gate drop feed="Aftenposten" variant=full hosts="e24.no:3" count=3
+[WebServer] [digest] partial-undated feed="The Tyee" variant=full parsed=5 dropped=1 kept=4
+[WebServer] [error-mapper] 503: Seed unavailable: seismology:earthquakes:v1
+[WebServer] [digest] freshness floor dropped 277 stale items (max age: 96h)
+[WebServer] [digest] story adoption chunk incomplete; expected 800 Redis result(s), got 0
+[WebServer] [digest] publisher-link-gate persist-blank source="OCCRP" host="occrp.org"
+[WebServer] [digest] publisher-link-gate persist-blank source="OCCRP" host="occrp.org"
+[WebServer] [forecast-evidence] attempted=74 published=0 dropped=0 coverage_read_confirmed=true tracking_writes_confirmed=false writes_confirmed=false coverage_advanced=false accumulator_ttl_confirmed=false maintenance_confirmed=false accumulator_pruned=false accumulator_prune_confirmed=true cutover_enabled=false key=forecast:evidence:v1 ttl_s=1296000
+[WebServer] [digest-publication] publish unavailable variant=full lang=en
+[WebServer] [error-mapper] 503: Seed unavailable: seismology:earthquakes:v1
+[axe] scanned=2977 pass-nodes, incomplete=aria-prohibited-attr:9,color-contrast:21
+[axe] violations: []
+  ✓  1 [chromium] › e2e/a11y-axe-scan.spec.ts:81:3 › a11y — axe-core WCAG A/AA scan › dashboard has no axe violations outside the known backlog (15.5s)
+[WebServer] [CII] ACLED returned 0 events for both windows — if auth is unconfigured set ACLED_EMAIL/ACLED_PASSWORD (or ACLED_ACCESS_TOKEN) on the api project, else check for an upstream ACLED API error/rate-limit. CII conflict realtime signal-density coverage is falling back to UCDP only.
+[WebServer] [cii] daily history write unconfirmed
+[WebServer] [CII] ACLED returned 0 events for both windows — if auth is unconfigured set ACLED_EMAIL/ACLED_PASSWORD (or ACLED_ACCESS_TOKEN) on the api project, else check for an upstream ACLED API error/rate-limit. CII conflict realtime signal-density coverage is falling back to UCDP only.
+[WebServer] [cii] daily history write unconfirmed
+[WebServer] [error-mapper] 503: Seed unavailable: seismology:earthquakes:v1
+[axe:settings] violations: []
+  ✓  2 [chromium] › e2e/a11y-axe-scan.spec.ts:101:3 › a11y — axe-core WCAG A/AA scan › settings dialog has no axe violations outside the known backlog (6.1s)
+  ✓  3 [chromium] › e2e/planetslam-foundation.spec.ts:7:3 › foundation: anonymous dashboard at 1440px (9.7s)
+  ✓  4 [chromium] › e2e/planetslam-foundation.spec.ts:7:3 › foundation: anonymous dashboard at 768px (8.8s)
+  ✓  5 [chromium] › e2e/planetslam-foundation.spec.ts:7:3 › foundation: anonymous dashboard at 390px (8.4s)
+
+  5 passed (50.3s)
