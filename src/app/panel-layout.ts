@@ -255,6 +255,7 @@ export function variantSwitcherHref(
   currentVariant: string,
   isLocal: boolean,
 ): string {
+  if (IS_PLANETSLAM) return `/dashboard?variant=${targetVariant}`;
   return isLocal || currentVariant === targetVariant ? '#' : VARIANT_SWITCHER_DASHBOARD_URLS[targetVariant];
 }
 

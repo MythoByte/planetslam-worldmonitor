@@ -10,6 +10,41 @@ import {
 } from '../src/services/variant-panel-ownership';
 
 describe('variant panel ownership', () => {
+  it('seeds new PlanetSlam editions and restores each saved panel profile on return', () => {
+    const store = new Map<string, string>();
+    const storage = {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => { store.set(key, value); },
+    };
+    let panels: Record<string, PanelConfig> = {
+      world: { name: 'World', enabled: true, priority: 1 },
+      positive: { name: 'Positive', enabled: false, priority: 1 },
+      'cw-user': { name: 'My widget', enabled: true, priority: 1 },
+    };
+    const transition = (previousVariant: string, currentVariant: string, defaultKey: string) => {
+      panels = applyVariantPanelLayoutTransition({
+        currentVariant,
+        panelSettings: panels,
+        variantPanelKeys: new Set([defaultKey]),
+        isDynamicPanel: key => key.startsWith('cw-'),
+        getDefaultPanel: key => ({ name: key, enabled: true, priority: 1 }),
+        persistPanels: () => {},
+        persistAppliedVariant: () => {},
+        editionProfiles: { previousVariant, storage },
+      });
+    };
+    transition('full', 'happy', 'positive');
+    assert.equal(panels.positive?.enabled, true, 'a disabled World panel must not hide a new edition default');
+    assert.equal(panels['cw-user']?.enabled, true);
+    panels.positive!.enabled = false; // User explicitly hides it in Good News.
+    transition('happy', 'full', 'world');
+    assert.equal(panels.world?.enabled, true, 'the original World preferences return');
+    transition('full', 'happy', 'positive');
+    assert.equal(panels.positive?.enabled, false, 'the Good News preference survives a round trip');
+    assert.ok(store.has('planetslam-panels:full'));
+    assert.ok(store.has('planetslam-panels:happy'));
+  });
+
   it('persists free ownership before a destructive preference and stops on failure', () => {
     const events: string[] = [];
     const failed = persistGateOwnershipTransition(
