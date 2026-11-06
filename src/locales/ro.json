@@ -384,7 +384,8 @@
     "panelCatHappyNews": "Știri bune",
     "panelCatHappyPlanet": "Planetă și donații",
     "embed": "Încorporează",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "panels": {
     "liveNews": "Știri Live",
@@ -4742,6 +4743,9 @@
     },
     "happy": {
       "map": "Harta Știrilor Bune"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

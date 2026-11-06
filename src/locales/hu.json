@@ -451,7 +451,8 @@
     "panelCatHappyNews": "Jó Hírek",
     "panelCatHappyPlanet": "Bolygó & Adományozás",
     "embed": "Beágyazás",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "panels": {
     "liveNews": "Élő Hírek",
@@ -4721,6 +4722,9 @@
     },
     "happy": {
       "map": "Jó Hírek Térképe"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

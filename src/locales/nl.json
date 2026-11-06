@@ -3888,7 +3888,8 @@
     "panelCatHappyNews": "Goed Nieuws",
     "panelCatHappyPlanet": "Planeet & Geven",
     "embed": "Insluiten",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "countryBrief": {
     "identifying": "Land identificeren...",
@@ -4721,6 +4722,9 @@
     },
     "happy": {
       "map": "Goed nieuws-kaart"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

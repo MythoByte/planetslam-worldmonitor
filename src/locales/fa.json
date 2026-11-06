@@ -451,7 +451,8 @@
     "panelCatCommodityEcon": "اقتصاد و تجارت",
     "panelCatHappyNews": "اخبار خوب",
     "panelCatHappyPlanet": "سیاره و نیکوکاری",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "panels": {
     "liveNews": "اخبار زنده",
@@ -4721,6 +4722,9 @@
     },
     "happy": {
       "map": "نقشه اخبار خوب"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

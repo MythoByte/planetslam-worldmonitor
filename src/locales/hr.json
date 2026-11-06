@@ -454,7 +454,8 @@
     "panelCatHappyNews": "Dobre vijesti",
     "panelCatHappyPlanet": "Planet i pomoć",
     "embed": "Ugradi",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "panels": {
     "liveNews": "Vijesti uživo",
@@ -4753,6 +4754,9 @@
     },
     "happy": {
       "map": "Mapa dobrih vijesti"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

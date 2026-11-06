@@ -451,7 +451,8 @@
     "panelCatHappyNews": "अच्छी खबरें",
     "panelCatHappyPlanet": "प्लैनेट और दान",
     "embed": "एम्बेड",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "panels": {
     "liveNews": "ताजा खबरें",
@@ -4721,6 +4722,9 @@
     },
     "happy": {
       "map": "सकारात्मक समाचार मानचित्र"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

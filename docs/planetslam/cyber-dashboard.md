@@ -75,3 +75,16 @@ watchlist add/remove/reload, edition navigation, layout at 1440/390px, and outag
 recovery. That proves UI behavior, not live provider or production operation.
 Live worker-to-cache-to-API observations and the local review browser run provide
 separate evidence. Publishing to Bespin is a separate authorized action.
+
+## Catalog origin evidence
+
+Origin describes the publisher or issuing program, not where an incident occurs.
+The Hacker News identifies THN Media Private Limited as its parent on its
+[about page](https://thehackernews.com/p/about-us.html); its
+[registered-office notice](https://awards.thehackernews.com/contact-us/) places
+that company in India. BleepingComputer's
+[contact address](https://www.bleepingcomputer.com/contact/) is in New York, US.
+The CVE Program's
+[program FAQ](https://www.cve.org/Resources/Media/Archives/OldWebsite/about/faqs.html)
+identifies MITRE as its Secretariat; the US program origin refers to that issuing
+organization and sponsorship, while CVE participation is international.

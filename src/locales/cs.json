@@ -386,7 +386,8 @@
     "panelCatHappyNews": "Dobré zprávy",
     "panelCatHappyPlanet": "Planeta a dárcovství",
     "embed": "Vložit",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "panels": {
     "liveNews": "Živé zprávy",
@@ -4763,6 +4764,9 @@
     },
     "happy": {
       "map": "Mapa dobrých zpráv"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

@@ -380,7 +380,8 @@
     "panelCatHappyNews": "好訊息",
     "panelCatHappyPlanet": "地球與慈善",
     "embed": "嵌入",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "panels": {
     "liveNews": "即時新聞",
@@ -4700,6 +4701,9 @@
     },
     "happy": {
       "map": "好訊息地圖"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

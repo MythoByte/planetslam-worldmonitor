@@ -455,7 +455,8 @@
     "panelCatCommodityEcon": "Економіка та торгівля",
     "panelCatHappyNews": "Хорошi новини",
     "panelCatHappyPlanet": "Планета та благодійність",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "panels": {
     "liveNews": "Прямі новини",
@@ -4763,6 +4764,9 @@
     },
     "happy": {
       "map": "Карта добрих новин"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

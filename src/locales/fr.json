@@ -384,7 +384,8 @@
     "panelCatHappyNews": "Bonnes Nouvelles",
     "panelCatHappyPlanet": "Planète & Solidarité",
     "embed": "Intégrer",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "panels": {
     "liveNews": "Actualités en direct",
@@ -4742,6 +4743,9 @@
     },
     "happy": {
       "map": "Carte des bonnes nouvelles"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

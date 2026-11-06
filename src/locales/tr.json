@@ -382,7 +382,8 @@
     "panelCatHappyNews": "İyi Haberler",
     "panelCatHappyPlanet": "Gezegen & Hayırseverlik",
     "embed": "Göm",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "panels": {
     "liveNews": "Canli Haberler",
@@ -4721,6 +4722,9 @@
     },
     "happy": {
       "map": "İyi Haberler Haritası"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

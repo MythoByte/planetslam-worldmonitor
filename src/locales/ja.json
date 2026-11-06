@@ -380,7 +380,8 @@
     "panelCatHappyNews": "ニュース",
     "panelCatHappyPlanet": "地球・社会貢献",
     "embed": "埋め込む",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "panels": {
     "liveNews": "ライブニュース",
@@ -4700,6 +4701,9 @@
     },
     "happy": {
       "map": "グッドニュースマップ"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

@@ -382,7 +382,8 @@
     "panelCatHappyNews": "Καλές Ειδήσεις",
     "panelCatHappyPlanet": "Πλανήτης & Δωρεές",
     "embed": "Ενσωμάτωση",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "panels": {
     "liveNews": "Ζωντανές Ειδήσεις",
@@ -4721,6 +4722,9 @@
     },
     "happy": {
       "map": "Χάρτης Θετικών Ειδήσεων"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

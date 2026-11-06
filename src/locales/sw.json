@@ -451,7 +451,8 @@
     "panelCatCommodityEcon": "Uchumi na Biashara",
     "panelCatHappyNews": "Habari Njema",
     "panelCatHappyPlanet": "Sayari & Kutoa",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "panels": {
     "liveNews": "Habari za Moja kwa Moja",
@@ -4721,6 +4722,9 @@
     },
     "happy": {
       "map": "Ramani ya Habari Nzuri"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

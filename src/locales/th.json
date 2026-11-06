@@ -380,7 +380,8 @@
     "panelCatHappyNews": "ข่าวดี",
     "panelCatHappyPlanet": "โลกและการให้กำลังใจ",
     "embed": "ฝังตัว",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "panels": {
     "liveNews": "ข่าวสด",
@@ -4700,6 +4701,9 @@
     },
     "happy": {
       "map": "แผนที่ข่าวดี"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }
