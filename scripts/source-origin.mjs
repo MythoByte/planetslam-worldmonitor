@@ -219,6 +219,7 @@ const HOST_ORIGINS = Object.freeze({
   'api.cloudflare.com': 'US',
   'radar.cloudflare.com': 'US',
   'api.abuseipdb.com': 'US',
+  'www.abuseipdb.com': 'US',
   'api.alternative.me': null,
   'api.aviationstack.com': 'GB',
   'api.coingecko.com': 'MY',
@@ -617,6 +618,7 @@ const HOST_ORIGINS = Object.freeze({
 // Provider-level overrides win when the host is a CDN, cloud, or shared
 // platform that would otherwise point at the wrong country.
 const PROVIDER_ORIGINS = Object.freeze({
+  'UMD GoTech Cyber Events Database': 'US',
   // Space edition: national issuing agencies keep their origin regardless of
   // worldwide coverage. ESA is intergovernmental; community space platforms
   // use the catalog's International classification rather than an inferred

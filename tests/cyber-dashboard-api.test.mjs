@@ -21,7 +21,7 @@ test('cyber API is cache-only and health keeps source failures visible', async (
   };
   try {
     const health = await (await handler(new Request('https://planetslam.com/api/cyber-dashboard?dataset=health'))).json();
-    assert.equal(health.status, 'unavailable'); assert.equal(health.data.items.length, 4);
+    assert.equal(health.status, 'unavailable'); assert.equal(health.data.items.length, 6);
     assert.ok(health.data.items.every(i => i.status === 'unavailable' && i.data === null && i.provider));
     assert.equal(calls[0].url, 'https://redis.example/pipeline');
     assert.ok(calls[0].commands.every(c => c[0] === 'GET' && c[1].startsWith('cyber-dashboard:')));

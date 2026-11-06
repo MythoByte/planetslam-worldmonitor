@@ -588,6 +588,9 @@
     "ukmtoIncidents": "UKMTO Incidents"
   },
   "panelVariants": {
+    "cyber": {
+      "map": "Cyber Incidents & Infrastructure"
+    },
     "finance": {
       "map": "Global Markets Map",
       "liveNews": "Market Headlines",

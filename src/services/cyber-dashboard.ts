@@ -1,5 +1,9 @@
 import { getRpcBaseUrl } from './rpc-client';
 import type { CyberDataset, CyberEnvelope } from '@/types/cyber-dashboard';
+const listeners = new Set<(value: CyberEnvelope) => void>();
+export function subscribeCyberDataset(callback: (value: CyberEnvelope) => void): () => void {
+  listeners.add(callback); return () => { listeners.delete(callback); };
+}
 const cache = new Map<CyberDataset, { at: number; value: CyberEnvelope }>();
 const pending = new Map<CyberDataset, Promise<CyberEnvelope>>();
 export async function fetchCyberDataset<T>(dataset: CyberDataset, force = false): Promise<CyberEnvelope<T>> {
@@ -15,7 +19,9 @@ export async function fetchCyberDataset<T>(dataset: CyberDataset, force = false)
       const value = await response.json() as CyberEnvelope;
       if (value.dataset !== dataset || !['fresh', 'stale', 'unavailable'].includes(value.status)
         || typeof value.provider !== 'string' || !('data' in value)) throw new Error('Invalid cyber response');
-      cache.set(dataset, { at: Date.now(), value }); return value;
+      cache.set(dataset, { at: Date.now(), value });
+      for (const callback of listeners) { try { callback(value); } catch { console.warn('[Cyber] dataset listener could not update'); } }
+      return value;
     })().finally(() => pending.delete(dataset));
     pending.set(dataset, request);
   }

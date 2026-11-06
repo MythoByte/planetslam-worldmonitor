@@ -12,7 +12,7 @@ The inventory is **generated, not hand-written**: `scripts/source-attribution.mj
 ## Observed Source Inventory
 
 {/* BEGIN GENERATED SOURCE ATTRIBUTION */}
-This generated inventory covers **860 active source hosts** representing **841 active providers** (**378 structured/API**, **468 feed**, and **30 operational-status** hosts). It is derived from source declarations in `scripts/`, `server/`, `api/`, and `src/`. Each row shows the configured provider identity and where the source is referenced. Syndication transports such as FeedBurner and Google News remain listed as hosts and are not counted as publishers.
+This generated inventory covers **863 active source hosts** representing **843 active providers** (**381 structured/API**, **468 feed**, and **30 operational-status** hosts). It is derived from source declarations in `scripts/`, `server/`, `api/`, and `src/`. Each row shows the configured provider identity and where the source is referenced. Syndication transports such as FeedBurner and Google News remain listed as hosts and are not counted as publishers.
 
 | Provider | Observed surface |
 | --- | --- |
@@ -307,7 +307,7 @@ This generated inventory covers **860 active source hosts** representing **841 a
 | feeds.nos.nl (feeds.nos.nl) | feed — shared/news-catalog.json |
 | feeds.npr.org (feeds.npr.org) | feed — shared/news-catalog.json |
 | fema.gov (fema.gov) | feed — shared/news-catalog.json |
-| feodotracker.abuse.ch (feodotracker.abuse.ch) | structured — scripts/seed-cyber-threats.mjs |
+| feodotracker.abuse.ch (feodotracker.abuse.ch) | structured — scripts/_cyber-incidents.mjs, scripts/seed-cyber-threats.mjs |
 | finance.worldmonitor.app (finance.worldmonitor.app) | structured — src/app/panel-layout.ts, src/config/variant-meta.ts |
 | finance.yahoo.com (finance.yahoo.com) | feed — shared/news-catalog.json |
 | Financial Action Task Force (FATF) (www.fatf-gafi.org) | structured — scripts/seed-fatf-listing.mjs |
@@ -336,7 +336,7 @@ This generated inventory covers **860 active source hosts** representing **841 a
 | geospatial-usace.opendata.arcgis.com (geospatial-usace.opendata.arcgis.com) | structured — scripts/fetch-mirta-bases.mjs |
 | ghoapi.azureedge.net (ghoapi.azureedge.net) | structured — scripts/seed-resilience-static.mjs |
 | github.blog (github.blog) | feed — shared/news-catalog.json |
-| github.com (github.com) | structured — api/download.js, api/health.js, scripts/build-accuracy-page.mjs, scripts/build-crawlable-corpus.mjs, +6 more |
+| github.com (github.com) | structured — api/download.js, api/health.js, scripts/_cyber-incidents.mjs, scripts/build-accuracy-page.mjs, +7 more |
 | Global Affairs Canada (SEMA consolidated sanctions) (www.international.gc.ca) | structured — scripts/_sema-sanctions.mjs |
 | Global Energy Monitor (globalenergymonitor.org) | structured — scripts/import-gem-pipelines.mjs, src/components/PipelineStatusPanel.ts, src/components/StorageFacilityMapPanel.ts |
 | globalinitiative.net (globalinitiative.net) | feed — shared/news-catalog.json |
@@ -533,7 +533,7 @@ This generated inventory covers **860 active source hosts** representing **841 a
 | openstreetmap.org (openstreetmap.org) | structured — src/config/basemap-styles.ts |
 | ott.tv5monde.com (ott.tv5monde.com) | feed — src/config/live-video-sources.ts |
 | ottawacitizen.com (ottawacitizen.com) | feed — shared/news-catalog.json |
-| otx.alienvault.com (otx.alienvault.com) | structured — scripts/seed-cyber-threats.mjs |
+| otx.alienvault.com (otx.alienvault.com) | structured — scripts/_cyber-incidents.mjs, scripts/seed-cyber-threats.mjs |
 | Our World in Data (ourworldindata.org) | structured — scripts/seed-low-carbon-generation.mjs, server/worldmonitor/resilience/v1/_dimension-scorers.ts, server/worldmonitor/resilience/v1/_indicator-source-policy.ts |
 | Our World in Data (owid-public.owid.io) | structured — scripts/seed-owid-energy-mix.mjs |
 | outbreaknewstoday.com (outbreaknewstoday.com) | Excluded / candidate — No current fetch observed |
@@ -755,6 +755,8 @@ This generated inventory covers **860 active source hosts** representing **841 a
 | uis.unesco.org (uis.unesco.org) | structured — server/worldmonitor/resilience/v1/_indicator-source-policy.ts |
 | ukrinform.net (ukrinform.net) | feed — shared/news-catalog.json |
 | ukrinform.ua (ukrinform.ua) | feed — shared/news-catalog.json |
+| UMD GoTech Cyber Events Database (base44.app) | structured (syndication transport) — scripts/_cyber-providers.mjs |
+| UMD GoTech Cyber Events Database (cybereventsdatabase.org) | structured — api/_cyber-incidents.js, src/components/CyberIncidentsPanel.ts |
 | unchainedcrypto.com (unchainedcrypto.com) | feed — shared/news-catalog.json |
 | understandingwar.org (understandingwar.org) | feed — shared/news-catalog.json |
 | UNDP Human Development Report (hdr.undp.org) | structured — scripts/benchmark-resilience-external.mjs |
@@ -762,6 +764,7 @@ This generated inventory covers **860 active source hosts** representing **841 a
 | United Nations Population Division (population.un.org) | structured — scripts/_demographics-capability-source.mjs |
 | unstats.un.org (unstats.un.org) | structured — scripts/build-un-m49-regions.mjs |
 | urlhaus-api.abuse.ch (urlhaus-api.abuse.ch) | structured — scripts/ais-relay.cjs, scripts/seed-cyber-threats.mjs |
+| urlhaus.abuse.ch (urlhaus.abuse.ch) | structured — scripts/_cyber-incidents.mjs |
 | USDA FAS PSD (api.fas.usda.gov) | structured — scripts/seed-food-stocks.mjs |
 | USDA FAS PSD (apps.fas.usda.gov) | Excluded / candidate — No current fetch observed |
 | USGS ScienceBase (Mineral Commodity Summaries) (www.sciencebase.gov) | structured — scripts/seed-mineral-production.mjs, scripts/seed-supply-vulnerability.mjs |

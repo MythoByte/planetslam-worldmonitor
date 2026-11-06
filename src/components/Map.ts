@@ -1,3 +1,5 @@
+import { type CyberMapSnapshot, cyberMarkerLabel } from '@/types/cyber-map';
+import { selectCyberMarker } from './cyber-map-interaction';
 import type { SpaceOrbitSnapshot } from '@/types/space-orbits';
 import type { SpaceMapSnapshot } from '@/types/space-map';
 import * as d3 from 'd3';
@@ -180,6 +182,25 @@ export class MapComponent {
     };
 
   private static readonly SVG_MARKER_DOM_ZOOM_LAYERS = new Set<keyof MapLayers>(['bases', 'nuclear']);
+
+  private cyberMap: CyberMapSnapshot | null = null;
+  public setCyberMap(snapshot: CyberMapSnapshot): void { this.cyberMap = snapshot; this.render(); }
+  private renderCyberMap(projection: d3.GeoProjection): void {
+    const group = this.dynamicLayerGroup?.append('g').attr('class', 'cyber-native-markers');
+    if (!group) return;
+    for (const marker of this.cyberMap?.markers ?? []) {
+      const point = projection([marker.longitude, marker.latitude]);
+      if (!point) continue;
+      const circle = group.append('circle').attr('class', `cyber-map-marker cyber-map-${marker.kind}`)
+        .attr('data-cyber-marker', marker.id).attr('cx', point[0]).attr('cy', point[1])
+        .attr('r', marker.kind === 'incident' ? 5 : 3).attr('fill', marker.kind === 'incident' ? '#ffbc50' : '#bd91ff')
+        .attr('stroke', '#fff').attr('stroke-width', 0.7).attr('vector-effect', 'non-scaling-stroke')
+        .attr('role', 'button').attr('tabindex', 0).attr('aria-label', cyberMarkerLabel(marker))
+        .on('click', event => { event.stopPropagation(); selectCyberMarker(marker); })
+        .on('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectCyberMarker(marker); } });
+      circle.append('title').text(cyberMarkerLabel(marker));
+    }
+  }
 
   private spaceOrbits: SpaceOrbitSnapshot | null = null;
 
@@ -751,7 +772,7 @@ export class MapComponent {
     ];
     // Filter sunset and renderer-incompatible layers so the SVG/mobile picker
     // cannot expose a toggle whose layer has no SVG paint path.
-    const layers = (SITE_VARIANT === 'space' ? ['satellites', 'spaceports', 'webcams'] as (keyof MapLayers)[]
+    const layers = (SITE_VARIANT === 'cyber' ? [] : SITE_VARIANT === 'space' ? ['satellites', 'spaceports', 'webcams'] as (keyof MapLayers)[]
                  : SITE_VARIANT === 'tech' ? techLayers
                  : SITE_VARIANT === 'finance' ? financeLayers
                  : SITE_VARIANT === 'happy' ? happyLayers
@@ -1586,6 +1607,7 @@ export class MapComponent {
     this.updateCountryFills();
 
     const steps: Array<() => void> = [];
+    if (this.cyberMap?.markers.length) steps.push(() => this.renderCyberMap(projection));
     steps.push(() => this.renderSpaceOverlay(projection));
     steps.push(() => this.renderSpaceOrbits(projection));
     if (this.state.layers.cables) steps.push(() => this.renderCables(projection));

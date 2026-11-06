@@ -1,6 +1,9 @@
+import { validIncidentData, validInfrastructureData, INCIDENT_PROVIDER, INCIDENT_SOURCE_URL, INCIDENT_INTERVAL_MS, INCIDENT_MAX_AGE_MS, INFRA_MAX_AGE_MS, CYBER_NEWS_SOURCES } from './_cyber-incidents.js';
 // Shared normalized contract for the cache-only API and central worker.
 const MINUTE = 60_000;
 export const CYBER_DATASETS = Object.freeze({
+  incidents: { provider: INCIDENT_PROVIDER, sourceUrl: INCIDENT_SOURCE_URL, intervalMs: INCIDENT_INTERVAL_MS, maxAgeMs: INCIDENT_MAX_AGE_MS },
+  infrastructure: { provider: 'Shared cyber IOC collection', sourceUrl: 'https://planetslam.com/dashboard?variant=cyber', intervalMs: 5 * MINUTE, staleAfterMs: 150 * MINUTE, maxAgeMs: INFRA_MAX_AGE_MS },
   kev: { provider: 'CISA Known Exploited Vulnerabilities', sourceUrl: 'https://www.cisa.gov/known-exploited-vulnerabilities-catalog', feedUrl: 'https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json', intervalMs: 60 * MINUTE, maxAgeMs: 48 * 60 * MINUTE },
   bleeping: { provider: 'BleepingComputer', sourceUrl: 'https://www.bleepingcomputer.com/', feedUrl: 'https://www.bleepingcomputer.com/feed/', intervalMs: 15 * MINUTE, maxAgeMs: 6 * 60 * MINUTE },
   krebs: { provider: 'Krebs on Security', sourceUrl: 'https://krebsonsecurity.com/', feedUrl: 'https://krebsonsecurity.com/feed/', intervalMs: 15 * MINUTE, maxAgeMs: 6 * 60 * MINUTE },
@@ -13,6 +16,8 @@ export function httpsUrl(value) {
 const str = (v, max = 2000) => typeof v === 'string' && v.length <= max;
 const time = v => Number.isFinite(v) && v > 0;
 export function validCyberData(name, data) {
+  if (name === 'incidents') return validIncidentData(data);
+  if (name === 'infrastructure') return validInfrastructureData(data);
   if (!Object.hasOwn(CYBER_DATASETS, name) || !data || !Array.isArray(data.items) || !data.items.length || data.items.length > 10000) return false;
   if (name === 'kev') return time(data.catalogAt) && Number.isInteger(data.totalCount) && data.totalCount === data.items.length && str(data.version, 40)
     && data.items.every(i => i && typeof i === 'object' && /^CVE-\d{4}-\d{4,}$/.test(i.id) && str(i.vendor, 160) && str(i.product, 200) && str(i.title, 400)
@@ -26,9 +31,10 @@ export function cyberEnvelope(name, snapshot, now = Date.now()) {
   if (!config) throw new Error('Unknown cyber dataset');
   const valid = snapshot?.dataset === name && validCyberData(name, snapshot.data)
     && time(snapshot.fetchedAt) && snapshot.fetchedAt <= now + MINUTE
+    && (name !== 'infrastructure' || snapshot.data.sourceFetchedAt === snapshot.fetchedAt)
     && (!snapshot.observedAt || time(snapshot.observedAt) && snapshot.observedAt <= now + MINUTE);
   const age = valid ? Math.max(0, now - snapshot.fetchedAt) : Infinity;
-  const status = age > config.maxAgeMs ? 'unavailable' : age > config.intervalMs * 2 ? 'stale' : 'fresh';
+  const status = age > config.maxAgeMs ? 'unavailable' : age > (config.staleAfterMs ?? config.intervalMs * 2) ? 'stale' : 'fresh';
   return { dataset: name, status, provider: config.provider, sourceUrl: config.sourceUrl,
     fetchedAt: valid ? snapshot.fetchedAt : null, observedAt: valid ? snapshot.observedAt ?? null : null,
     expiresAt: valid ? snapshot.fetchedAt + config.maxAgeMs : null,
@@ -36,7 +42,7 @@ export function cyberEnvelope(name, snapshot, now = Date.now()) {
     data: status === 'unavailable' ? null : snapshot.data };
 }
 export function aggregateCyberNews(envelopes, now = Date.now()) {
-  const sources = envelopes.filter(e => e.dataset !== 'kev');
+  const sources = envelopes.filter(e => CYBER_NEWS_SOURCES.includes(e.dataset));
   const usable = sources.filter(e => e.status !== 'unavailable' && e.data);
   const seen = new Set();
   const items = usable.flatMap(e => e.data.items).filter(i => i.publishedAt <= now + MINUTE && now - i.publishedAt <= 7 * 86400_000)

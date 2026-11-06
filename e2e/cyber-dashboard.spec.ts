@@ -1,25 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { seedAnonymousDashboard } from './bootstrap-request-budget-fixtures';
-import type { CyberDataset, CyberEnvelope } from '../src/types/cyber-dashboard';
+import { installCyberFixtures as fixtures } from './cyber-dashboard-fixtures';
 
 test.skip(process.env.VITE_BRAND !== 'planetslam', 'Cyber is a PlanetSlam edition');
-function fixture(dataset: CyberDataset): CyberEnvelope<unknown> {
-  const now = Date.now();
-  const news = { items: [
-    { id: 'n1', title: 'Synthetic Docker patch announcement', summary: '<img src=x onerror=alert(1)> Fixture text.', publisher: 'Synthetic publisher', url: 'https://example.com/docker', publishedAt: now - 60_000, topic: 'Vulnerabilities' },
-    { id: 'n2', title: 'Synthetic ransomware incident report', summary: 'An unrelated synthetic story.', publisher: 'Synthetic publisher', url: 'https://example.com/incident', publishedAt: now - 120_000, topic: 'Ransomware' },
-  ] };
-  const kev = { version: 'synthetic-1', totalCount: 1, catalogAt: now, items: [{ id: 'CVE-2026-99999', vendor: 'Synthetic Vendor', product: 'Docker', title: 'Synthetic Docker vulnerability', description: 'Fixture, not an actual vulnerability.', action: 'Apply the vendor update.', addedAt: now - 86400_000, dueDate: '2026-11-20', ransomware: 'Unknown', url: 'https://example.com/cve', references: ['https://example.com/vendor'] }] };
-  const base = { dataset, status: 'fresh' as const, provider: 'Synthetic acceptance provider', sourceUrl: 'https://example.com/source', fetchedAt: now, observedAt: now, expiresAt: now + 3600000 };
-  if (dataset === 'health') return { ...base, data: { items: ['kev', 'bleeping', 'krebs', 'hackernews'].map(name => ({ ...base, dataset: name, provider: `Synthetic ${name}`, data: null })) } };
-  return { ...base, data: dataset === 'news' ? news : kev };
-}
-async function fixtures(page: Page, overrides: Partial<Record<CyberDataset, Partial<CyberEnvelope<unknown>>>> = {}) {
-  await page.route('**/api/cyber-dashboard?*', route => {
-    const dataset = new URL(route.request().url()).searchParams.get('dataset') as CyberDataset;
-    return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ ...fixture(dataset), ...overrides[dataset] }) });
-  });
-}
 async function boot(page: Page) {
   await seedAnonymousDashboard(page, 'full', { initializeOnce: { sessionKey: 'cyber-acceptance', clearStorage: true, localStorage: { 'worldmonitor-theme': 'dark' } } });
   await page.goto('/dashboard?variant=cyber');

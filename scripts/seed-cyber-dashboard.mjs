@@ -25,10 +25,10 @@ export async function seedCyber({ now = Date.now(), names = Object.keys(CYBER_DA
       if (!held) { results.push({ dataset, status: 'locked' }); continue; }
       const admission = await command(['SET', `cyber-dashboard:attempt:${dataset}:v1`, String(now), 'NX', 'PX', config.intervalMs]);
       if (admission?.result !== 'OK') { results.push({ dataset, status: 'cooldown' }); continue; }
-      const response = await fetchDataset(dataset, { now });
+      const response = await fetchDataset(dataset, { now, command });
       if (response?.skipped) { results.push({ dataset, status: response.skipped }); continue; }
       if (!validCyberData(dataset, response?.data) || !Number.isFinite(response.observedAt) || response.observedAt <= 0 || response.observedAt > Date.now() + 60_000) throw new Error('Invalid normalized data');
-      const fetchedAt = Date.now();
+      const fetchedAt = dataset === 'infrastructure' ? response.fetchedAt : Date.now();
       const snapshot = { dataset, fetchedAt, observedAt: response.observedAt, data: response.data };
       const recordCount = response.data.items.length;
       await publish({ key: cyberKey(dataset), data: snapshot, ttlSeconds: Math.ceil(config.maxAgeMs / 1000),

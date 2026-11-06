@@ -1,3 +1,5 @@
+import { type CyberMapSnapshot, cyberMarkerLabel } from '@/types/cyber-map';
+import { selectCyberMarker } from './cyber-map-interaction';
 import type { SpaceOrbitSnapshot } from '@/types/space-orbits';
 import { BRAND } from '@/config/brand';
 import type { SpaceMapSnapshot } from '@/types/space-map';
@@ -515,6 +517,9 @@ interface GlobeControlsLike {
 const SET_CENTER_ROTATION_MS = 1200;
 
 export class GlobeMap {
+  private cyberMap: CyberMapSnapshot | null = null;
+  public setCyberMap(snapshot: CyberMapSnapshot): void { this.cyberMap = snapshot; this.paintSpaceOverlay(); }
+
   private spaceOrbits: SpaceOrbitSnapshot | null = null;
 
   public setSpaceOrbitSnapshot(snapshot: SpaceOrbitSnapshot): void {
@@ -533,6 +538,8 @@ export class GlobeMap {
   private paintSpaceOverlay(): void {
     if (!this.globe || !this.initialized || this.destroyed || this.webglLost) return;
     const points = [
+      ...(this.cyberMap?.markers ?? []).map(marker => ({ ...marker, cyberKind: marker.kind, kind: 'cyber',
+        name: cyberMarkerLabel(marker), color: marker.kind === 'incident' ? '#ffbc50' : '#bd91ff', radius: marker.kind === 'incident' ? 0.55 : 0.3 })),
       ...this.spaceOverlay.aurora.filter(point => Math.round(point.longitude) % 2 === 0 && Math.round(point.latitude) % 2 === 0).map(point => ({ ...point, kind: 'aurora', name: `Aurora forecast: model intensity ${point.probability} / 100. Not a local visibility guarantee.`, color: `rgba(65,235,140,${0.15 + point.probability / 150})`, radius: 0.32 })),
       ...this.spaceOverlay.launches.map(launch => ({ ...launch, kind: 'launch', name: `${launch.name} · ${launch.pad} · ${new Date(launch.net).toUTCString()}`, color: '#ffbc50', radius: 0.55 })),
       ...(this.layers.satellites ? this.spaceOrbits?.positions ?? [] : []).map(orbit => ({ ...orbit, kind: 'satellite', name: `${orbit.name} · calculated position · ${orbit.altitudeKm.toFixed(1)} km · elements ${orbit.elementStatus}`, color: orbit.elementStatus === 'stale' ? '#ffbc50' : orbit.selected ? '#4be1ff' : '#82a0d7', radius: orbit.selected ? 0.65 : 0.32 })),
@@ -541,6 +548,11 @@ export class GlobeMap {
       .pointColor('color').pointRadius('radius').pointAltitude((point: object) => (point as { kind: string }).kind === 'satellite' ? (point as { altitudeKm: number }).altitudeKm / 6371 : 0.003)
       .pointLabel((point: object) => escapeHtml(String((point as { name: string }).name)))
       .pointsTransitionDuration(0);
+    if (SITE_VARIANT === 'cyber') this.globe.onPointClick((point: object) => {
+      const marker = point as { id?: string; cyberKind?: string };
+      const original = this.cyberMap?.markers.find(m => m.id === marker.id && m.kind === marker.cyberKind);
+      if (original) selectCyberMarker(original);
+    });
   }
 
   private container: HTMLElement;

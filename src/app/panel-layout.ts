@@ -279,6 +279,7 @@ export const DEFERRED_PANEL_NATURAL_FOOTPRINTS: Readonly<Record<string, Deferred
   'space-observing': { rowSpan: 3 },
   'space-missions': { rowSpan: 2 },
   'space-brief': { rowSpan: 3 },
+  'cyber-incidents': { rowSpan: 3 },
   'cyber-news': { rowSpan: 2 },
   'cyber-kev': { rowSpan: 2 },
   'cyber-watchlist': { rowSpan: 2 },
@@ -503,6 +504,12 @@ export class PanelLayoutManager implements AppModule {
   private readonly proActivationController: ProActivationController;
   private readonly passkeyOfferController: PasskeyOfferBoot;
   private readonly checkoutReturnFocusController = new AbortController();
+  private readonly onCyberShowMap = (): void => {
+    if (SITE_VARIANT !== 'cyber') return;
+    const config = this.ctx.panelSettings.map;
+    if (config) { config.enabled = true; saveToStorage(STORAGE_KEYS.panels, this.ctx.panelSettings); this.applyPanelSettings(); }
+    this.revealMobileMap();
+  };
 
   constructor(ctx: AppContext, callbacks: PanelLayoutManagerCallbacks) {
     this.ctx = ctx;
@@ -730,6 +737,7 @@ export class PanelLayoutManager implements AppModule {
   }
 
   async init(): Promise<void> {
+    if (SITE_VARIANT === 'cyber') window.addEventListener('planetslam:cyber-show-map', this.onCyberShowMap);
     await this.renderLayout();
     if (this.ctx.isDestroyed) return;
     void this.reconcileCheckoutReturnFocus();
@@ -831,6 +839,7 @@ export class PanelLayoutManager implements AppModule {
   }
 
   destroy(): void {
+    window.removeEventListener('planetslam:cyber-show-map', this.onCyberShowMap);
     this.checkoutReturnFocusController.abort();
     clearAllPendingCalls();
     this.applyTimeRangeFilterDebounced.cancel();
@@ -2797,6 +2806,7 @@ export class PanelLayoutManager implements AppModule {
 
     // Space datasets are self-refreshing and stay off the global bootstrap path.
     // One lazy module supplies the cards; shared service requests are deduplicated.
+    this.lazyDefaultPanel('cyber-incidents', () => import('@/components/CyberIncidentsPanel'), 'CyberIncidentsPanel');
     const cyberPanels = [
       ['cyber-news', 'Cyber News', 'news'], ['cyber-kev', 'Exploited Vulnerabilities', 'kev'],
       ['cyber-watchlist', 'My Technology Watchlist', 'watchlist'], ['cyber-health', 'Cyber Data Status', 'health'],

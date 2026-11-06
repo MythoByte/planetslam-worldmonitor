@@ -1,9 +1,11 @@
-# PlanetSlam Cyber dashboard — Phase 1
+# PlanetSlam Cyber dashboard — Phases 1–2
 
 Open `/dashboard?variant=cyber` or choose **Cyber** in the PlanetSlam edition
-switcher. The edition uses the shared layout/settings/theme and four movable,
-resizable panels. The base map is disabled by default. No cyber map, attack counter, incident tracker, EPSS ranking,
-AI brief, installed-version discovery, or notifications are included in Phase 1.
+switcher. The edition uses the shared layout/settings/theme and movable,
+resizable panels. New profiles enable the Cyber map. Existing saved map choices
+are preserved; **Show Cyber map** or an incident's **Locate on map** explicitly
+enables and reveals it. EPSS ranking, attack statistics, AI briefings, installed
+version discovery, and notifications remain later phases.
 
 - **Cyber News:** source-linked headlines and short excerpts from BleepingComputer,
   Krebs on Security, and The Hacker News. Seven-day coverage, latest first, with
@@ -24,10 +26,49 @@ AI brief, installed-version discovery, or notifications are included in Phase 1.
   successful fetch times, newest publication/catalog dates, and fresh, delayed,
   or unavailable states. A partial news outage retains other usable sources.
 
+## Phase 2: reported incidents and geographic layers
+
+**Reported Cyber Incidents** displays the public recent-record sample from the
+UMD GoTech Cyber Events Database. Its research publication is monthly, not a live
+attack stream. The bounded adapter uses the same unauthenticated recent-record
+resource as the public site and does not request authenticated downloads or bulk
+exports. Cards retain the organization, source-coded sector/category/country,
+original reporting link, estimated event date, report publication, and available
+provider revision timestamp/change log. Account/author metadata is not published.
+Reports remain **reported**, and explicit claims in the description are marked
+**claim in reporting**; the dashboard does not independently verify them.
+
+Country, sector, category, literal search, and reported/observed-period filters
+are shared between the tracker and map and saved in this browser. Sector filters
+apply only to incidents: an indicator IP has no inferred victim industry. The
+map controls toggle the layers independently, while the incident list retains
+matching records even when its map layer is hidden. **Reset filters** restores
+the defaults. **Inspect map marker** provides keyboard access and centers a
+chosen marker; native marker selection opens its source details. Selecting a
+country recenters a matching geographic point. Dataset refresh/retry notifies
+both consumers, including recovery from a partially unavailable source.
+
+- Amber represents reported victim **country-level** positions from the existing
+  country-centroid dataset. It is not an organization address. Unknown countries
+  stay in the tracker and are omitted from the map; positions can overlap.
+- Violet represents **approximate infrastructure geolocation** from the existing
+  shared `cyber:threats:v2` collector. It is not the victim or attacker location.
+  The original collector can use country-level fallback coordinates. No raw
+  indicator is turned into a navigation link; indicators are defanged and only
+  the trusted feed source is linked.
+- The infrastructure projection is bounded, reports its source total/truncation,
+  and limits geographic drawing. The mixed upstream snapshot does not supply
+  completeness status for every individual provider, so none is inferred.
+- SVG/mobile, DeckGL, and globe consume the same bounded geographic snapshot.
+  Renderer switches rehydrate it. Filters clear a selected detail if its marker
+  leaves the visible dataset. There are no simulated attack arcs or global attack
+  totals. The inherited global time slider and unrelated severity legend are
+  hidden for Cyber; its own reported/observed period applies to these layers.
+
 ## Data path
 
 `provider → seed-cyber-dashboard worker → validated Redis snapshot + atomic
-seed-meta → GET /api/cyber-dashboard?dataset=news|kev|health → shared browser
+seed-meta → GET /api/cyber-dashboard?dataset=news|kev|incidents|infrastructure|health → shared browser
 service → lazy panel`
 
 Readers never trigger provider work and Cyber data stays off global bootstrap.
@@ -39,12 +80,17 @@ watchlist subscriptions. Only the first 20 matching rows render initially; **Sho
 The central worker uses the existing Redis helpers and durable attempt admission
 per source. Concurrent replicas share a lock and cooldown. Fetch/normalization
 failure retains the last-good snapshot and its clock. Publication atomically
-writes snapshot and seed metadata. There are no provider credentials for Phase 1.
+writes snapshot and seed metadata. The Cyber dashboard worker requires no new provider credentials. The infrastructure
+collector retains its existing source credentials and entitlements; the dashboard
+only projects its shared cache, without starting that collector or making GeoIP
+requests. A missing or expired collector snapshot is explicitly unavailable.
 CISA's official GitHub mirror is the fallback when its primary feed is unavailable.
 RSS and JSON responses have time and byte limits, and links must be HTTPS.
 
 | Source | Scheduled attempt | Delayed after | Expires after |
 | --- | --- | --- | --- |
+| UMD GoTech public incident sample | 6 hours | 12 hours | 48 hours |
+| Shared infrastructure projection | 5 minutes | 150 minutes from collector fetch | 3 hours from collector fetch |
 | CISA KEV | 1 hour | 2 hours | 48 hours |
 | Each news publisher | 15 minutes | 30 minutes | 6 hours |
 
@@ -52,7 +98,11 @@ These states describe successful retrieval, not incident detection or internet
 safety. A publisher can publish infrequently while its feed is retrieved normally.
 Expired/invalid data is hidden; a failed refresh cannot reset the original fetch
 clock. Missing data is never represented as zero attacks or proof of safety.
-The health endpoint returns each source even when all are unavailable.
+The health endpoint returns each source even when all are unavailable. Copying
+infrastructure never resets its collector fetch time: the canonical envelope
+clock wins over a potentially newer side metadata value. Redis retention of the
+projection cannot extend its original validity. Incident fetch health is separate
+from monthly publication age, which remains visible in the latest report date.
 
 ## Running the worker
 
@@ -66,7 +116,7 @@ populate the new cache namespace. Provider failures remain visible.
 ## Verification
 
 - `node --import tsx --test tests/cyber-dashboard.test.mjs tests/cyber-watchlist.test.mts tests/cyber-dashboard-api.test.mjs`
-- `VITE_BRAND=planetslam npx playwright test e2e/cyber-dashboard.spec.ts --project=chromium`
+- `VITE_BRAND=planetslam npx playwright test e2e/cyber-dashboard.spec.ts e2e/cyber-incidents.spec.ts --project=chromium`
 - `npm run typecheck`, `npm run typecheck:api`, `npm run lint:boundaries`
 - Branded Vite production build, then local Compose worker/API/browser checks.
 
@@ -88,3 +138,16 @@ The CVE Program's
 [program FAQ](https://www.cve.org/Resources/Media/Archives/OldWebsite/about/faqs.html)
 identifies MITRE as its Secretariat; the US program origin refers to that issuing
 organization and sponsorship, while CVE participation is international.
+
+## UMD GoTech source onboarding
+
+The [official UMD project page](https://www.cpppe.umd.edu/cyber-events-database)
+links the [public Cyber Events Database](https://cybereventsdatabase.org/) and
+explains monthly publication and source attribution. The original reporting and
+coded event date can differ; the codebook states that some event dates are
+estimates. The adapter requests only the recent-record sample already presented
+to anonymous site visitors, without authentication or pagination. Public access
+does not establish blanket redistribution rights; the attribution ledger retains
+terms-review status. Credit: Harry, C., & Gallagher, N. (2018), *Classifying Cyber
+Events*, and the UMD GoTech Cyber Events Database. The issuer's origin is the
+University of Maryland, US; this is unrelated to victim or actor geography.

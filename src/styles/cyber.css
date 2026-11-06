@@ -34,3 +34,21 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+.cyber-explore-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin: 10px 0; }
+.cyber-explore-filters label { display: flex; flex-direction: column; gap: 4px; font-size: 11px; max-width: 100%; }
+.cyber-explore-filters select, .cyber-explore-filters input { max-width: 220px; min-width: 0; }
+.cyber-timeline { margin: 10px 0; font-size: 12px; }
+.cyber-timeline summary { cursor: pointer; color: var(--cyber-accent, var(--text-primary)); }
+.cyber-timeline ol { padding-left: 20px; }
+.cyber-map-controls { position: absolute; left: 10px; top: 52px; z-index: 15; max-width: min(340px, calc(100% - 20px)); max-height: 72%; overflow: auto; padding: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 11px; }
+.cyber-map-controls summary { cursor: pointer; font-weight: 700; }
+.cyber-map-controls .cyber-explore-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cyber-map-controls select, .cyber-map-controls input, .cyber-map-controls button { max-width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 6px; font: inherit; }
+.cyber-map-controls a { color: var(--accent); display: block; margin-top: 6px; }
+.cyber-map-detail { border-top: 1px solid var(--border); padding-top: 10px; overflow-wrap: anywhere; }
+.cyber-map-marker { cursor: pointer; }
+.cyber-map-marker:focus { stroke: var(--accent); stroke-width: 2px; }
+html[data-brand="planetslam"][data-variant="cyber"] .map-legend,
+html[data-brand="planetslam"][data-variant="cyber"] .deckgl-legend { display: none; }
+html[data-brand="planetslam"][data-variant="cyber"] .time-slider { display: none; }
+.cyber-map-inspect { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }

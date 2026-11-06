@@ -1231,6 +1231,9 @@ export const VARIANT_PANEL_OVERRIDES: Partial<Record<string, Partial<Record<stri
     'live-news': { name: 'Energy Headlines' },
     insights:    { name: 'AI Energy Insights' },
   },
+  cyber: {
+    map:         { name: 'Cyber Incidents & Infrastructure' },
+  },
   space: {
     map:         { name: 'Space & Orbit Map' },
   },

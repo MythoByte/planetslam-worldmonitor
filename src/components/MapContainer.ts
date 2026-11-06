@@ -1,3 +1,4 @@
+import type { CyberMapSnapshot } from '@/types/cyber-map';
 import type { SpaceOrbitSnapshot } from '@/types/space-orbits';
 import type { SpaceMapSnapshot } from '@/types/space-map';
 import { SITE_VARIANT } from '@/config/variant';
@@ -190,6 +191,15 @@ export class MapContainer {
     else this.svgMap?.setSpaceOrbitSnapshot(snapshot);
   }
 
+  private cachedCyberMap: CyberMapSnapshot | null = null;
+  private cyberMapController: import('./CyberMapOverlay').CyberMapOverlay | null = null;
+  public setCyberMap(snapshot: CyberMapSnapshot): void {
+    this.cachedCyberMap = snapshot;
+    if (this.useGlobe) this.globeMap?.setCyberMap(snapshot);
+    else if (this.useDeckGL) this.deckGLMap?.setCyberMap(snapshot);
+    else this.svgMap?.setCyberMap(snapshot);
+  }
+
   private cachedSpaceOverlay: SpaceMapSnapshot = { aurora: [], launches: [] };
   private spaceOverlayController: import('./SpaceMapOverlay').SpaceMapOverlay | null = null;
 
@@ -356,6 +366,11 @@ export class MapContainer {
     // init() attaches the resize observer synchronously (before its first await),
     // so the constructor does not need to start it separately.
     void this.init();
+    if (SITE_VARIANT === 'cyber') {
+      void import('./CyberMapOverlay').then(({ CyberMapOverlay }) => {
+        if (!this.destroyed) this.cyberMapController = new CyberMapOverlay(this.container, snapshot => this.setCyberMap(snapshot), (lat, lon) => this.setCenter(lat, lon, 3));
+      });
+    }
     if (SITE_VARIANT === 'space') {
       window.addEventListener('planetslam:space-orbits', this.onSpaceOrbitSnapshot);
       void import('@/services/space-orbits').then(({ getPublishedSpaceOrbitSnapshot }) => {
@@ -855,6 +870,7 @@ export class MapContainer {
   }
 
   private rehydrateActiveMap(): void {
+    if (this.cachedCyberMap) this.setCyberMap(this.cachedCyberMap);
     if (this.cachedSpaceOrbits) this.setSpaceOrbitSnapshot(this.cachedSpaceOrbits);
     this.setSpaceOverlay(this.cachedSpaceOverlay);
     // 1. Re-wire callbacks (through own public methods for adapter safety)
@@ -1941,6 +1957,8 @@ export class MapContainer {
   }
 
   public destroy(): void {
+    this.cyberMapController?.destroy();
+    this.cyberMapController = null;
     window.removeEventListener('planetslam:space-orbits', this.onSpaceOrbitSnapshot);
     this.spaceOverlayController?.destroy();
     this.spaceOverlayController = null;
