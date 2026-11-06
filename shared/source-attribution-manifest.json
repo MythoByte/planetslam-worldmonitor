@@ -2017,6 +2017,21 @@
       ]
     },
     {
+      "host": "base44.app",
+      "provider": "UMD GoTech Cyber Events Database",
+      "kind": "structured",
+      "observed": true,
+      "license": "Public recent-record API transport for the UMD GoTech site. This integration requests only the public recent-record sample, without authentication or gated bulk exports.",
+      "attribution": "Attribute incident records to UMD GoTech and their original reporting, not to the hosting platform. Do not publish account metadata.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "scripts/_cyber-providers.mjs"
+        }
+      ],
+      "role": "transport"
+    },
+    {
       "host": "basemaps.cartocdn.com",
       "provider": "basemaps.cartocdn.com",
       "kind": "structured",
@@ -2928,6 +2943,23 @@
       "references": [
         {
           "path": "src/services/billing.ts"
+        }
+      ]
+    },
+    {
+      "host": "cybereventsdatabase.org",
+      "provider": "UMD GoTech Cyber Events Database",
+      "kind": "structured",
+      "observed": true,
+      "license": "Public recent-record research sample; full dataset downloads require publisher access. Public access is not a blanket republication licence; retain source-specific terms review.",
+      "attribution": "Credit UMD GoTech Cyber Events Database and Harry & Gallagher (2018), Classifying Cyber Events. Preserve original reporting links, monthly research cadence, sample limits and reported/claim uncertainty.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "api/_cyber-incidents.js"
+        },
+        {
+          "path": "src/components/CyberIncidentsPanel.ts"
         }
       ]
     },
@@ -4577,6 +4609,9 @@
       "status": "terms-review",
       "references": [
         {
+          "path": "scripts/_cyber-incidents.mjs"
+        },
+        {
           "path": "scripts/seed-cyber-threats.mjs"
         }
       ]
@@ -4984,6 +5019,9 @@
         },
         {
           "path": "api/health.js"
+        },
+        {
+          "path": "scripts/_cyber-incidents.mjs"
         },
         {
           "path": "scripts/build-accuracy-page.mjs"
@@ -7589,6 +7627,9 @@
       "attribution": "Credit otx.alienvault.com and link to the original upstream API/dataset.",
       "status": "terms-review",
       "references": [
+        {
+          "path": "scripts/_cyber-incidents.mjs"
+        },
         {
           "path": "scripts/seed-cyber-threats.mjs"
         }
@@ -10627,6 +10668,20 @@
         },
         {
           "path": "scripts/seed-cyber-threats.mjs"
+        }
+      ]
+    },
+    {
+      "host": "urlhaus.abuse.ch",
+      "provider": "urlhaus.abuse.ch",
+      "kind": "structured",
+      "observed": true,
+      "license": "Provider terms for this upstream API/dataset; verify before redistribution",
+      "attribution": "Credit urlhaus.abuse.ch and link to the original upstream API/dataset.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "scripts/_cyber-incidents.mjs"
         }
       ]
     },

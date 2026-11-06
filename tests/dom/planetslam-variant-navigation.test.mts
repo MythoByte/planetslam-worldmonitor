@@ -19,14 +19,14 @@ async function select(url: string) {
 }
 
 describe('PlanetSlam same-origin editions', () => {
-  it('seeds Cyber with four free panels and no implied attack-map data', async () => {
+  it('seeds Cyber with the reported-incident map and free panels', async () => {
     const { SITE_VARIANT } = await select('https://planetslam.com/dashboard?variant=cyber');
     expect(SITE_VARIANT).toBe('cyber');
     const panels = await import('@/config/panels');
     const settings = panels.getInitialPanelSettingsForVariant('cyber');
     expect(Object.entries(settings).filter(([, value]) => value.enabled).map(([key]) => key).sort())
-      .toEqual(['cyber-health', 'cyber-kev', 'cyber-news', 'cyber-watchlist']);
-    expect(settings.map?.enabled).toBe(false);
+      .toEqual(['cyber-health', 'cyber-incidents', 'cyber-kev', 'cyber-news', 'cyber-watchlist', 'map']);
+    expect(settings.map?.enabled).toBe(true);
     expect(Object.values(panels.DEFAULT_MAP_LAYERS).every(value => value === false)).toBe(true);
     for (const key of ['cyber-health', 'cyber-kev', 'cyber-news', 'cyber-watchlist']) {
       expect(panels.isPanelNativeToVariant(key, 'cyber')).toBe(true);

@@ -1,3 +1,5 @@
+import { type CyberMapSnapshot, type CyberMapMarker, cyberMarkerLabel } from '@/types/cyber-map';
+import { createCyberMapLayers } from './cyber-map-layers';
 import type { SpaceOrbitSnapshot, SpaceOrbitPosition, SpaceGroundTrack } from '@/types/space-orbits';
 import { BRAND } from '@/config/brand';
 import type { SpaceMapSnapshot, SpaceAuroraPoint, SpaceLaunchMarker } from '@/types/space-map';
@@ -617,6 +619,9 @@ export class DeckGLMap {
     this.spaceOrbits = snapshot;
     this.render();
   }
+
+  private cyberMap: CyberMapSnapshot | null = null;
+  public setCyberMap(snapshot: CyberMapSnapshot): void { this.cyberMap = snapshot; this.render(); }
 
   private spaceOverlay: SpaceMapSnapshot = { aurora: [], launches: [] };
 
@@ -2063,6 +2068,7 @@ export class DeckGLMap {
       this.layerCache.delete('day-night-layer');
     }
 
+    layers.push(...createCyberMapLayers(this.cyberMap));
     // Native geographic layers follow MapLibre pan/zoom; never screen-positioned dots.
     if (this.spaceOverlay.aurora.length) layers.push(new ScatterplotLayer<SpaceAuroraPoint>({
       id: 'space-aurora-forecast', data: this.spaceOverlay.aurora,
@@ -5219,6 +5225,9 @@ export class DeckGLMap {
     };
 
     switch (layerId) {
+      case 'cyber-native-incident':
+      case 'cyber-native-infrastructure':
+        return { html: `<div class="deckgl-tooltip">${text(cyberMarkerLabel(info.object as CyberMapMarker))}</div>` };
       case 'space-orbit-positions':
         return { html: `<div class="deckgl-tooltip"><strong>${text(obj.name)}</strong><br/>Calculated position · NORAD ${text(obj.noradId)}<br/>${numericLabel(obj.altitudeKm, 1)} km · ${numericLabel(obj.velocityKmS, 2)} km/s<br/>Elements: ${text(obj.elementStatus)} · ${text(new Date(obj.epoch).toUTCString())}</div>` };
       case 'space-aurora-forecast':

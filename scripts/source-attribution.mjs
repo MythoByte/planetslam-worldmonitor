@@ -93,6 +93,12 @@ const publisherMetadataFeed = (provider) => ({
  * become a provider rename or regroup.
  */
 export const PROVIDER_IDENTITY_GROUPS = Object.freeze({
+  'umd-cyber-events': Object.freeze({
+    provider: 'UMD GoTech Cyber Events Database',
+    memberHosts: Object.freeze(['cybereventsdatabase.org', 'base44.app']),
+    reason: 'The UMD GoTech public incident site reads its recent-record sample through this Base44 application transport.',
+    reviewReference: 'PlanetSlam Cyber Phase 2 public homepage and public recent-record API review, 2026-11-06',
+  }),
   uzstat: Object.freeze({
     provider: 'stat.uz',
     memberHosts: Object.freeze(['api.siat.stat.uz', 'stat.uz']),
@@ -213,6 +219,18 @@ export const PROVIDER_IDENTITY_GROUPS = Object.freeze({
 });
 
 const PROVIDER_OVERRIDES = {
+  'cybereventsdatabase.org': {
+    provider: 'UMD GoTech Cyber Events Database', identityGroup: 'umd-cyber-events',
+    license: 'Public recent-record research sample; full dataset downloads require publisher access. Public access is not a blanket republication licence; retain source-specific terms review.',
+    attribution: 'Credit UMD GoTech Cyber Events Database and Harry & Gallagher (2018), Classifying Cyber Events. Preserve original reporting links, monthly research cadence, sample limits and reported/claim uncertainty.',
+    status: 'terms-review',
+  },
+  'base44.app': {
+    provider: 'UMD GoTech Cyber Events Database', identityGroup: 'umd-cyber-events', role: 'transport',
+    license: 'Public recent-record API transport for the UMD GoTech site. This integration requests only the public recent-record sample, without authentication or gated bulk exports.',
+    attribution: 'Attribute incident records to UMD GoTech and their original reporting, not to the hosting platform. Do not publish account metadata.',
+    status: 'terms-review',
+  },
   // PlanetSlam Space sources. Public access is distinct from content reuse rights.
   "api.nasa.gov": {
     provider: "NASA Open APIs (APOD, NeoWs, DONKI)",
@@ -1114,7 +1132,7 @@ const PROVIDER_OVERRIDES = {
 // a provider-bearing override a separate, explicit lifecycle event instead of
 // something `--write` can silently normalize into the manifest.
 export const PROVIDER_IDENTITY_REVIEW = Object.freeze({
-  sha256: '14bf864722669cf64226fdd7e87eea11fee27025357e8b62d09ae784ad90b915',
+  sha256: '17c595839db9dde31888132415ede261be86fa3b2534ff097ddb65aaca6bcdc1',
   // 2026-11-02 (#10051): group the Philippine DOE with the CloudFront media
   // host that serves its weekly PDFs, and SONABHY with the Strapi CMS its
   // tariff page reads from.
@@ -1128,12 +1146,12 @@ export const PROVIDER_IDENTITY_REVIEW = Object.freeze({
   // This is application UI, not an ingested external provider or dataset.
   // 2026-11-06: record distinct Space API, imagery, news, and link-out identities.
   // Preserve reserved-rights review for third-party content and public API services.
-  reason: 'Add the PlanetSlam Space provider identities for NASA Open APIs, NASA news, SDO, NOAA SWPC, ESA news, The Space Devs launch/news APIs, and official mission link destinations, with source-specific rights and attribution rather than blanket unrestricted-use claims. Classify planetslam.com as the first-party PlanetSlam web application, excluded from external data-provider counts. Preserve all reviewed provider identities, including Shanghai Financial Portal with PBOC source attribution (2026-10-24 review). Add the Uzbekistan Statistics Agency as one identity across stat.uz and api.siat.stat.uz, with its CC BY 4.0 terms, and record the citation and reserved-rights terms that SIMA Niger and Greater Amman Municipality state on their sites (#9892). Add the Algerian Ministry of Agriculture (madr.gov.dz) and the National Statistics Office of Mongolia data host (data.1212.mn) as food-price publishers in terms review (#10050). Add the Philippine Department of Energy as one identity across doe.gov.ph and its CloudFront media host, and SONABHY as one identity across www.sonabhy.bf and the Strapi CMS its tariff page reads (#10051). Move Ember electricity data to files.ember-energy.org, where Ember now publishes its monthly release; storage.googleapis.com now serves only GDELT bulk files and joins api.gdeltproject.org as one GDELT identity (2026-11-03).',
+  reason: 'Onboard the UMD GoTech public recent-incident sample and its Base44 transport as one publisher for PlanetSlam Cyber Phase 2; no authenticated dataset export is used. Preserve all prior provider identities. Add the PlanetSlam Space provider identities for NASA Open APIs, NASA news, SDO, NOAA SWPC, ESA news, The Space Devs launch/news APIs, and official mission link destinations, with source-specific rights and attribution rather than blanket unrestricted-use claims. Classify planetslam.com as the first-party PlanetSlam web application, excluded from external data-provider counts. Preserve all reviewed provider identities, including Shanghai Financial Portal with PBOC source attribution (2026-10-24 review). Add the Uzbekistan Statistics Agency as one identity across stat.uz and api.siat.stat.uz, with its CC BY 4.0 terms, and record the citation and reserved-rights terms that SIMA Niger and Greater Amman Municipality state on their sites (#9892). Add the Algerian Ministry of Agriculture (madr.gov.dz) and the National Statistics Office of Mongolia data host (data.1212.mn) as food-price publishers in terms review (#10050). Add the Philippine Department of Energy as one identity across doe.gov.ph and its CloudFront media host, and SONABHY as one identity across www.sonabhy.bf and the Strapi CMS its tariff page reads (#10051). Move Ember electricity data to files.ember-energy.org, where Ember now publishes its monthly release; storage.googleapis.com now serves only GDELT bulk files and joins api.gdeltproject.org as one GDELT identity (2026-11-03).',
   // A URL cited here is scanned like any other: this file sits inside
   // SOURCE_ROOTS, so citing a host that is not already a registered source
   // invents a provider row for it. The B.C. catalogue URLs above are safe
   // because that host is itself an observed source; parallel.ai is not.
-  reviewReference: 'Issue #6449 BGS provenance review; plus Issue #7371 country corpus identity review; plus Issue #7005 IMD cyclone/marine source-rights probe; plus Issues #7012, #7036, and #6682 Toronto safety sources; plus PR #7576 source migration review; plus Issue #7000 publisher-centric source catalog; plus Issue #7001, Issue #6437, Issue #6622, Issue #6659, PR #6447, the 2026-09-01 FAOSTAT transport identity review, the 2026-09-04 FIRMS partial-coverage incident, and the 2026-09-05 Barchart WAF outage that moved S&P 500 breadth to the TradingView screener scan; plus Issue #7838, which added the read-only Sentry resolve-pin audit; plus PR #8394 JODI publication catalog lineage; plus the 2026-10-17 /verify audit that added the Al Jazeera claim-pool depth search; plus Issue #9352 part C, the US Consolidated Screening List export-control lists; plus Issue #10051 fuel-price batch 3, the DOE media host and SONABHY CMS groups; plus the 2026-11-06 PlanetSlam owner-requested first-party navigation review; plus the 2026-11-06 PlanetSlam Space phase 1-3 source onboarding review of official NASA media guidance, SDO data rules, NWS disclaimer, ESA terms, and The Space Devs service documentation.',
+  reviewReference: 'Issue #6449 BGS provenance review; plus Issue #7371 country corpus identity review; plus Issue #7005 IMD cyclone/marine source-rights probe; plus Issues #7012, #7036, and #6682 Toronto safety sources; plus PR #7576 source migration review; plus Issue #7000 publisher-centric source catalog; plus Issue #7001, Issue #6437, Issue #6622, Issue #6659, PR #6447, the 2026-09-01 FAOSTAT transport identity review, the 2026-09-04 FIRMS partial-coverage incident, and the 2026-09-05 Barchart WAF outage that moved S&P 500 breadth to the TradingView screener scan; plus Issue #7838, which added the read-only Sentry resolve-pin audit; plus PR #8394 JODI publication catalog lineage; plus the 2026-10-17 /verify audit that added the Al Jazeera claim-pool depth search; plus Issue #9352 part C, the US Consolidated Screening List export-control lists; plus Issue #10051 fuel-price batch 3, the DOE media host and SONABHY CMS groups; plus the 2026-11-06 PlanetSlam owner-requested first-party navigation review; plus the 2026-11-06 PlanetSlam Space phase 1-3 source onboarding review of official NASA media guidance, SDO data rules, NWS disclaimer, ESA terms, and The Space Devs service documentation; plus the 2026-11-06 UMD GoTech public homepage, public recent-record API and methodology review for Cyber Phase 2.',
 });
 
 export function providerIdentityDigest(providerOverrides = PROVIDER_OVERRIDES) {

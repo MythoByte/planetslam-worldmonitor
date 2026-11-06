@@ -4704,6 +4704,9 @@
     },
     "space": {
       "map": "Space & Orbit Map"
+    },
+    "cyber": {
+      "map": "Cyber Incidents & Infrastructure"
     }
   }
 }

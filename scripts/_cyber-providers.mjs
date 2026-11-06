@@ -1,3 +1,4 @@
+import { normalizeCyberIncidents, readSharedCyberInfrastructure } from './_cyber-incidents.mjs';
 import { CYBER_DATASETS, httpsUrl, validCyberData } from '../api/_cyber-data.js';
 import { parseRssItems } from './seed-climate-news.mjs';
 const clean = (v, max) => typeof v === 'string' ? v.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max) : '';
@@ -46,8 +47,10 @@ async function readProvider(url, fetchFn) {
   const buffer = new Uint8Array(size); let offset = 0; for (const chunk of chunks) { buffer.set(chunk, offset); offset += chunk.length; }
   return new TextDecoder().decode(buffer);
 }
-export async function fetchCyberDataset(name, { fetchFn = fetch, now = Date.now() } = {}) {
+export async function fetchCyberDataset(name, { fetchFn = fetch, now = Date.now(), command } = {}) {
   if (!Object.hasOwn(CYBER_DATASETS, name)) throw new Error('Unknown dataset');
+  if (name === 'infrastructure') return readSharedCyberInfrastructure(command, now);
+  if (name === 'incidents') return normalizeCyberIncidents(JSON.parse(await readProvider('https://base44.app/api/apps/68c3041c75bb09b9728e4b37/entities/CyberEvent?sort=-event_date&limit=20', fetchFn)), now);
   if (name !== 'kev') return normalizeCyberNews(await readProvider(CYBER_DATASETS[name].feedUrl, fetchFn), name, now);
   try { return normalizeKev(JSON.parse(await readProvider(CYBER_DATASETS.kev.feedUrl, fetchFn))); }
   catch { return normalizeKev(JSON.parse(await readProvider('https://raw.githubusercontent.com/cisagov/kev-data/develop/known_exploited_vulnerabilities.json', fetchFn))); }

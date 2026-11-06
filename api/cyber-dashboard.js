@@ -1,6 +1,7 @@
 import { getCorsHeaders, isDisallowedOrigin } from './_cors.js';
 import { jsonResponse } from './_json-response.js';
 import { readJsonBatchFromUpstashWithStatus } from './_upstash-json.js';
+import { CYBER_NEWS_SOURCES } from './_cyber-incidents.js';
 import { CYBER_DATASETS, cyberKey, cyberEnvelope, aggregateCyberNews } from './_cyber-data.js';
 export const config = { runtime: 'edge' };
 export default async function handler(req) {
@@ -9,8 +10,8 @@ export default async function handler(req) {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers });
   if (req.method !== 'GET') return jsonResponse({ error: 'Method not allowed' }, 405, { ...headers, Allow: 'GET, OPTIONS' });
   const dataset = new URL(req.url).searchParams.get('dataset') || 'health';
-  if (!['news', 'health', 'kev'].includes(dataset)) return jsonResponse({ error: 'Unknown dataset' }, 400, headers);
-  const names = dataset === 'kev' ? ['kev'] : Object.keys(CYBER_DATASETS).filter(n => dataset === 'health' || n !== 'kev');
+  if (!['news', 'health', 'kev', 'incidents', 'infrastructure'].includes(dataset)) return jsonResponse({ error: 'Unknown dataset' }, 400, headers);
+  const names = dataset === 'news' ? CYBER_NEWS_SOURCES : dataset === 'health' ? Object.keys(CYBER_DATASETS) : [dataset];
   const rows = await readJsonBatchFromUpstashWithStatus(names.map(cyberKey), 3000, true);
   const now = Date.now(), results = names.map((n, i) => cyberEnvelope(n, rows[i]?.value, now));
   if (dataset === 'news') return jsonResponse(aggregateCyberNews(results, now), 200, headers);

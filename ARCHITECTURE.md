@@ -46,7 +46,7 @@ World Monitor is a real-time global intelligence dashboard built as a TypeScript
         │ CoinGeck│ │  FRED   │ │ FIRMS   │
         │   ...   │ │   ...   │ │   ...   │
         └─────────┘ └─────────┘ └─────────┘
-           860 observed source hosts
+           863 observed source hosts
 ```
 
 **Source files**: `package.json`, `vercel.json`
