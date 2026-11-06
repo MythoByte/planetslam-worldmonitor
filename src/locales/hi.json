@@ -450,7 +450,8 @@
     "panelCatCommodityEcon": "अर्थव्यवस्था और व्यापार",
     "panelCatHappyNews": "अच्छी खबरें",
     "panelCatHappyPlanet": "प्लैनेट और दान",
-    "embed": "एम्बेड"
+    "embed": "एम्बेड",
+    "panelCatSpace": "Space"
   },
   "panels": {
     "liveNews": "ताजा खबरें",

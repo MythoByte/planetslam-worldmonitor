@@ -249,6 +249,7 @@ export const VARIANT_SWITCHER_DASHBOARD_URLS = {
   commodity: 'https://commodity.worldmonitor.app/dashboard',
   energy: 'https://energy.worldmonitor.app/dashboard',
   happy: 'https://happy.worldmonitor.app/dashboard',
+  space: 'https://planetslam.com/dashboard?variant=space',
 } as const;
 
 export function variantSwitcherHref(
@@ -272,6 +273,7 @@ export function variantSwitcherHref(
 // lift these defaults into one shared table imported by both the `Panel`
 // constructor and this map, removing the duplication entirely (see #4490).
 export const DEFERRED_PANEL_NATURAL_FOOTPRINTS: Readonly<Record<string, DeferredPanelShellFootprint>> = {
+  'space-cameras': { rowSpan: 3 },
   cii: { rowSpan: 2 },
   'chat-analyst': { rowSpan: 2 },
   'china-corridors': { rowSpan: 2, className: 'panel-wide' },
@@ -1137,7 +1139,14 @@ export class PanelLayoutManager implements AppModule {
                title="Good News${SITE_VARIANT === 'happy' ? ` ${t('common.currentVariant')}` : ''}">
               <span class="variant-icon">☀️</span>
               <span class="variant-label">Good News</span>
-            </a>`;
+            </a>${IS_PLANETSLAM ? `
+            <span class="variant-divider"></span>
+            <a href="${vHref('space')}"
+               class="variant-option ${SITE_VARIANT === 'space' ? 'active' : ''}"
+               data-variant="space" title="Space${SITE_VARIANT === 'space' ? ` ${t('common.currentVariant')}` : ''}">
+              <span class="variant-icon">🚀</span>
+              <span class="variant-label">Space</span>
+            </a>` : ''}`;
       })()}</div>
           <span class="logo">${BRAND.wordmark}</span><span class="logo-mobile">${BRAND.name}</span><span class="version">v${__APP_VERSION__}</span>${BETA_MODE ? '<span class="beta-badge">BETA</span>' : ''}
           <a href="${creditUrl}" target="_blank" rel="noopener" class="credit-link">
@@ -1205,6 +1214,7 @@ export class PanelLayoutManager implements AppModule {
           { key: 'commodity', icon: '⛏️', label: t('header.commodity') },
           { key: 'energy', icon: '⚡', label: t('header.energy') },
           { key: 'happy', icon: '☀️', label: 'Good News' },
+          ...(IS_PLANETSLAM ? [{ key: 'space', icon: '🚀', label: 'Space' }] : []),
         ];
         return variants.map(v =>
           `<button class="mobile-menu-item mobile-menu-variant ${v.key === SITE_VARIANT ? 'active' : ''}" data-variant="${v.key}">
@@ -2772,6 +2782,25 @@ export class PanelLayoutManager implements AppModule {
     // magazine on click. Self-fetching (no data-loader integration);
     // PRO gating handled by the base Panel class via premium: 'locked'.
     this.lazyDefaultPanel('latest-brief', () => import('@/components/LatestBriefPanel'), 'LatestBriefPanel');
+
+    // Space datasets are self-refreshing and stay off the global bootstrap path.
+    // One lazy module supplies the cards; shared service requests are deduplicated.
+    const spacePanels = [
+      ['space-apod', 'NASA Picture of the Day', 'apod'],
+      ['space-news', 'Space News', 'news'],
+      ['space-launches', 'Launch Countdown', 'launches'],
+      ['space-spacex', 'SpaceX Watch', 'launches'],
+      ['space-weather', 'Space Weather', 'weather'],
+      ['space-neo', 'Near-Earth Objects', 'neo'],
+      ['space-solar', 'Sun Now', 'solar'],
+      ['space-events', 'Solar Flares & CMEs', 'events'],
+      ['space-health', 'Space Data Status', 'health'],
+    ] as const;
+    for (const [key, title, dataset] of spacePanels) {
+      this.lazyImportedPanel(key, () => import('@/components/SpaceDashboardPanels'), 'SpaceDataPanel',
+        (SpaceDataPanel) => new SpaceDataPanel(key, title, dataset));
+    }
+    this.lazyDefaultPanel('space-cameras', () => import('@/components/SpaceCamerasPanel'), 'SpaceCamerasPanel');
 
     this.lazyDefaultPanel('commodities', () => import('@/components/MarketPanel'), 'CommoditiesPanel');
     this.lazyDefaultPanel('energy-complex', () => import('@/components/EnergyComplexPanel'), 'EnergyComplexPanel');

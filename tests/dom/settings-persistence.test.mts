@@ -161,12 +161,13 @@ describe('dashboard tabs in the settings backup (#9372)', () => {
     expect(flush).toHaveBeenCalledTimes(1);
   });
 
-  it('round trips tab workspaces through export and import', async () => {
-    localStorage.setItem('worldmonitor-tabs-v1:full', JSON.stringify(tabsState));
+  it.each(['full', 'space'])('round trips %s tab workspaces through export and import', async variant => {
+    const storageKey = `worldmonitor-tabs-v1:${variant}`;
+    localStorage.setItem(storageKey, JSON.stringify(tabsState));
     const { data } = await exportToObject();
     localStorage.clear();
     await expect(importSettings(file(data))).resolves.toEqual({ success: true, keysImported: Object.keys(data).length });
-    expect(localStorage.getItem('worldmonitor-tabs-v1:full')).toBe(JSON.stringify(tabsState));
+    expect(localStorage.getItem(storageKey)).toBe(JSON.stringify(tabsState));
   });
 
   it.each([

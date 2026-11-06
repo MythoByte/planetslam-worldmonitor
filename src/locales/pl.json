@@ -385,7 +385,8 @@
     "panelCatCommodityEcon": "Gospodarka i Handel",
     "panelCatHappyNews": "Dobre Wiadomości",
     "panelCatHappyPlanet": "Planeta i Filantropia",
-    "embed": "Osadź"
+    "embed": "Osadź",
+    "panelCatSpace": "Space"
   },
   "panels": {
     "liveNews": "Wiadomości na żywo",

@@ -110,6 +110,17 @@ const SOURCE_DOMAIN_MATCHERS = [
 // Keep ambiguous structured providers explicit so a new unmatched provider
 // fails the build instead of silently becoming "geopolitics".
 const SOURCE_DOMAIN_OVERRIDES = new Map([
+  // Space sources use the existing public catalog taxonomy: environment for
+  // solar/near-Earth observations, aviation for launches, and news for feeds.
+  ['NASA Open APIs (APOD, NeoWs, DONKI)', 'environment'],
+  ['NASA Solar Dynamics Observatory', 'environment'],
+  ['NOAA Space Weather Prediction Center source links', 'environment'],
+  ['NASA news and official live links', 'news'],
+  ['European Space Agency news', 'news'],
+  ['Spaceflight News API (The Space Devs)', 'news'],
+  ['Launch Library 2 (The Space Devs)', 'aviation'],
+  ['Space Launch Now mission links', 'aviation'],
+  ['SpaceX official mission and webcast links', 'aviation'],
   ['ammancity.gov.jo', 'finance'],
   ['data.1212.mn', 'finance'],
   ['madr.gov.dz', 'finance'],

@@ -450,7 +450,8 @@
     "panelCatMining": "معدن و زنجیره تأمین",
     "panelCatCommodityEcon": "اقتصاد و تجارت",
     "panelCatHappyNews": "اخبار خوب",
-    "panelCatHappyPlanet": "سیاره و نیکوکاری"
+    "panelCatHappyPlanet": "سیاره و نیکوکاری",
+    "panelCatSpace": "Space"
   },
   "panels": {
     "liveNews": "اخبار زنده",

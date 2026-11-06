@@ -450,7 +450,8 @@
     "panelCatCommodityEcon": "Gazdaság & Kereskedelem",
     "panelCatHappyNews": "Jó Hírek",
     "panelCatHappyPlanet": "Bolygó & Adományozás",
-    "embed": "Beágyazás"
+    "embed": "Beágyazás",
+    "panelCatSpace": "Space"
   },
   "panels": {
     "liveNews": "Élő Hírek",

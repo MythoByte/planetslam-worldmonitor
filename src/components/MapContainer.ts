@@ -1,3 +1,5 @@
+import type { SpaceMapSnapshot } from '@/types/space-map';
+import { SITE_VARIANT } from '@/config/variant';
 /**
  * MapContainer - lightweight conditional map renderer
  * Paints a stable shell first, then lazy-loads the selected renderer.
@@ -174,6 +176,16 @@ type CIIScore = { code: string; score: number; level: string };
  * based on device capabilities
  */
 export class MapContainer {
+  private cachedSpaceOverlay: SpaceMapSnapshot = { aurora: [], launches: [] };
+  private spaceOverlayController: import('./SpaceMapOverlay').SpaceMapOverlay | null = null;
+
+  public setSpaceOverlay(snapshot: SpaceMapSnapshot): void {
+    this.cachedSpaceOverlay = snapshot;
+    if (this.useGlobe) this.globeMap?.setSpaceOverlay(snapshot);
+    else if (this.useDeckGL) this.deckGLMap?.setSpaceOverlay(snapshot);
+    else this.svgMap?.setSpaceOverlay(snapshot);
+  }
+
   private container: HTMLElement;
   private isMobile: boolean;
   private readonly preferDesktopRenderer: boolean;
@@ -330,6 +342,11 @@ export class MapContainer {
     // init() attaches the resize observer synchronously (before its first await),
     // so the constructor does not need to start it separately.
     void this.init();
+    if (SITE_VARIANT === 'space') {
+      void import('./SpaceMapOverlay').then(({ SpaceMapOverlay }) => {
+        if (!this.destroyed) this.spaceOverlayController = new SpaceMapOverlay(this.container, snapshot => this.setSpaceOverlay(snapshot));
+      });
+    }
   }
 
   private hasWebGLSupport(): boolean {
@@ -820,6 +837,7 @@ export class MapContainer {
   }
 
   private rehydrateActiveMap(): void {
+    this.setSpaceOverlay(this.cachedSpaceOverlay);
     // 1. Re-wire callbacks (through own public methods for adapter safety)
     if (this.cachedOnStateChanged) this.onStateChanged(this.cachedOnStateChanged);
     if (this.cachedOnLayerChange) this.setOnLayerChange(this.cachedOnLayerChange);
@@ -1904,6 +1922,8 @@ export class MapContainer {
   }
 
   public destroy(): void {
+    this.spaceOverlayController?.destroy();
+    this.spaceOverlayController = null;
     this.emergencyLayer.destroy();
     this.notamAirspaceLayer.destroy();
     this.destroyed = true;

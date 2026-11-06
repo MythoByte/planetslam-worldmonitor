@@ -1,3 +1,4 @@
+import type { SpaceMapSnapshot } from '@/types/space-map';
 import * as d3 from 'd3';
 import { UKMTO_SOURCE_URL, ukmtoIncidentLabel, type UkmtoMapIncident } from '../../shared/ukmto-incidents';
 import * as topojson from 'topojson-client';
@@ -178,6 +179,34 @@ export class MapComponent {
     };
 
   private static readonly SVG_MARKER_DOM_ZOOM_LAYERS = new Set<keyof MapLayers>(['bases', 'nuclear']);
+
+  private spaceOverlay: SpaceMapSnapshot = { aurora: [], launches: [] };
+
+  public setSpaceOverlay(snapshot: SpaceMapSnapshot): void {
+    this.spaceOverlay = snapshot;
+    this.render();
+  }
+
+  private renderSpaceOverlay(projection: d3.GeoProjection): void {
+    const group = this.dynamicLayerGroup?.append('g').attr('class', 'space-forecast-overlay');
+    if (!group) return;
+    // Sample the model grid on the lightweight renderer to bound mobile SVG work.
+    const aurora = this.spaceOverlay.aurora.filter(point => Math.round(point.longitude) % 2 === 0 && Math.round(point.latitude) % 2 === 0);
+    for (const point of aurora) {
+      const position = projection([point.longitude, point.latitude]);
+      if (!position) continue;
+      group.append('circle').attr('cx', position[0]).attr('cy', position[1])
+        .attr('r', 2.2).attr('fill', '#41eb8c').attr('fill-opacity', 0.15 + point.probability / 150)
+        .append('title').text(`Aurora forecast: model intensity ${point.probability} / 100. Not a local visibility guarantee.`);
+    }
+    for (const launch of this.spaceOverlay.launches) {
+      const position = projection([launch.longitude, launch.latitude]);
+      if (!position) continue;
+      group.append('circle').attr('cx', position[0]).attr('cy', position[1])
+        .attr('r', 5).attr('fill', '#ffbc50').attr('stroke', '#fff0be')
+        .append('title').text(`${launch.name} · ${launch.pad} · ${new Date(launch.net).toUTCString()}`);
+    }
+  }
 
   private container: HTMLElement;
   private svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
@@ -690,7 +719,8 @@ export class MapComponent {
     ];
     // Filter sunset and renderer-incompatible layers so the SVG/mobile picker
     // cannot expose a toggle whose layer has no SVG paint path.
-    const layers = (SITE_VARIANT === 'tech' ? techLayers
+    const layers = (SITE_VARIANT === 'space' ? ['satellites', 'spaceports', 'webcams'] as (keyof MapLayers)[]
+                 : SITE_VARIANT === 'tech' ? techLayers
                  : SITE_VARIANT === 'finance' ? financeLayers
                  : SITE_VARIANT === 'happy' ? happyLayers
                  : SITE_VARIANT === 'energy' ? energyLayers
@@ -1524,6 +1554,7 @@ export class MapComponent {
     this.updateCountryFills();
 
     const steps: Array<() => void> = [];
+    steps.push(() => this.renderSpaceOverlay(projection));
     if (this.state.layers.cables) steps.push(() => this.renderCables(projection));
     if (this.state.layers.pipelines) steps.push(() => this.renderPipelines(projection));
     if (this.state.layers.conflicts) steps.push(() => this.renderConflicts(projection));

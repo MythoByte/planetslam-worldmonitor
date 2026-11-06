@@ -381,7 +381,8 @@
     "panelCatCommodityEcon": "Οικονομία & Εμπόριο",
     "panelCatHappyNews": "Καλές Ειδήσεις",
     "panelCatHappyPlanet": "Πλανήτης & Δωρεές",
-    "embed": "Ενσωμάτωση"
+    "embed": "Ενσωμάτωση",
+    "panelCatSpace": "Space"
   },
   "panels": {
     "liveNews": "Ζωντανές Ειδήσεις",

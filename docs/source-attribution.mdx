@@ -12,7 +12,7 @@ The inventory is **generated, not hand-written**: `scripts/source-attribution.mj
 ## Observed Source Inventory
 
 {/* BEGIN GENERATED SOURCE ATTRIBUTION */}
-This generated inventory covers **848 active source hosts** representing **829 active providers** (**364 structured/API**, **468 feed**, and **30 operational-status** hosts). It is derived from source declarations in `scripts/`, `server/`, `api/`, and `src/`. Each row shows the configured provider identity and where the source is referenced. Syndication transports such as FeedBurner and Google News remain listed as hosts and are not counted as publishers.
+This generated inventory covers **857 active source hosts** representing **838 active providers** (**373 structured/API**, **468 feed**, and **30 operational-status** hosts). It is derived from source declarations in `scripts/`, `server/`, `api/`, and `src/`. Each row shows the configured provider identity and where the source is referenced. Syndication transports such as FeedBurner and Google News remain listed as hosts and are not counted as publishers.
 
 | Provider | Observed surface |
 | --- | --- |
@@ -280,6 +280,7 @@ This generated inventory covers **848 active source hosts** representing **829 a
 | euractiv.com (euractiv.com) | Excluded / candidate — No current fetch observed |
 | eurasianet.org (eurasianet.org) | feed — shared/news-catalog.json |
 | euromaidanpress.com (euromaidanpress.com) | feed — shared/news-catalog.json |
+| European Space Agency news (www.esa.int) | structured — scripts/_space-providers.mjs, scripts/source-attribution.mjs |
 | evn.com.vn (evn.com.vn) | structured — scripts/shared/regional-energy-feeds.json |
 | Example domain placeholder (example.com) | structured — scripts/mcp-live-smoke.mjs, scripts/openapi-inject-examples.mjs, src/services/mcp-store.ts, src/utils/sanitize.ts |
 | export.arxiv.org (export.arxiv.org) | feed+structured — scripts/seed-research.mjs, shared/news-catalog.json |
@@ -418,6 +419,7 @@ This generated inventory covers **848 active source hosts** representing **829 a
 | krebsonsecurity.com (krebsonsecurity.com) | feed — shared/news-catalog.json |
 | kyivindependent.com (kyivindependent.com) | feed — shared/news-catalog.json |
 | L'Orient Today (lorientlejour.com) | feed — shared/news-catalog.json |
+| Launch Library 2 (The Space Devs) (ll.thespacedevs.com) | structured — scripts/_space-providers.mjs |
 | lavca.org (lavca.org) | Excluded / candidate — No current fetch observed |
 | leFaso.net (lefaso.net) | feed — shared/news-catalog.json |
 | lequotidien.sn (lequotidien.sn) | feed — shared/news-catalog.json |
@@ -478,6 +480,9 @@ This generated inventory covers **848 active source hosts** representing **829 a
 | Naharnet Lebanon (www.naharnet.com) | feed — shared/news-catalog.json |
 | NASA FIRMS (firms.modaps.eosdis.nasa.gov) | structured — scripts/wildfire/firms-area.mjs |
 | NASA FIRMS (firms2.modaps.eosdis.nasa.gov) | Excluded / candidate — No current fetch observed |
+| NASA news and official live links (www.nasa.gov) | structured — scripts/_space-providers.mjs |
+| NASA Open APIs (APOD, NeoWs, DONKI) (api.nasa.gov) | structured — scripts/_space-providers.mjs |
+| NASA Solar Dynamics Observatory (sdo.gsfc.nasa.gov) | structured — scripts/_space-providers.mjs |
 | nasstatus.faa.gov (nasstatus.faa.gov) | structured — scripts/seed-aviation.mjs, server/worldmonitor/aviation/v1/_shared.ts |
 | nationalpost.com (nationalpost.com) | feed — shared/news-catalog.json |
 | ndtvindiaelemarchana.akamaized.net (ndtvindiaelemarchana.akamaized.net) | feed — src/config/live-video-sources.ts |
@@ -496,6 +501,7 @@ This generated inventory covers **848 active source hosts** representing **829 a
 | newsmaker.md (newsmaker.md) | feed — shared/news-catalog.json |
 | nhkwlive-ojp.akamaized.net (nhkwlive-ojp.akamaized.net) | Excluded / candidate — No current fetch observed |
 | nmxlive.akamaized.net (nmxlive.akamaized.net) | feed — src/config/live-video-sources.ts |
+| NOAA Space Weather Prediction Center source links (www.spaceweather.gov) | structured — src/components/SpaceDashboardPanels.ts |
 | nominatim.openstreetmap.org (nominatim.openstreetmap.org) | structured — api/reverse-geocode.js, server/worldmonitor/infrastructure/v1/reverse-geocode.ts |
 | northernminer.com (northernminer.com) | feed — shared/news-catalog.json |
 | novayagazeta.eu (novayagazeta.eu) | feed — shared/news-catalog.json |
@@ -639,6 +645,9 @@ This generated inventory covers **848 active source hosts** representing **829 a
 | slack-status.com (slack-status.com) | operational-status — server/worldmonitor/infrastructure/v1/list-service-statuses.ts |
 | slack.com (slack.com) | structured — api/channel-oauth-bind.ts, api/slack/oauth/callback.ts, api/slack/oauth/start.ts |
 | slidstvo.info (slidstvo.info) | feed — shared/news-catalog.json |
+| Space Launch Now mission links (spacelaunchnow.me) | structured — scripts/_space-providers.mjs |
+| Spaceflight News API (The Space Devs) (api.spaceflightnewsapi.net) | structured — scripts/_space-providers.mjs |
+| SpaceX official mission and webcast links (www.spacex.com) | structured — src/components/SpaceDashboardPanels.ts |
 | spglobal.com (spglobal.com) | feed — shared/news-catalog.json |
 | ssl.bing.com (ssl.bing.com) | structured — scripts/seo-bing-collect.mjs |
 | stat.gov.kg (stat.gov.kg) | structured — scripts/lib/food-prices-adapters/nsckg.mjs |

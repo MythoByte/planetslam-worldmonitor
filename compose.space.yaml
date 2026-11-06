@@ -1,0 +1,23 @@
+# Optional overlay for the repository's docker-compose.yml.
+# docker compose -f docker-compose.yml -f compose.space.yaml --profile space up -d --build space-seeder
+services:
+  space-seeder:
+    profiles: [space]
+    build:
+      context: .
+      dockerfile: Dockerfile.relay
+    image: worldmonitor-ais-relay:latest
+    command: [node, scripts/seed-space.mjs, --loop]
+    environment:
+      UPSTASH_REDIS_REST_URL: http://redis-rest:80
+      UPSTASH_REDIS_REST_TOKEN: "${REDIS_TOKEN:?REDIS_TOKEN required}"
+      UPSTASH_ALLOW_INSECURE_HTTP: "true"
+      NASA_API_KEY: "${NASA_API_KEY:-}"
+      SPACEDEVS_API_KEY: "${SPACEDEVS_API_KEY:-}"
+    depends_on:
+      redis-rest:
+        condition: service_started
+    # The relay image's HTTP probe does not apply to this worker command.
+    healthcheck:
+      disable: true
+    restart: unless-stopped

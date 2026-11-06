@@ -385,7 +385,8 @@
     "panelCatCommodityEcon": "Экономика и торговля",
     "panelCatHappyNews": "Хорошие новости",
     "panelCatHappyPlanet": "Планета и благотворительность",
-    "embed": "Встроить"
+    "embed": "Встроить",
+    "panelCatSpace": "Space"
   },
   "panels": {
     "liveNews": "Новости в реальном времени",

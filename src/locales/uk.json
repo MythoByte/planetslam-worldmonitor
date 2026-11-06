@@ -454,7 +454,8 @@
     "panelCatMining": "Видобування і ланцюги поставок",
     "panelCatCommodityEcon": "Економіка та торгівля",
     "panelCatHappyNews": "Хорошi новини",
-    "panelCatHappyPlanet": "Планета та благодійність"
+    "panelCatHappyPlanet": "Планета та благодійність",
+    "panelCatSpace": "Space"
   },
   "panels": {
     "liveNews": "Прямі новини",

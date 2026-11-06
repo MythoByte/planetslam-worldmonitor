@@ -379,7 +379,8 @@
     "panelCatCommodityEcon": "เศรษฐกิจและการค้า",
     "panelCatHappyNews": "ข่าวดี",
     "panelCatHappyPlanet": "โลกและการให้กำลังใจ",
-    "embed": "ฝังตัว"
+    "embed": "ฝังตัว",
+    "panelCatSpace": "Space"
   },
   "panels": {
     "liveNews": "ข่าวสด",

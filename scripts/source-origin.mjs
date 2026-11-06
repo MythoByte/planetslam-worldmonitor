@@ -612,6 +612,19 @@ const HOST_ORIGINS = Object.freeze({
 // Provider-level overrides win when the host is a CDN, cloud, or shared
 // platform that would otherwise point at the wrong country.
 const PROVIDER_ORIGINS = Object.freeze({
+  // Space edition: national issuing agencies keep their origin regardless of
+  // worldwide coverage. ESA is intergovernmental; community space platforms
+  // use the catalog's International classification rather than an inferred
+  // country from a generic or vanity domain.
+  'NASA Open APIs (APOD, NeoWs, DONKI)': 'US',
+  'NASA news and official live links': 'US',
+  'NASA Solar Dynamics Observatory': 'US',
+  'NOAA Space Weather Prediction Center source links': 'US',
+  'SpaceX official mission and webcast links': 'US',
+  'European Space Agency news': null,
+  'Spaceflight News API (The Space Devs)': null,
+  'Launch Library 2 (The Space Devs)': null,
+  'Space Launch Now mission links': null,
   'B.C. Evacuation Orders and Alerts': 'CA',
   'Toronto Police Service': 'CA',
   'Toronto Police Service Open Data': 'CA',

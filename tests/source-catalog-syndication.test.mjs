@@ -24,6 +24,7 @@ import {
   sourceAttributionLedgerStats,
 } from '../scripts/source-attribution.mjs';
 import { buildSourceCatalog } from '../scripts/crawlable-sources-page.mjs';
+import { resolveSourceOrigin } from '../scripts/source-origin.mjs';
 import { rawCatalogProviderNames } from './helpers/raw-catalog-providers.mjs';
 
 const rootDir = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -250,4 +251,22 @@ test('www catalog hosts inherit geography from stripped editorial hosts', () => 
     new Map([['The Hindu', ['IN']]]),
   );
   assert.deepEqual(catalog[0].coveredCountries, ['IN']);
+});
+
+
+test('Space catalog origins distinguish national agencies from international platforms', () => {
+  const cases = [
+    ['NASA Open APIs (APOD, NeoWs, DONKI)', 'api.nasa.gov', 'US'],
+    ['NASA news and official live links', 'www.nasa.gov', 'US'],
+    ['NASA Solar Dynamics Observatory', 'sdo.gsfc.nasa.gov', 'US'],
+    ['NOAA Space Weather Prediction Center source links', 'www.spaceweather.gov', 'US'],
+    ['SpaceX official mission and webcast links', 'www.spacex.com', 'US'],
+    ['European Space Agency news', 'www.esa.int', null],
+    ['Spaceflight News API (The Space Devs)', 'api.spaceflightnewsapi.net', null],
+    ['Launch Library 2 (The Space Devs)', 'll.thespacedevs.com', null],
+    ['Space Launch Now mission links', 'spacelaunchnow.me', null],
+  ];
+  for (const [provider, host, expected] of cases) {
+    assert.equal(resolveSourceOrigin({ provider, hosts: [host] }), expected, provider);
+  }
 });
