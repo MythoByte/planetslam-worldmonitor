@@ -188,9 +188,13 @@ COPY scripts/seed-space.mjs ./scripts/seed-space.mjs
 COPY scripts/_space-providers.mjs ./scripts/_space-providers.mjs
 COPY scripts/_space-orbits.mjs ./scripts/_space-orbits.mjs
 COPY scripts/_space-missions.mjs ./scripts/_space-missions.mjs
+COPY scripts/_space-brief.mjs ./scripts/_space-brief.mjs
+COPY scripts/lib/llm-chain.cjs ./scripts/lib/llm-chain.cjs
+COPY server/_shared/llm-sanitize.js ./server/_shared/llm-sanitize.js
 COPY api/_space-data.js ./api/_space-data.js
 COPY api/_space-orbits.js ./api/_space-orbits.js
 COPY api/_space-missions.js ./api/_space-missions.js
+COPY api/_space-brief.js ./api/_space-brief.js
 COPY scripts/seed-chokepoint-flows.mjs ./scripts/seed-chokepoint-flows.mjs
 COPY scripts/seed-ember-electricity.mjs ./scripts/seed-ember-electricity.mjs
 COPY scripts/seed-yield-curve-au.mjs ./scripts/seed-yield-curve-au.mjs

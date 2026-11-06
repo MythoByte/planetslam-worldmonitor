@@ -90,3 +90,16 @@
 @media (max-width: 600px) { .space-observer-form { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .space-observer-form button { grid-column: 1 / -1; } }
 @media (max-width: 600px) { .space-orbit-controls { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .space-body { padding: 10px; } .space-metric strong { font-size: 20px; } .space-solar-grid { grid-template-columns: 1fr; } }
+.space-brief-header { display: grid; gap: 8px; margin: 12px 0; }
+.space-brief-header h3, .space-brief-header p { margin: 0; }
+.space-brief-header small, .space-brief-sources small { display: block; color: var(--text-dim); font-size: 11px; line-height: 1.6; }
+.space-brief-section h4 { margin: 0 0 8px; }
+.space-brief-citations { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 11px; }
+.space-brief-citations a, .space-brief-sources a { overflow-wrap: anywhere; }
+.space-brief-sources { padding-left: 22px; }
+.space-brief-sources li { margin: 12px 0; }
+.space-brief-coverage { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.space-brief-coverage li { display: grid; gap: 4px; border: 1px solid var(--border); border-radius: 4px; padding: 8px; overflow-wrap: anywhere; }
+.space-brief-coverage small { color: var(--text-dim); font-size: 10px; line-height: 1.6; }
+.space-panel [data-brief-detail] > summary { cursor: pointer; padding: 12px 0; }
+.space-brief-citations a:focus-visible, .space-panel [data-brief-detail] > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }

@@ -1535,7 +1535,7 @@ export const PANEL_CATEGORY_MAP: Record<string, { labelKey: string; panelKeys: s
 
   space: {
     labelKey: 'header.panelCatSpace',
-    panelKeys: ['space-satellites', 'space-observing', 'space-missions', 'space-cameras', 'space-launches', 'space-weather', 'space-apod', 'space-news', 'space-spacex', 'space-neo', 'space-solar', 'space-events', 'space-health'],
+    panelKeys: ['space-brief', 'space-satellites', 'space-observing', 'space-missions', 'space-cameras', 'space-launches', 'space-weather', 'space-apod', 'space-news', 'space-spacex', 'space-neo', 'space-solar', 'space-events', 'space-health'],
     variants: ['space'],
   },
 

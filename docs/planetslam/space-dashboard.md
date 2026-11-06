@@ -4,9 +4,9 @@ Space is a PlanetSlam edition at `/dashboard?variant=space`. It uses the existin
 edition switcher, panel layout, settings persistence, theme, and map renderers.
 There is no separate upstream Space hostname.
 
-## Delivered scope: phases 1–5
+## Delivered scope: phases 1–6
 
-- Foundation: thirteen movable/resizable panels, shared cached data, attribution,
+- Foundation: fourteen movable/resizable panels, shared cached data, attribution,
   observation/fetch times, explicit fresh/stale/unavailable states, source status.
 - Space Live: on-demand NASA ISS and independent NASASpaceflight Starbase/Space
   Coast players, source links, saved favorites, offscreen pause and disconnect.
@@ -45,7 +45,9 @@ There is no separate upstream Space hostname.
 - Optional browser reminders: explicit permission and opt-in, watched events and
   visible pass opportunities, schedule changes and duplicate suppression. These
   work while this dashboard is open; no closed-page, email or push service exists.
-- AI daily briefs and final cross-feature release acceptance remain phase 6.
+- Space Daily Brief: a shared, source-linked daily briefing with optional AI
+  synthesis, a labeled source-summary fallback, and explicit coverage gaps.
+  The PlanetSlam map controls and page-author metadata credit MythoByte.
 
 ## Data path and failure behavior
 
@@ -75,6 +77,7 @@ of fetch age. Missing observations never become zero severity or an empty sky.
 | NEO approaches | 6 hours | 24 hours |
 | Orbital GP catalog | 6 hours per group | 48 hours per source snapshot |
 | Mission events | 15 minutes | 6 hours |
+| Daily brief | 5-minute readiness checks; at most one AI attempt per UTC day | 48 hours |
 
 An atomic shared Redis admission token limits attempts across worker replicas and
 restarts. Launch Library uses one upcoming-launch request per 15 minutes without
@@ -145,6 +148,51 @@ coalescing, native tags and Web Locks where available reduce duplicate delivery
 across refreshes and cooperating tabs. Native tags do not include raw observer
 coordinates. Closing the final observing panel stops its timer and suppresses in-flight deliveries.
 
+## Daily brief (phase 6)
+
+The Space worker prepares one shared UTC edition from the same cached snapshots
+used by the panels. The browser only reads `dataset=brief`; refreshing it cannot
+start an AI call or fetch a provider. Observer locations, watchlists and other
+personal browser settings never enter the brief inputs.
+
+Every section links to identified source snapshots. The brief records generation,
+fetch and observation/publication times, source coverage and missing feeds.
+Unavailable feeds do not become reassuring zero counts or claims of no hazards.
+Changing launch/mission schedules and space weather remain estimates at the stated
+source time; the individual panels show more recent updates during the day.
+
+Optional AI synthesis uses the existing server-side OpenRouter transport with a
+bounded prompt, output, timeout and one admitted AI attempt per UTC day across
+worker replicas. Only citation IDs supplied with the input can be returned;
+links come from the original cached sources. Missing AI configuration, transport
+failure or invalid output produces an explicitly labeled source summary. A brief
+with no usable evidence remains unavailable. There are no viewer-triggered AI costs.
+
+Previous-day editions are labeled stale and expire after 48 hours. Original
+source clocks remain visible and age independently. A fresh brief timestamp does
+not reset an older provider observation. AI summaries can be wrong; use the cited
+sources to check details.
+
+## Release acceptance
+
+The focused acceptance checks exercise the existing ingestion/cache/API path,
+source freshness and outages, satellite math, observer privacy, opt-in reminders,
+camera lifecycle, watchlist persistence and the daily brief's citations and
+fallback. Desktop/mobile browser checks use labeled synthetic fixtures; provider
+availability must also be verified independently when deploying.
+
+The brief is loaded as a deferred panel. Other editions retain their normal
+startup, and no Space data is added to the global bootstrap. Orbital calculation
+limits and cancellation remain in place. Production chunk and service-worker
+tests enforce the existing 32-file / 2 MiB precache budget. Browser checks cover
+keyboard-accessible controls, content escaping, readable source labels, responsive
+width and actual 2D/3D map credits.
+
+Release gates: browser/API typechecks, architectural and Safe HTML/storage/panel
+guards, Space producer/reader and DOM suites, strict Space browser acceptance,
+production build, PWA/chunk checks and generated-file freshness. Passing fixtures
+does not commission every optional provider or establish live forecast accuracy.
+
 ## Operator setup
 
 The implementation does not enable a worker, change existing deployment Compose,
@@ -154,6 +202,10 @@ Set these server-side values through the deployment's existing secret mechanism:
 
 - `NASA_API_KEY`: NASA Open APIs key for APOD, NeoWs, and DONKI; not the FIRMS key.
 - `SPACEDEVS_API_KEY`: optional Launch Library entitlement. Polling stays conservative.
+- `OPENROUTER_API_KEY`: optional existing server key for daily AI synthesis; without
+  it the brief uses its source-summary mode. Map it explicitly into `space-seeder`.
+- `SPACE_BRIEF_MODEL`: optional model override; defaults to the existing
+  `deepseek/deepseek-v4-flash` configuration. This does not change the other AI panels.
 - `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`: existing shared cache.
 
 Never put provider credentials in `VITE_*`, browser configuration, or Git. With no

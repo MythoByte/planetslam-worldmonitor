@@ -51,6 +51,9 @@ function brandDashboard(html: string): string {
     .replace('if(v)document.documentElement.dataset.variant=v;', "var q=new URLSearchParams(location.search).get('variant');v=['full','tech','finance','commodity','energy','happy','space'].includes(q)?q:'full';if(v)document.documentElement.dataset.variant=v;")
     .replace(/<title>.*?<\/title>/, '<title>PlanetSlam — Global Intelligence</title>')
     .replace(/<meta name="application-name" content=".*?" \/>/, '<meta name="application-name" content="PlanetSlam" />')
+    .replace(/<meta name="author" content=".*?" \/>/, '<meta name="author" content="MythoByte" />')
+    .replace(/"author":\s*\{[^}]*"name":\s*"Elie Habib"\s*\}/g,
+      '"author": {"@type": "Organization", "name": "MythoByte", "url": "https://github.com/MythoByte"}')
     .replace(/<link rel="canonical"[^>]*>/g, '')
     .replace('</head>', '<meta name="robots" content="noindex, nofollow" /><style>html[data-brand="planetslam"]{--wm-pro-banner-slot-height:0px}html[data-brand="planetslam"].wm-pro-banner-reserved #app::before{display:none}</style></head>')
     .replace('<span>World Monitor</span>', '<span>PlanetSlam</span>')

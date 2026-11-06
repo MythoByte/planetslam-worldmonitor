@@ -19,7 +19,10 @@ for (const width of [1440, 390]) {
     await installSpaceFixtures(page);
     await boot(page);
     const panel = (id: string) => page.locator(`#panelsGrid [data-panel="space-${id}"]`);
-    await expect(panel('cameras')).toBeVisible();
+    await expect(async () => {
+      await panel('cameras').scrollIntoViewIfNeeded();
+      await expect(panel('cameras').locator('[data-camera-favorite="starbase"]')).toBeVisible();
+    }).toPass({ timeout: 15_000 });
     await expect(panel('cameras').locator('iframe')).toHaveCount(0);
     await panel('cameras').locator('[data-camera-favorite="starbase"]').click();
     expect(await page.evaluate(() => localStorage.getItem('planetslam-space-camera-favorites-v1'))).toContain('starbase');
@@ -55,7 +58,10 @@ for (const width of [1440, 390]) {
     await panel('weather').scrollIntoViewIfNeeded();
     await page.screenshot({ path: testInfo.outputPath(`space-weather-${width}.png`) });
     await page.reload();
-    await expect(panel('cameras').locator('[data-camera-favorite="starbase"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(async () => {
+      await panel('cameras').scrollIntoViewIfNeeded();
+      await expect(panel('cameras').locator('[data-camera-favorite="starbase"]')).toHaveAttribute('aria-pressed', 'true');
+    }).toPass({ timeout: 15_000 });
     await expect(page.locator('[data-testid="space-map-controls"] input').first()).not.toBeChecked();
   });
 }

@@ -28,9 +28,23 @@ export function spaceFixture(dataset: SpaceDataset): SpaceEnvelope<unknown> {
       { id: 'fixture-docking', name: 'Synthetic docking acceptance event', kind: 'docking', type: 'Docking', description: 'Synthetic mission fixture; not an actual event.', date: now + 3600000, datePrecision: 'minute', datePrecisionDescription: 'Minute estimate', windowStart: null, windowEnd: null, durationSeconds: null, location: 'ISS', status: 'Scheduled · provider estimate', webcastUrl: 'https://example.com/mission/watch', url: 'https://example.com/mission', launchIds: ['fixture-launch'], updatedAt: now },
       { id: 'fixture-briefing', name: 'Synthetic briefing acceptance event', kind: 'briefing', type: 'Briefing', description: 'Synthetic briefing fixture.', date: now + 86400000, datePrecision: 'day', datePrecisionDescription: 'Day estimate', windowStart: null, windowEnd: null, durationSeconds: null, location: 'NASA', status: 'Scheduled · provider estimate', webcastUrl: '', url: 'https://example.com/briefing', launchIds: [], updatedAt: now },
     ] },
+    brief: { date, generatedAt: now, mode: 'ai', model: 'synthetic-acceptance-model', title: 'Synthetic Space daily brief',
+      items: [
+        { id: 'science', heading: 'Science and exploration', summary: 'A synthetic science summary for acceptance; not an actual report.', sourceIds: ['source-news'] },
+        { id: 'weather', heading: 'Space weather snapshot', summary: 'Synthetic cached G1 conditions, not an operational forecast.', sourceIds: ['source-weather'] },
+      ],
+      sources: [
+        { id: 'source-news', dataset: 'news', title: 'Synthetic original science story', url: 'https://example.com/news/science', fetchedAt: now, observedAt: now - 120000, status: 'fresh', expiresAt: now + 21600000, freshUntil: now + 1800000 },
+        { id: 'source-weather', dataset: 'weather', title: 'Synthetic NOAA source snapshot', url: 'https://example.com/weather', fetchedAt: now - 600000, observedAt: now - 660000, status: 'stale', expiresAt: now + 3000000, freshUntil: now - 1 },
+      ],
+      coverage: ['apod', 'news', 'launches', 'weather', 'aurora', 'solar', 'events', 'neo', 'orbits', 'missions'].map(dataset => ({ dataset,
+        status: dataset === 'neo' ? 'unavailable' : dataset === 'weather' ? 'stale' : 'fresh', fetchedAt: dataset === 'neo' ? null : now, observedAt: dataset === 'neo' ? null : now - 60000,
+        itemCount: dataset === 'neo' ? 0 : 1, expiresAt: dataset === 'neo' ? null : now + 3600000, freshUntil: dataset === 'neo' ? null : now + 600000 })),
+      limitations: ['Synthetic NEO coverage gap: no NEO conclusions are included.', 'Provider schedules and weather can change after generation.'],
+    },
     health: { items: [] },
   };
-  if (dataset === 'health') data.health = { items: (['apod', 'news', 'launches', 'weather', 'aurora', 'solar', 'events', 'neo', 'orbits', 'missions'] as SpaceDataset[]).map(key => ({ ...spaceFixture(key), data: null })) };
+  if (dataset === 'health') data.health = { items: (['apod', 'news', 'launches', 'weather', 'aurora', 'solar', 'events', 'neo', 'orbits', 'missions', 'brief'] as SpaceDataset[]).map(key => ({ ...spaceFixture(key), data: null })) };
   return { dataset, status: 'fresh', provider: 'Synthetic acceptance provider', sourceUrl: 'https://example.com/provider', fetchedAt: now, observedAt: now - 60000, expiresAt: now + 3600000, data: data[dataset] };
 }
 
