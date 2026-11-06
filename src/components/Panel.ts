@@ -1,3 +1,5 @@
+import { IS_PLANETSLAM } from '@/config/brand';
+import { hasNoWorkingPanelSource, setPanelSourceUnavailable } from '@/services/panel-source-availability';
 import { isDesktopRuntime } from '../services/runtime';
 import { invokeTauri } from '../services/tauri-bridge';
 import { t } from '../services/i18n';
@@ -143,6 +145,17 @@ export class Panel {
   protected countEl: HTMLElement | null = null;
   protected statusBadgeEl: HTMLElement | null = null;
   protected newBadgeEl: HTMLElement | null = null;
+  private sourceFailures = new Set<'request' | 'badge' | 'health'>();
+
+  private updateSourceAvailability(reason: 'request' | 'badge' | 'health', unavailable: boolean): void {
+    if (!IS_PLANETSLAM) return;
+    if (unavailable) this.sourceFailures.add(reason);
+    else this.sourceFailures.delete(reason);
+    const hidden = this.sourceFailures.size > 0;
+    this.element.classList.toggle('panel-source-unavailable', hidden);
+    setPanelSourceUnavailable(this.panelId, this, hidden);
+  }
+
   private freshnessBadgeEl: HTMLElement | null = null;
   private freshnessUnsubscribe: (() => void) | null = null;
   private freshnessRefreshTimer: ReturnType<typeof setInterval> | null = null;
@@ -823,6 +836,7 @@ export class Panel {
     detail?: string,
     detailTitle?: string,
   ): void {
+    this.updateSourceAvailability('badge', state === 'unavailable');
     if (!this.statusBadgeEl) return;
     const labels = {
       live: t('common.live'),
@@ -848,6 +862,7 @@ export class Panel {
   }
 
   protected updateFreshnessBadge(summary: PanelFreshnessSummary | null = dataFreshness.getPanelFreshness(this.panelId)): void {
+    this.updateSourceAvailability('health', hasNoWorkingPanelSource(summary));
     if (!this.freshnessBadgeEl) return;
     if (!summary) {
       this.freshnessBadgeEl.style.display = 'none';
@@ -1076,6 +1091,11 @@ export class Panel {
   public isNearViewport(marginPx = 400): boolean {
     if (!this.element.isConnected) return false;
     if (typeof window === 'undefined') return true;
+    // Keep scheduled probes alive while automatically hidden, so recovery can
+    // restore the module. Explicit user/category hiding still wins.
+    if (IS_PLANETSLAM && this.sourceFailures.size > 0
+      && !this.element.classList.contains('hidden')
+      && !this.element.classList.contains('mobile-cat-hidden')) return true;
 
     const style = window.getComputedStyle(this.element);
     if (style.display === 'none' || style.visibility === 'hidden') return false;
@@ -1181,6 +1201,7 @@ export class Panel {
    * `setContent*` helpers instead, which clear as part of the write.
    */
   public clearErrorState(): void {
+    this.updateSourceAvailability('request', false);
     this.setErrorState(false);
     this.clearRetryCountdown();
     this.retryAttempt = 0;
@@ -1455,6 +1476,7 @@ export class Panel {
   }
 
   public showConfigError(message: string): void {
+    this.updateSourceAvailability('request', true);
     const msgEl = h('div', { className: 'config-error-message' }, message);
     if (isDesktopRuntime()) {
       msgEl.appendChild(
@@ -1481,6 +1503,7 @@ export class Panel {
   }
 
   public setErrorState(hasError: boolean, tooltip?: string): void {
+    if (hasError) this.updateSourceAvailability('request', true);
     this.header.classList.toggle('panel-header-error', hasError);
     if (tooltip) {
       this.header.title = tooltip;
@@ -1742,6 +1765,7 @@ export class Panel {
   }
 
   public destroy(): void {
+    setPanelSourceUnavailable(this.panelId, this, false);
     this.destroyed = true;
     this.abortController.abort();
     this.clearRetryCountdown();

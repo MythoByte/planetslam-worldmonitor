@@ -69,3 +69,73 @@ for (const width of [1440, 768, 390]) {
     await testInfo.attach('viewport', { body: JSON.stringify({ width, branded, controlledResponses: true }), contentType: 'application/json' });
   });
 }
+
+for (const width of [1440, 390]) {
+  test(`source availability: hides and restores modules at ${width}px`, async ({ page }, testInfo) => {
+    test.skip(!branded, 'PlanetSlam-only visibility policy');
+    await page.setViewportSize({ width, height: 1000 });
+    await seedAnonymousDashboard(page, 'full', {
+      initializeOnce: { sessionKey: 'ps-source-profile', clearStorage: true, localStorage: {
+        'mobile-map-collapsed': 'false',
+        'worldmonitor-panels': JSON.stringify({
+          climate: { name: 'Climate Anomalies', enabled: true, priority: 0 },
+          politics: { name: 'World News', enabled: true, priority: 0 },
+        }),
+        'panel-order': JSON.stringify(['climate', 'politics']),
+      } },
+    });
+    await page.route('**/api/**', route => route.fulfill({ json: {} }));
+    await page.route('**/api/bootstrap*', route => route.fulfill({ json: { missing: [], data: {} } }));
+    let available = true;
+    let healthRequests = 0;
+    await page.route('**/api/health?*', route => {
+      healthRequests++;
+      return route.fulfill({ json: {
+        status: available ? 'OK' : 'DEGRADED',
+        checkedAt: new Date().toISOString(),
+        checks: {
+          climateAnomalies: { status: available ? 'OK' : 'EMPTY_DATA', records: 0, seedAgeMin: 0 },
+          climateDisasters: { status: available ? 'OK' : 'EMPTY_DATA', records: 0, seedAgeMin: 0 },
+          climateAirQuality: { status: available ? 'OK' : 'EMPTY_DATA', records: 0, seedAgeMin: 0 },
+        },
+      } });
+    });
+    await page.clock.install();
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    await expect.poll(() => healthRequests, { timeout: 60_000 }).toBeGreaterThan(0);
+    const climate = page.locator('#panelsGrid .panel[data-panel="climate"]');
+    await expect(climate).toBeAttached({ timeout: 60_000 });
+    await climate.scrollIntoViewIfNeeded();
+    await expect(climate).toBeVisible();
+    await expect(climate.locator('.panel-empty')).toBeVisible();
+    await page.screenshot({ path: `docs/planetslam/evidence/planetslam-${width}-source-working.png` });
+
+    const initialRequests = healthRequests;
+    available = false;
+    await page.clock.fastForward(301_000);
+    await expect.poll(() => healthRequests).toBeGreaterThan(initialRequests);
+    await expect(climate).toHaveClass(/panel-source-unavailable/);
+    await expect(climate).toBeHidden();
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('worldmonitor-panels')!).climate.enabled)).toBe(true);
+    await page.screenshot({ path: `docs/planetslam/evidence/planetslam-${width}-source-unavailable.png` });
+
+    if (width <= 768) {
+      await page.locator('[data-mobile-tab="more"]').click();
+      await page.locator('#mobileMenuSettings').click();
+    } else await page.locator('#unifiedSettingsBtn').click();
+    await page.locator('#us-tab-panels').click();
+    const climateSetting = page.locator('#usPanelToggles [data-panel="climate"]');
+    await expect(climateSetting).toHaveCount(0);
+
+    const failedRequests = healthRequests;
+    available = true;
+    await page.clock.fastForward(301_000);
+    await expect.poll(() => healthRequests).toBeGreaterThan(failedRequests);
+    await expect(climate).not.toHaveClass(/panel-source-unavailable/);
+    await expect(climateSetting).toHaveCount(1);
+    await page.locator('.unified-settings-close').click();
+    await expect(climate).toBeVisible();
+    await page.screenshot({ path: `docs/planetslam/evidence/planetslam-${width}-source-restored.png` });
+    await testInfo.attach('source-availability', { body: JSON.stringify({ width, healthRequests, controlledHealthResponses: true }), contentType: 'application/json' });
+  });
+}

@@ -18,6 +18,12 @@ Browser -> existing generated RPC clients -> existing Vite local handlers / self
 
 `branding/vite-plugin.ts` sets dashboard HTML identity and noindex, removes dashboard canonical claims and supplies the SVG icon. Small hooks in Vite, main, panel layout and banner select the brand and suppress the upstream Pro launch promotion. The brand HTML transform also disables its prepaint reservation to prevent a blank strip. New visits default to the existing 2D map. Explicit stored map choice wins, and upstream capability/failure fallbacks stay in place. Existing responsive panels, map controls, search, layer selection and feeds are reused. Other upstream marketing/reference pages and PWA identities are retained unless explicitly documented as customized: this is a dashboard foundation, not a complete public-site rebrand.
 
+## Module availability
+
+PlanetSlam hides locked upstream premium panels and their upgrade entry points. It also hides a module when its panel reports a request/configuration failure or an unavailable data badge, or when all of its health-mapped sources report errors, disabled status, or confirmed missing data. The same session-only state filters panel settings. It never infers server API-key configuration from browser secrets.
+
+Unknown source health, usable stale data, successful empty event feeds, and panels with a working fallback remain visible. Hidden modules retain their saved enabled state and remain eligible for scheduled probes; a successful render or recovered health restores them. The policy covers existing explicit panel and mapped-health signals, not a complete independent provider inventory. Modules without such evidence are left visible until they report a failure. Default World Monitor builds retain their upstream behavior.
+
 ## Untrusted data
 
 Provider payloads, headlines, embedded streams, coordinates and URLs are untrusted. Keep upstream schema validation, bounded fetches, cache isolation, sanitization, safe HTML boundaries and URL checks; do not interpolate feed content into branding markup. No new raw HTML rendering or proxy is added. RSS/Telegram availability is not truth verification. LLM output is advisory and must never be an execution instruction. Before public staging, review CSP destinations, streaming embeds and direct browser fetches; reject credentials in VITE_* except explicitly public configuration such as a publishable identifier.

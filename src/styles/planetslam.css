@@ -82,6 +82,7 @@ html[data-brand="planetslam"] .site-footer-name { color: var(--accent); }
 
 /* Paid upstream features are not offered by the PlanetSlam dashboard. */
 html[data-brand="planetslam"] .panel-is-locked,
+html[data-brand="planetslam"] .panel-source-unavailable,
 html[data-brand="planetslam"] .pro-preview,
 html[data-brand="planetslam"] .layer-toggle-locked,
 html[data-brand="planetslam"] .resilience-widget__locked,
