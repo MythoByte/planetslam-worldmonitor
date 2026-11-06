@@ -40,8 +40,8 @@ There is no separate upstream Space hostname.
 - Tonight's Sky & Observing: approximate Moon phase/illumination; explicit local
   observer coordinates; 24/48-hour selected/watched satellite passes, rise/peak/set,
   directions and ISS visibility candidates.
-- Personal watchlists: up to ten satellites, launches and mission events each;
-  existing camera favorites remain in Space Live.
+- Personal watchlists for satellites, launches and mission events, each with a
+  maximum list length of ten; camera favorites remain in Space Live.
 - Optional browser reminders: explicit permission and opt-in, watched events and
   visible pass opportunities, schedule changes and duplicate suppression. These
   work while this dashboard is open; no closed-page, email or push service exists.

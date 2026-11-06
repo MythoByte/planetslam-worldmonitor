@@ -28,7 +28,7 @@ Unknown source health, usable stale data, successful empty event feeds, and pane
 
 PlanetSlam maps World Monitor navigation links only to local pages present in the deployed HTML inventory. Dashboard edition links preserve their edition/query parameters. Missing documentation, status and MCP destinations are removed; hosted billing/auth destinations are not offered. The live audit found documentation URLs returning the dashboard with HTTP 200, which is not treated as a valid documentation page. Generated static HTML and dynamically hydrated links use the same policy. API/provider transports and authentication contracts are independent of navigation mapping.
 
-All anonymous PlanetSlam users can enable any number of available news sources, individually or with Select All. Reload reconciliation restores only disables owned by the former 80-source gate and preserves explicit user disables. This bypass applies only to source selection; it does not grant upstream paid API entitlements. Default World Monitor builds retain their original source cap and navigation.
+All anonymous PlanetSlam users can enable any number of available news sources, individually or with Select All. Reload reconciliation restores only disables owned by the former source-selection gate and preserves explicit user disables. This bypass applies only to source selection; it does not grant upstream paid API entitlements. Default World Monitor builds retain their original source cap and navigation.
 
 ## Untrusted data
 
