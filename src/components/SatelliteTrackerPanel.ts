@@ -1,5 +1,6 @@
 import { Panel } from './Panel';
 import { fetchSpaceDataset } from '@/services/space';
+import { getSpacePreferences, isSpaceWatched, toggleSpaceWatch, subscribeSpacePreferences, SPACE_WATCH_LIMIT } from '@/services/space-personalization';
 import { loadFromStorage, saveToStorage } from '@/utils';
 import { safeHtml, joinSafeHtml, safeUrlAttr, type SafeHtml } from '@/utils/sanitize';
 import { prepareSpaceOrbits, calculateSpaceOrbitSnapshot, publishSpaceOrbitSnapshot, emptySpaceOrbitSnapshot, spaceOrbitGroupStatus } from '@/services/space-orbits';
@@ -50,10 +51,13 @@ export class SatelliteTrackerPanel extends Panel {
   private timer: ReturnType<typeof setInterval>;
   private visible = true;
   private observer: IntersectionObserver | null = null;
+  private unsubscribePreferences: () => void;
+  private disposed = false;
 
   constructor() {
     super({ id: 'space-satellites', title: 'Satellite Tracker', className: 'space-panel', defaultRowSpan: 3 });
     this.render();
+    this.unsubscribePreferences = subscribeSpacePreferences(() => this.render());
     this.content.addEventListener('input', event => {
       const input = event.target as HTMLInputElement;
       if (!input.matches('[data-orbit-search]')) return;
@@ -67,8 +71,9 @@ export class SatelliteTrackerPanel extends Panel {
       this.persist(); this.update();
     }, { signal: this.signal });
     this.content.addEventListener('click', event => {
-      const target = (event.target as HTMLElement).closest<HTMLElement>('[data-orbit-id], [data-orbit-retry]');
+      const target = (event.target as HTMLElement).closest<HTMLElement>('[data-orbit-id], [data-orbit-retry], [data-orbit-watch]');
       if (target?.hasAttribute('data-orbit-retry')) void this.fetchData(true);
+      if (target?.dataset.orbitWatch) { toggleSpaceWatch('satellite', target.dataset.orbitWatch); return; }
       const id = target?.dataset.orbitId;
       if (!id || !this.latest?.data?.items.some(item => item.noradId === id)) return;
       this.prefs.selectedId = id; this.persist(); this.update();
@@ -139,9 +144,11 @@ export class SatelliteTrackerPanel extends Panel {
 
   private selectedDetails(item: OrbitObject | undefined): SafeHtml {
     const selected = this.snapshot.selected;
-    if (!selected) return safeHtml`<section data-orbit-selected><h3>${item?.name || 'Selected satellite'}</h3><p class="space-empty">${this.latest ? 'Calculated position unavailable. The selected object may be missing, its orbital elements may have expired, or propagation could not be completed.' : 'Loading the orbital catalog…'}</p><p>NORAD ${this.prefs.selectedId}${item ? safeHtml` · Element epoch ${time(item.epoch)} · Age ${age(item.epoch)}` : ''}</p></section>`;
+    const watched = isSpaceWatched('satellite', this.prefs.selectedId);
+    const watchButton = safeHtml`<button type="button" data-orbit-watch="${this.prefs.selectedId}" aria-pressed="${watched}" ${!watched && getSpacePreferences().satelliteWatchlist.length >= SPACE_WATCH_LIMIT ? safeHtml`disabled` : ''}>${watched ? '★ Watching satellite' : '☆ Watch satellite'}</button>`;
+    if (!selected) return safeHtml`<section data-orbit-selected>${watchButton}<h3>${item?.name || 'Selected satellite'}</h3><p class="space-empty">${this.latest ? 'Calculated position unavailable. The selected object may be missing, its orbital elements may have expired, or propagation could not be completed.' : 'Loading the orbital catalog…'}</p><p>NORAD ${this.prefs.selectedId}${item ? safeHtml` · Element epoch ${time(item.epoch)} · Age ${age(item.epoch)}` : ''}</p></section>`;
     const source = this.usableCatalog()?.groups.find(group => group.status !== 'unavailable' && item?.groups.includes(group.id));
-    return safeHtml`<section data-orbit-selected><div class="space-eyebrow">${selected.elementStatus === 'stale' ? 'Stale orbital elements · calculated estimate' : 'Calculated position · orbital estimate'}</div><h3>${selected.name}</h3><p>NORAD ${selected.noradId} · ${item?.objectId || 'International identifier unavailable'}</p><div class="space-orbit-metrics">${joinSafeHtml([
+    return safeHtml`<section data-orbit-selected>${watchButton}<div class="space-eyebrow">${selected.elementStatus === 'stale' ? 'Stale orbital elements · calculated estimate' : 'Calculated position · orbital estimate'}</div><h3>${selected.name}</h3><p>NORAD ${selected.noradId} · ${item?.objectId || 'International identifier unavailable'}</p><div class="space-orbit-metrics">${joinSafeHtml([
       ['Latitude', `${number(selected.latitude)}°`], ['Longitude', `${number(selected.longitude)}°`],
       ['Altitude', `${number(selected.altitudeKm, 1)} km`], ['Speed', `${number(selected.velocityKmS, 3)} km/s`],
       ['Period', `${number(selected.periodMinutes, 1)} min`], ['Inclination', `${number(selected.inclinationDeg)}°`],
@@ -180,6 +187,7 @@ export class SatelliteTrackerPanel extends Panel {
   }
 
   override destroy(): void {
-    clearInterval(this.timer); this.observer?.disconnect(); this.clearMap(); super.destroy();
+    if (this.disposed) return; this.disposed = true;
+    clearInterval(this.timer); this.observer?.disconnect(); this.unsubscribePreferences(); this.clearMap(); super.destroy();
   }
 }

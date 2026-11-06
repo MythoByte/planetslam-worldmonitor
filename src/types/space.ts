@@ -1,5 +1,5 @@
 /** Public, cached Space datasets. Provider credentials never enter browser payloads. */
-export type SpaceDataset = 'apod' | 'news' | 'launches' | 'weather' | 'aurora' | 'solar' | 'events' | 'neo' | 'orbits' | 'health';
+export type SpaceDataset = 'apod' | 'news' | 'launches' | 'weather' | 'aurora' | 'solar' | 'events' | 'neo' | 'orbits' | 'missions' | 'health';
 export interface SpaceEnvelope<T> {
   dataset: SpaceDataset;
   status: 'fresh' | 'stale' | 'unavailable';
@@ -23,6 +23,28 @@ export interface SolarData { items: { id: string; title: string; url: string; so
 export interface SpaceEventsData { items: { id: string; type: 'flare' | 'cme'; time: number; classType: string; note: string; url: string }[] }
 export interface NeoData { items: { id: string; name: string; approachAt: number; diameterMinKm: number; diameterMaxKm: number; missDistanceKm: number; lunarDistance: number; velocityKmS: number; potentiallyHazardous: boolean; url: string }[] }
 export interface SpaceHealthData { items: SpaceEnvelope<never>[] }
+
+export type MissionDatePrecision = 'second' | 'minute' | 'hour' | 'day' | 'month' | 'quarter' | 'year' | 'unknown';
+export interface SpaceMissionEvent {
+  id: string;
+  name: string;
+  kind: 'spacewalk' | 'docking' | 'landing' | 'briefing' | 'other';
+  type: string;
+  description: string;
+  date: number;
+  datePrecision: MissionDatePrecision;
+  datePrecisionDescription: string;
+  windowStart: number | null;
+  windowEnd: number | null;
+  durationSeconds: number | null;
+  location: string;
+  status: string;
+  webcastUrl: string;
+  url: string;
+  launchIds: string[];
+  updatedAt: number | null;
+}
+export interface MissionsData { items: SpaceMissionEvent[]; totalCount: number; truncated: boolean }
 
 export type OrbitGroupId = 'stations' | 'weather' | 'science' | 'communications' | 'starlink';
 /** CelesTrak GP JSON uses OMM keywords. Numeric units follow CCSDS OMM/SGP4. */

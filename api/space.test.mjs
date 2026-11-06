@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import handler from './space.js';
+import { normalizeMissions } from '../scripts/_space-missions.mjs';
 
 test('space route rejects unknown datasets and methods before touching Redis', async () => {
   const original = globalThis.fetch;
@@ -47,10 +48,29 @@ test('missing Redis does not imply empty sky or zero storms; health keeps provid
     assert.equal(payload.data, null);
     const health = await (await handler(new Request('https://planetslam.com/api/space?dataset=health'))).json();
     assert.equal(health.dataset, 'health');
-    assert.equal(health.data.items.length, 9);
+    assert.equal(health.data.items.length, 10);
     assert.ok(health.data.items.every(row => row.status === 'unavailable' && row.provider));
   } finally {
     if (previous.url !== undefined) process.env.UPSTASH_REDIS_REST_URL = previous.url;
     if (previous.token !== undefined) process.env.UPSTASH_REDIS_REST_TOKEN = previous.token;
+  }
+});
+
+test('malformed mission cache fields return unavailable before reaching the browser', async () => {
+  const previousFetch = globalThis.fetch;
+  const previousUrl = process.env.UPSTASH_REDIS_REST_URL, previousToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+  process.env.UPSTASH_REDIS_REST_URL = 'https://redis.example';
+  process.env.UPSTASH_REDIS_REST_TOKEN = 'synthetic-only';
+  const now = Date.now();
+  const data = normalizeMissions({ count: 1, results: [{ id: 123, name: 'Synthetic mission', date: new Date(now + 3600_000).toISOString(), type: { name: 'EVA' } }] }, now).data;
+  globalThis.fetch = async () => Response.json([{ result: JSON.stringify({ dataset: 'missions', fetchedAt: now, data: { ...data, items: [{ ...data.items[0], description: null }] } }) }]);
+  try {
+    const result = await (await handler(new Request('https://planetslam.com/api/space?dataset=missions'))).json();
+    assert.equal(result.status, 'unavailable');
+    assert.equal(result.data, null);
+  } finally {
+    globalThis.fetch = previousFetch;
+    if (previousUrl === undefined) delete process.env.UPSTASH_REDIS_REST_URL; else process.env.UPSTASH_REDIS_REST_URL = previousUrl;
+    if (previousToken === undefined) delete process.env.UPSTASH_REDIS_REST_TOKEN; else process.env.UPSTASH_REDIS_REST_TOKEN = previousToken;
   }
 });

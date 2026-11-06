@@ -67,7 +67,7 @@ export async function prepareSpaceOrbits(catalog: OrbitCatalogData, now = Date.n
       || Math.abs(item.epoch - epoch) > 1000 || String(item.omm.NORAD_CAT_ID) !== item.noradId
       || !Array.isArray(item.groups) || !item.groups.some(group => GROUPS.has(group))) continue;
     try {
-      const sourceGroups = sources.filter(source => item.groups.includes(source.id)).map(source => ({ id: source.id, expiresAt: source.fetchedAt! + SPACE_ORBIT_SOURCE_MAX_AGE_MS }));
+      const sourceGroups = sources.filter(source => item.groups.includes(source.id)).map(source => ({ id: source.id, expiresAt: source.fetchedAt! + SPACE_ORBIT_SOURCE_MAX_AGE_MS, fetchedAt: source.fetchedAt!, refreshFailed: source.refreshFailed === true }));
       if (!sourceGroups.length) continue;
       const satrec = lib.json2satrec({ ...item.omm });
       if (satrec.error !== 0 || !Number.isFinite(satrec.no) || satrec.no <= 0) continue;

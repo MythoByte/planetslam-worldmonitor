@@ -72,8 +72,10 @@ test('Space preserves stale observations and shows outages, then recovers', asyn
   await expect(apod).toContainText('NASA provider unavailable.');
   await expect(apod).toBeVisible();
   await expect(page.locator('[data-panel="space-weather"]')).toContainText('Stale · last known data');
-  await page.locator('[data-panel="space-spacex"]').scrollIntoViewIfNeeded();
-  await expect(page.locator('[data-panel="space-spacex"]')).toContainText('SpaceX synthetic acceptance headline');
+  await expect(async () => {
+    await page.locator('[data-panel="space-spacex"]').scrollIntoViewIfNeeded();
+    await expect(page.locator('[data-panel="space-spacex"]')).toContainText('SpaceX synthetic acceptance headline');
+  }).toPass({ timeout: 15000 });
   await installSpaceFixtures(page);
   await apod.scrollIntoViewIfNeeded();
   await apod.getByRole('button', { name: 'Retry', exact: true }).click();

@@ -4,9 +4,9 @@ Space is a PlanetSlam edition at `/dashboard?variant=space`. It uses the existin
 edition switcher, panel layout, settings persistence, theme, and map renderers.
 There is no separate upstream Space hostname.
 
-## Delivered scope: phases 1–4
+## Delivered scope: phases 1–5
 
-- Foundation: eleven movable/resizable panels, shared cached data, attribution,
+- Foundation: thirteen movable/resizable panels, shared cached data, attribution,
   observation/fetch times, explicit fresh/stale/unavailable states, source status.
 - Space Live: on-demand NASA ISS and independent NASASpaceflight Starbase/Space
   Coast players, source links, saved favorites, offscreen pause and disconnect.
@@ -32,8 +32,20 @@ There is no separate upstream Space hostname.
   calculated position and ground track, orbit details, source and element age.
   The Space tracker consumes CelesTrak GP JSON/OMM with SGP4; it does not depend
   on five-digit legacy TLE identifiers. The existing World intelligence satellite
-  pipeline remains separate. Pass predictions, missions, personalized observing,
-  notifications, and AI daily briefs belong to later phases.
+  pipeline remains separate.
+- Mission Events: dockings, spacewalks, landings, briefings and other events from
+  Launch Library 2, preserving the provider's date precision and estimate status.
+  Day/month/quarter/year estimates stay visible until their UTC period ends;
+  coarse dates never become an invented precise launch window.
+- Tonight's Sky & Observing: approximate Moon phase/illumination; explicit local
+  observer coordinates; 24/48-hour selected/watched satellite passes, rise/peak/set,
+  directions and ISS visibility candidates.
+- Personal watchlists: up to ten satellites, launches and mission events each;
+  existing camera favorites remain in Space Live.
+- Optional browser reminders: explicit permission and opt-in, watched events and
+  visible pass opportunities, schedule changes and duplicate suppression. These
+  work while this dashboard is open; no closed-page, email or push service exists.
+- AI daily briefs and final cross-feature release acceptance remain phase 6.
 
 ## Data path and failure behavior
 
@@ -62,11 +74,13 @@ of fetch age. Missing observations never become zero severity or an empty sky.
 | DONKI events | 1 hour | 24 hours |
 | NEO approaches | 6 hours | 24 hours |
 | Orbital GP catalog | 6 hours per group | 48 hours per source snapshot |
+| Mission events | 15 minutes | 6 hours |
 
 An atomic shared Redis admission token limits attempts across worker replicas and
 restarts. Launch Library uses one upcoming-launch request per 15 minutes without
-pagination fanout, leaving room within its documented 15/hour unauthenticated
-allowance. Request and lock timeouts bound failure impact. No raw provider errors
+pagination fanout, and one upcoming-missions request on the same cadence. Both share a durable
+12-request/hour limit (normally eight requests/hour combined), within the
+provider's documented 15/hour unauthenticated allowance. Request and lock timeouts bound failure impact. No raw provider errors
 are logged because NASA request URLs contain a credential.
 
 ## Satellite tracking (phase 4)
@@ -89,6 +103,47 @@ Dateline crossings are split rather than drawing a line across the whole world.
 No NASA key is needed for the satellite catalog. A worker rebuild and restart is
 required when deploying phase 4; an app-only update cannot populate orbital data.
 Provider rejection must remain visible rather than falling back to demo orbits.
+
+## Observing and reminders (phase 5)
+
+Observer latitude/longitude can be entered manually. Browser geolocation is called
+only after clicking Use my location. Coordinates, horizon and watchlists stay in
+local browser storage; coordinates are not included in PlanetSlam API requests.
+Clearing/changing the observer aborts previous calculations and invalidates its
+reminder candidates. Saved location is not silently synchronized to a server.
+
+The engine predicts at most ten distinct selected/watched satellites over 24 or
+48 hours, yields between bounded calculation batches, and supports cancellation.
+Rise/set use the geometric horizon; passes must peak at least ten degrees above
+it. A possible visual window additionally requires a satellite at least ten
+degrees high, fully sunlit, with the observer's Sun at or below minus six degrees.
+Finite Earth/Sun disks conservatively exclude penumbra. Clouds, terrain, buildings,
+refraction, brightness, manoeuvres and precise ephemeris corrections are not
+modelled. These are viewing candidates rather than visibility guarantees.
+
+Source/element expiry clips predictions; ongoing and unresolved/clipped pass ends
+are explicit. Source confidence is assessed per object, so unrelated older
+spacecraft in a group do not downgrade a fresh ISS calculation. Moon phase uses
+an approximate geocentric lunar orbit/perturbation model; cycle age is a phase
+angle estimate rather than the exact elapsed time since a new Moon. The supported
+astronomical model range is 1900–2100.
+
+Reminders default off and request notification permission only from the Enable
+button. Denied/unsupported browsers retain the rest of the dashboard. Delivery is
+page-open and best effort; browsers may delay background-tab timers. There is no
+service-worker push subscription or email integration. Initial reminders use a
+five-minute window for watched Go-for-launch schedules, second/minute-precision
+mission events and fresh visible pass opportunities. Coarse estimates can produce
+informational schedule-change notices, never precise five-minute reminders.
+
+Every delivery rechecks watches, permission, current source data and observer
+identity. Pass predictions can remain usable in an open background tab while the
+underlying element epoch still matches the current catalog; new elements suppress
+old predictions until recalculated. Stale/expired sources and changed/cleared
+locations suppress reminders. A local bounded delivery ledger, pass-time jitter
+coalescing, native tags and Web Locks where available reduce duplicate delivery
+across refreshes and cooperating tabs. Native tags do not include raw observer
+coordinates. Closing the final observing panel stops its timer and suppresses in-flight deliveries.
 
 ## Operator setup
 
@@ -155,3 +210,7 @@ verification skill supports isolated manual drives and screenshots.
 
 - [CelesTrak GP JSON and OMM formats](https://celestrak.org/NORAD/documentation/gp-data-formats.php)
 - [Satellite.js propagation documentation](https://github.com/shashwatak/satellite-js)
+
+- [USNO approximate solar coordinates](https://aa.usno.navy.mil/faq/sun_approx)
+- [USNO altitude and azimuth](https://aa.usno.navy.mil/faq/alt_az)
+- [Author description of approximate lunar orbital calculations](https://stjarnhimlen.se/comp/ppcomp.html)

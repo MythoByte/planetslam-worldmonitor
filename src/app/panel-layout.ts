@@ -275,6 +275,8 @@ export function variantSwitcherHref(
 export const DEFERRED_PANEL_NATURAL_FOOTPRINTS: Readonly<Record<string, DeferredPanelShellFootprint>> = {
   'space-cameras': { rowSpan: 3 },
   'space-satellites': { rowSpan: 3 },
+  'space-observing': { rowSpan: 3 },
+  'space-missions': { rowSpan: 2 },
   cii: { rowSpan: 2 },
   'chat-analyst': { rowSpan: 2 },
   'china-corridors': { rowSpan: 2, className: 'panel-wide' },
@@ -2803,6 +2805,8 @@ export class PanelLayoutManager implements AppModule {
     }
     this.lazyDefaultPanel('space-cameras', () => import('@/components/SpaceCamerasPanel'), 'SpaceCamerasPanel');
     this.lazyDefaultPanel('space-satellites', () => import('@/components/SatelliteTrackerPanel'), 'SatelliteTrackerPanel');
+    this.lazyDefaultPanel('space-observing', () => import('@/components/SpaceObservingPanel'), 'SpaceObservingPanel');
+    this.lazyDefaultPanel('space-missions', () => import('@/components/SpaceMissionsPanel'), 'SpaceMissionsPanel');
 
     this.lazyDefaultPanel('commodities', () => import('@/components/MarketPanel'), 'CommoditiesPanel');
     this.lazyDefaultPanel('energy-complex', () => import('@/components/EnergyComplexPanel'), 'EnergyComplexPanel');

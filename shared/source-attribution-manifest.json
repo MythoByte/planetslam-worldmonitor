@@ -6310,6 +6310,9 @@
       "status": "terms-review",
       "references": [
         {
+          "path": "scripts/_space-missions.mjs"
+        },
+        {
           "path": "scripts/_space-providers.mjs"
         }
       ]
@@ -7772,6 +7775,12 @@
       "attribution": "Excluded from the external-provider count: first-party web origin.",
       "status": "excluded",
       "references": [
+        {
+          "path": "scripts/_space-missions.mjs"
+        },
+        {
+          "path": "scripts/_space-providers.mjs"
+        },
         {
           "path": "src/embed/embed-url.ts"
         }

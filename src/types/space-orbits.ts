@@ -1,7 +1,7 @@
 import type { SatRec } from 'satellite.js';
 import type { OrbitGroupId, OrbitObject } from './space';
 
-export interface PreparedSpaceOrbit { item: OrbitObject; epoch: number; satrec: SatRec; sourceGroups: { id: OrbitGroupId; expiresAt: number }[] }
+export interface PreparedSpaceOrbit { item: OrbitObject; epoch: number; satrec: SatRec; sourceGroups: { id: OrbitGroupId; expiresAt: number; fetchedAt?: number; refreshFailed?: boolean }[] }
 export interface SpaceOrbitPosition {
   noradId: string;
   name: string;

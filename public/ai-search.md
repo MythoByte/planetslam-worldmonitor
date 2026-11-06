@@ -61,7 +61,7 @@ Coverage reconciled: 2026-11-06. Every figure below is generated from this repos
 - 704 feed definitions in the shared feed registry — distinct from the 468 feed-publishing hosts above, since one host can back several feed definitions
 - 40 named live data streams whose staleness is tracked and surfaced individually — a different axis from the 10 signal domains above, which group the source catalog by subject
 - 60 map layer types in the shared registry, 59 of them reachable in the full variant — the homepage publishes the full-variant figure; the remaining 1 is sunset or build-flag gated
-- 118 concrete panel implementations across 7 product variants
+- 120 concrete panel implementations across 7 product variants
 - 100 MCP tools; use `tools/list` for the live inventory
 - 28 supported interface languages
 - 31 countries scored by the Country Instability Index (CII v14)

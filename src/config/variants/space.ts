@@ -5,8 +5,10 @@ import type { VariantConfig } from './base';
 export const DEFAULT_PANELS: Record<string, PanelConfig> = {
   map: { name: 'Space & Orbit Map', enabled: true, priority: 1 },
   'space-satellites': { name: 'Satellite Tracker', enabled: true, priority: 1 },
+  'space-observing': { name: 'Tonight’s Sky & Observing', enabled: true, priority: 1 },
   'space-cameras': { name: 'Space Live', enabled: true, priority: 1 },
   'space-launches': { name: 'Launch Countdown', enabled: true, priority: 1 },
+  'space-missions': { name: 'Mission Events', enabled: true, priority: 1 },
   'space-weather': { name: 'Space Weather', enabled: true, priority: 1 },
   'space-apod': { name: 'Astronomy Picture of the Day', enabled: true, priority: 1 },
   'space-news': { name: 'Space News', enabled: true, priority: 1 },

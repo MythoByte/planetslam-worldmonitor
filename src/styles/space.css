@@ -73,5 +73,20 @@
 .space-orbit-result span { min-width: 0; overflow-wrap: anywhere; }
 .space-orbit-result[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
 .space-orbit-tracker [data-orbit-selected] { margin: 12px 0; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.space-moon { display: grid; gap: 5px; padding: 12px; border: 1px solid var(--border); border-radius: 5px; background: var(--bg); }
+.space-moon strong { font-size: 18px; font-weight: 500; }
+.space-moon small { color: var(--text-dim); }
+.space-observer-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: end; margin-bottom: 10px; }
+.space-observer-form label { display: grid; gap: 5px; min-width: 0; font-size: 11px; color: var(--text-dim); }
+.space-observer-form input { width: 100%; min-width: 0; box-sizing: border-box; border: 1px solid var(--border); border-radius: 4px; padding: 6px 9px; background: var(--surface); color: var(--text); font: inherit; }
+.space-observer-form input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.space-observer-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.space-pass-source { color: var(--text-dim); margin: 5px 0; }
+.space-watch-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; overflow-wrap: anywhere; }
+.space-watch-item span { min-width: 0; }
+.space-notifications { margin-top: 15px; padding-top: 12px; border-top: 1px solid var(--border); }
+.space-body [data-launch-watch], .space-body [data-mission-watch], .space-body [data-orbit-watch] { margin: 8px 0; }
+.space-body [data-launch-watch][aria-pressed="true"], .space-body [data-mission-watch][aria-pressed="true"], .space-body [data-orbit-watch][aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+@media (max-width: 600px) { .space-observer-form { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .space-observer-form button { grid-column: 1 / -1; } }
 @media (max-width: 600px) { .space-orbit-controls { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .space-body { padding: 10px; } .space-metric strong { font-size: 20px; } .space-solar-grid { grid-template-columns: 1fr; } }
