@@ -1,3 +1,5 @@
+import { IS_PLANETSLAM } from '@/config/brand';
+import { resolvePlanetSlamLink } from '@/config/planetslam-links';
 /**
  * Runtime-correct "send the user to this URL, outside the app".
  *
@@ -215,7 +217,12 @@ export async function openExternalUrl(
   preopened?: Window | null,
   options?: OpenExternalUrlOptions,
 ): Promise<ExternalNavOutcome> {
-  const targetUrl = typeof url === 'string' ? url : url.toString();
+  const originalUrl = typeof url === 'string' ? url : url.toString();
+  const targetUrl = IS_PLANETSLAM ? resolvePlanetSlamLink(originalUrl) : originalUrl;
+  if (targetUrl === null) {
+    closeWindowQuietly(preopened);
+    return 'failed';
+  }
   if (!isOpenableExternalUrl(targetUrl)) {
     reportOpenFailure(targetUrl, 'rejected-scheme');
     closeWindowQuietly(preopened);

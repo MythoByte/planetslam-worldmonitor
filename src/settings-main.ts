@@ -1,3 +1,4 @@
+import { installPlanetSlamLinks } from '@/services/planetslam-links';
 import './styles/main.css';
 import './styles/settings-window.css';
 import { SettingsManager } from '@/services/settings-manager';
@@ -970,3 +971,5 @@ safeStorageSet('wm-settings-open', '1');
 window.addEventListener('beforeunload', () => safeStorageRemove('wm-settings-open'));
 
 void initSettingsWindow();
+
+installPlanetSlamLinks(document.body);

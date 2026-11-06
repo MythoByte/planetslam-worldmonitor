@@ -24,6 +24,12 @@ PlanetSlam hides locked upstream premium panels and their upgrade entry points. 
 
 Unknown source health, usable stale data, successful empty event feeds, and panels with a working fallback remain visible. Hidden modules retain their saved enabled state and remain eligible for scheduled probes; a successful render or recovered health restores them. The policy covers existing explicit panel and mapped-health signals, not a complete independent provider inventory. Modules without such evidence are left visible until they report a failure. Default World Monitor builds retain their upstream behavior.
 
+## Local navigation and source selection
+
+PlanetSlam maps World Monitor navigation links only to local pages present in the deployed HTML inventory. Dashboard edition links preserve their edition/query parameters. Missing documentation, status and MCP destinations are removed; hosted billing/auth destinations are not offered. The live audit found documentation URLs returning the dashboard with HTTP 200, which is not treated as a valid documentation page. Generated static HTML and dynamically hydrated links use the same policy. API/provider transports and authentication contracts are independent of navigation mapping.
+
+All anonymous PlanetSlam users can enable any number of available news sources, individually or with Select All. Reload reconciliation restores only disables owned by the former 80-source gate and preserves explicit user disables. This bypass applies only to source selection; it does not grant upstream paid API entitlements. Default World Monitor builds retain their original source cap and navigation.
+
 ## Untrusted data
 
 Provider payloads, headlines, embedded streams, coordinates and URLs are untrusted. Keep upstream schema validation, bounded fetches, cache isolation, sanitization, safe HTML boundaries and URL checks; do not interpolate feed content into branding markup. No new raw HTML rendering or proxy is added. RSS/Telegram availability is not truth verification. LLM output is advisory and must never be an execution instruction. Before public staging, review CSP destinations, streaming embeds and direct browser fetches; reject credentials in VITE_* except explicitly public configuration such as a publishable identifier.

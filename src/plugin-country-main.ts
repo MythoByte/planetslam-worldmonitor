@@ -1,3 +1,4 @@
+import { installPlanetSlamLinks } from '@/services/planetslam-links';
 import './bootstrap/zod-csp';
 import { loadHostCountryMilitaryActivity, type CountryMilitarySignalCounts } from '@/services/country-military-activity';
 import { loadQualifiedCountrySignals } from '@/services/country-signal-projection';
@@ -883,3 +884,5 @@ if (document.documentElement.dataset.wmPluginManagedBoot === 'true') {
 } else {
   mount();
 }
+
+installPlanetSlamLinks(document.body);

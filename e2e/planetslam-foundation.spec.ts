@@ -153,3 +153,56 @@ for (const width of [1440, 390]) {
     await testInfo.attach('source-availability', { body: JSON.stringify({ width, healthRequests, controlledHealthResponses: true }), contentType: 'application/json' });
   });
 }
+
+for (const width of [1440, 390]) {
+  test(`PlanetSlam local links and unlimited sources at ${width}px`, async ({ page }) => {
+    test.skip(!branded, 'PlanetSlam-only policy');
+    await page.setViewportSize({ width, height: 1000 });
+    await seedAnonymousDashboard(page, 'full', {
+      initializeOnce: { sessionKey: 'ps-unlimited-sources', clearStorage: true, localStorage: {
+        'worldmonitor-theme': 'dark',
+        'worldmonitor-disabled-feeds': '[]',
+        'worldmonitor-free-tier-source-ownership': '[]',
+        'worldmonitor-panels': JSON.stringify({ politics: { name: 'World News', enabled: true, priority: 0 } }),
+      } },
+    });
+    await page.route('**/api/**', route => route.fulfill({ json: {} }));
+    await page.route('**/api/bootstrap*', route => route.fulfill({ json: { missing: [], data: {} } }));
+    const openSources = async () => {
+      if (width <= 768) {
+        await page.locator('[data-mobile-tab="more"]').click();
+        await page.locator('#mobileMenuSettings').click();
+      } else await page.locator('#unifiedSettingsBtn').click();
+      await page.locator('#us-tab-sources').click();
+    };
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready', 'true', { timeout: 60_000 });
+    await openSources();
+    await expect(page.locator('a[href*="worldmonitor.app"]')).toHaveCount(0);
+    // Missing docs paths are dashboard fallbacks, not valid local documents.
+    await expect(page.locator('.legal-links-item')).toHaveCount(0);
+    const sources = page.locator('#usSourceToggles .source-toggle-item');
+    const total = await sources.count();
+    expect(total).toBeGreaterThan(80);
+    await page.locator('.sources-select-none').click();
+    await expect(page.locator('#usSourceToggles .source-toggle-item.active')).toHaveCount(0);
+    await page.locator('.sources-select-all').click();
+    await expect(page.locator('#usSourceToggles .source-toggle-item.active')).toHaveCount(total);
+    const firstName = await sources.first().getAttribute('data-source');
+    // Individual toggles also cross 80, and a deliberate disable survives reload.
+    await sources.first().click();
+    await sources.first().click();
+    await expect(sources.first()).toHaveAttribute('aria-pressed', 'true');
+    await sources.first().click();
+    await page.screenshot({ path: `docs/planetslam/evidence/planetslam-${width}-unlimited-sources.png` });
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready', 'true', { timeout: 60_000 });
+    await openSources();
+    await expect(sources.first()).toHaveAttribute('data-source', firstName!);
+    await expect(sources.first()).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.locator('#usSourceToggles .source-toggle-item.active')).toHaveCount(total - 1);
+    await expect(page.locator('a[href*="worldmonitor.app"]')).toHaveCount(0);
+    const disabled = await page.evaluate(() => JSON.parse(localStorage.getItem('worldmonitor-disabled-feeds') || '[]'));
+    expect(disabled).toEqual([firstName]);
+  });
+}

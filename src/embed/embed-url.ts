@@ -1,3 +1,4 @@
+import { IS_PLANETSLAM } from '@/config/brand';
 import type { MapLayers } from '@/types';
 import {
   DEFAULT_EMBED_PANEL_ID,
@@ -246,7 +247,7 @@ export function buildEmbedMapUrl(
     variant?: EmbedVariant;
   } = {},
 ): string {
-  const url = new URL(baseUrl, 'https://www.worldmonitor.app');
+  const url = new URL(baseUrl, IS_PLANETSLAM ? 'https://planetslam.com' : 'https://www.worldmonitor.app');
   const layerIds = state.layerIds ?? embedLayerIdsFromMapLayers(state.layers ?? mapLayersFromEmbedIds(DEFAULT_EMBED_LAYER_IDS));
   const center = normalizeCenter(state.center ?? DEFAULT_EMBED_CENTER);
   const zoom = Number.isFinite(state.zoom) ? clamp(state.zoom as number, 1, 10) : DEFAULT_EMBED_ZOOM;
@@ -278,7 +279,7 @@ export function buildEmbedPanelUrl(
   if (panel === 'map') {
     return buildEmbedMapUrl(baseUrl, state);
   }
-  const url = new URL(baseUrl, 'https://www.worldmonitor.app');
+  const url = new URL(baseUrl, IS_PLANETSLAM ? 'https://planetslam.com' : 'https://www.worldmonitor.app');
   const theme = VALID_THEMES.has(state.theme as EmbedTheme) ? state.theme as EmbedTheme : DEFAULT_EMBED_THEME;
   const variant = VALID_VARIANTS.has(state.variant as EmbedVariant) ? state.variant as EmbedVariant : DEFAULT_EMBED_VARIANT;
   url.search = '';
@@ -356,7 +357,7 @@ export function buildEmbedIframeSnippet(url: string, options: { width?: string; 
 }
 
 export function buildWorldMonitorAttributionUrl(baseUrl: string, referrerHost: string | null): string {
-  const url = new URL(baseUrl, 'https://www.worldmonitor.app');
+  const url = new URL(baseUrl, IS_PLANETSLAM ? 'https://planetslam.com' : 'https://www.worldmonitor.app');
   url.searchParams.set('utm_source', 'embed');
   url.searchParams.set('utm_medium', 'iframe');
   url.searchParams.set('utm_campaign', referrerHost ? referrerHost.slice(0, 80) : 'direct');
