@@ -147,7 +147,7 @@ test('seeder cooldown and held lock prevent provider calls', async () => {
 
 test('failed provider preserves last-good cache and its clock; attempt is budgeted', async () => {
   const commands = [], writes = [];
-  const results = await seedSpace({ names: ['launches'], now, command: async command => { commands.push(command); return { result: 'OK' }; },
+  const results = await seedSpace({ names: ['launches'], now, command: async command => { commands.push(command); return { result: command[0] === 'EVAL' ? 1 : 'OK' }; },
     lock: async () => true, unlock: async () => {}, fetchDataset: async () => { throw new Error('upstream outage'); }, publish: async payload => writes.push(payload) });
   assert.equal(results[0].status, 'failed');
   assert.equal(writes.length, 0);
@@ -157,7 +157,7 @@ test('failed provider preserves last-good cache and its clock; attempt is budget
 
 test('successful seed atomically publishes bounded cache and companion metadata', async () => {
   const writes = [];
-  const results = await seedSpace({ names: ['launches'], command: async () => ({ result: 'OK' }), lock: async () => true, unlock: async () => {},
+  const results = await seedSpace({ names: ['launches'], command: async command => ({ result: command[0] === 'EVAL' ? 1 : 'OK' }), lock: async () => true, unlock: async () => {},
     fetchDataset: async () => ({ data: { items: [] }, observedAt: null }), publish: async payload => writes.push(payload) });
   assert.equal(results[0].status, 'published');
   assert.equal(writes[0].key, spaceKey('launches'));

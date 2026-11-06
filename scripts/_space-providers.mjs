@@ -1,4 +1,5 @@
 import { parseRssItems } from './seed-climate-news.mjs';
+import { fetchMissions } from './_space-missions.mjs';
 
 const UA = 'PlanetSlam-Space/1.0 (+https://planetslam.com)';
 const DAY = 86_400_000;
@@ -148,6 +149,7 @@ export async function fetchSpaceDataset(dataset, { fetchFn = fetch, now = Date.n
     return json(`https://api.nasa.gov/${path}?${new URLSearchParams({ ...params, api_key: nasaKey })}`);
   };
   switch (dataset) {
+    case 'missions': return fetchMissions({ now, fetchFn, launchKey });
     case 'apod': return normalizeApod(await nasa('planetary/apod', { start_date: date(now - 6 * DAY), end_date: date(now), thumbs: 'true' }));
     case 'news': {
       const rss = [];

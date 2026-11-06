@@ -1,5 +1,6 @@
 import { Panel } from './Panel';
 import { fetchSpaceDataset } from '@/services/space';
+import { getSpacePreferences, isSpaceWatched, toggleSpaceWatch, subscribeSpacePreferences, SPACE_WATCH_LIMIT } from '@/services/space-personalization';
 import { safeHtml, joinSafeHtml, safeUrlAttr, type SafeHtml } from '@/utils/sanitize';
 import type { SpaceDataset, SpaceEnvelope, ApodData, SpaceNewsData, LaunchesData, WeatherData, SolarData, SpaceEventsData, NeoData, SpaceLaunch, SpaceNewsItem, SpaceHealthData } from '@/types/space';
 import '@/styles/space.css';
@@ -27,7 +28,7 @@ function newsCards(items: SpaceNewsItem[]): SafeHtml {
   return joinSafeHtml(items.slice(0, 30).map(item => safeHtml`<article class="space-card"><div class="space-eyebrow">${item.publisher} · ${spaceTime(item.publishedAt)}</div><a class="space-headline" href="${safeUrlAttr(item.url)}" target="_blank" rel="noopener noreferrer">${item.title}</a><p>${item.summary?.slice(0, 260)}</p></article>`));
 }
 function launchCards(items: SpaceLaunch[]): SafeHtml {
-  return joinSafeHtml(items.slice(0, 16).map((item, index) => safeHtml`<article class="space-card ${index === 0 ? 'space-next-launch' : ''}"><div class="space-eyebrow">${item.provider} · ${item.status}</div><a class="space-headline" href="${safeUrlAttr(item.url)}" target="_blank" rel="noopener noreferrer">${item.name}</a><div class="space-countdown" data-launch-net="${item.net || ''}">${launchCountdown(item.net)}</div><time>${spaceTime(item.net)}</time><p>${item.rocket} · ${item.pad}</p>${item.windowStart || item.windowEnd ? safeHtml`<small>Window ${spaceTime(item.windowStart)} — ${spaceTime(item.windowEnd)}</small>` : ''}<p>${item.mission?.slice(0, 240)}</p>${item.webcastUrl ? safeHtml`<a class="space-action" href="${safeUrlAttr(item.webcastUrl)}" target="_blank" rel="noopener noreferrer">Watch at source ↗</a>` : ''}</article>`));
+  return joinSafeHtml(items.slice(0, 16).map((item, index) => safeHtml`<article class="space-card ${index === 0 ? 'space-next-launch' : ''}"><div class="space-eyebrow">${item.provider} · ${item.status}</div><a class="space-headline" href="${safeUrlAttr(item.url)}" target="_blank" rel="noopener noreferrer">${item.name}</a><div class="space-countdown" data-launch-net="${item.net || ''}">${launchCountdown(item.net)}</div><time>${spaceTime(item.net)}</time><button type="button" data-launch-watch="${item.id}" aria-pressed="${isSpaceWatched('launch', item.id)}" ${!isSpaceWatched('launch', item.id) && getSpacePreferences().launchWatchlist.length >= SPACE_WATCH_LIMIT ? safeHtml`disabled` : ''}>${isSpaceWatched('launch', item.id) ? '★ Watching launch' : '☆ Watch launch'}</button><p>${item.rocket} · ${item.pad}</p>${item.windowStart || item.windowEnd ? safeHtml`<small>Window ${spaceTime(item.windowStart)} — ${spaceTime(item.windowEnd)}</small>` : ''}<p>${item.mission?.slice(0, 240)}</p>${item.webcastUrl ? safeHtml`<a class="space-action" href="${safeUrlAttr(item.webcastUrl)}" target="_blank" rel="noopener noreferrer">Watch at source ↗</a>` : ''}</article>`));
 }
 function trend(values: number[], label: string): SafeHtml {
   const valid = values.filter(Number.isFinite);
@@ -47,11 +48,14 @@ export class SpaceDataPanel extends Panel {
   private newsFilter = 'all';
   private loading = false;
   private stopped = false;
+  private unsubscribePreferences: () => void;
 
   constructor(id: string, title: string, private dataset: SpaceDataset) {
     super({ id, title, className: 'space-panel', infoTooltip: 'Shared provider data with source attribution and observation time. Times are UTC. Updates can be delayed.' });
+    this.unsubscribePreferences = dataset === 'launches' ? subscribeSpacePreferences(() => this.renderLatest()) : () => {};
     this.content.addEventListener('click', event => {
-      const target = (event.target as HTMLElement).closest<HTMLElement>('[data-space-retry], [data-apod-date]');
+      const target = (event.target as HTMLElement).closest<HTMLElement>('[data-space-retry], [data-apod-date], [data-launch-watch]');
+      if (target?.dataset.launchWatch) { toggleSpaceWatch('launch', target.dataset.launchWatch); return; }
       if (target?.hasAttribute('data-space-retry')) void this.fetchData(true);
       if (target?.dataset.apodDate) { this.apodDate = target.dataset.apodDate; this.renderLatest(); }
     }, { signal: this.signal });
@@ -155,7 +159,7 @@ export class SpaceDataPanel extends Panel {
   }
 
   override destroy(): void {
-    this.stopped = true;
+    this.stopped = true; this.unsubscribePreferences();
     if (this.refreshTimer) clearInterval(this.refreshTimer);
     if (this.countdownTimer) clearInterval(this.countdownTimer);
     super.destroy();

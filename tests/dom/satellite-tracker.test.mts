@@ -6,6 +6,7 @@ import type { SpaceOrbitSnapshot } from '@/types/space-orbits';
 const source = vi.hoisted(() => ({ fetch: vi.fn() }));
 vi.mock('@/services/space', () => ({ fetchSpaceDataset: source.fetch }));
 import { SatelliteTrackerPanel, normalizeSatelliteTrackerPrefs } from '@/components/SatelliteTrackerPanel';
+import { getSpacePreferences } from '@/services/space-personalization';
 
 const panels: SatelliteTrackerPanel[] = [];
 const published: SpaceOrbitSnapshot[] = [];
@@ -59,6 +60,16 @@ afterEach(() => {
 });
 
 describe('Satellite tracker', () => {
+  it('saves and removes a satellite watch without changing the selected object', async () => {
+    const panel = await mount();
+    panel.getElement().querySelector<HTMLButtonElement>('[data-orbit-watch="25544"]')!.click();
+    expect(getSpacePreferences().satelliteWatchlist).toEqual(['25544']);
+    expect(panel.getElement().querySelector('[data-orbit-watch="25544"]')?.getAttribute('aria-pressed')).toBe('true');
+    expect(published.at(-1)?.selected?.noradId).toBe('25544');
+    panel.getElement().querySelector<HTMLButtonElement>('[data-orbit-watch="25544"]')!.click();
+    expect(getSpacePreferences().satelliteWatchlist).toEqual([]);
+  });
+
   it('rejects invalid saved preferences and selects ISS by default', async () => {
     for (const raw of [null, [], 'starlink', { group: 'unknown', selectedId: '<script>' }, { group: 3, selectedId: -1 }]) {
       expect(normalizeSatelliteTrackerPrefs(raw)).toEqual({ group: 'stations', selectedId: '25544' });

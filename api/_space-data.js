@@ -1,5 +1,6 @@
 // Shared wire contract. Seeders import this same-directory-safe edge module.
 import { projectOrbitCatalog, ORBIT_INTERVAL_MS, ORBIT_FETCH_MAX_AGE_MS } from './_space-orbits.js';
+import { validMissionData, upcomingMissionItems } from './_space-missions.js';
 const MINUTE = 60_000;
 export const SPACE_DATASETS = Object.freeze({
   apod: { provider: 'NASA APOD', sourceUrl: 'https://apod.nasa.gov/', intervalMs: 6 * 60 * MINUTE, maxAgeMs: 48 * 60 * MINUTE },
@@ -11,6 +12,7 @@ export const SPACE_DATASETS = Object.freeze({
   events: { provider: 'NASA DONKI', sourceUrl: 'https://kauai.ccmc.gsfc.nasa.gov/DONKI/', intervalMs: 60 * MINUTE, maxAgeMs: 24 * 60 * MINUTE },
   neo: { provider: 'NASA NeoWs', sourceUrl: 'https://cneos.jpl.nasa.gov/', intervalMs: 6 * 60 * MINUTE, maxAgeMs: 24 * 60 * MINUTE },
   orbits: { provider: 'CelesTrak GP / OMM', sourceUrl: 'https://celestrak.org/NORAD/elements/', intervalMs: ORBIT_INTERVAL_MS, maxAgeMs: ORBIT_FETCH_MAX_AGE_MS },
+  missions: { provider: 'The Space Devs Launch Library 2', sourceUrl: 'https://thespacedevs.com/llapi', intervalMs: 15 * MINUTE, maxAgeMs: 6 * 60 * MINUTE },
 });
 
 export const spaceKey = dataset => `space:${dataset}:v1`;
@@ -18,6 +20,7 @@ export const spaceKey = dataset => `space:${dataset}:v1`;
 export function validSpaceData(dataset, data) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
   if (dataset === 'orbits') return Array.isArray(data.items) && Array.isArray(data.groups);
+  if (dataset === 'missions') return validMissionData(data);
   if (dataset === 'weather') return data.scales && ['G', 'R', 'S'].every(k => Number.isFinite(data.scales[k]) && data.scales[k] >= 0 && data.scales[k] <= 5)
     && ['kp', 'wind', 'alerts'].every(k => Array.isArray(data[k])) && data.kp.length > 0 && data.wind.length > 0;
   if (dataset === 'aurora') return Number.isFinite(data.forecastAt) && Number.isFinite(data.observationAt) && Array.isArray(data.points);
@@ -49,7 +52,7 @@ export function spaceEnvelope(dataset, snapshot, now = Date.now()) {
     // This is a filtered current batch, not a statement about all global launches.
     items: snapshot.data.items.filter(item => Number.isFinite(item.net) && item.net >= now
       && !/success|fail|cancel|in flight|payload deployed/i.test(item.status || '')),
-  } : snapshot.data;
+  } : dataset === 'missions' ? { ...snapshot.data, items: upcomingMissionItems(snapshot.data.items, now) } : snapshot.data;
   return {
     dataset, status, provider: config.provider, sourceUrl: config.sourceUrl,
     fetchedAt: valid ? fetchedAt : null, observedAt,
