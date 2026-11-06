@@ -1,3 +1,4 @@
+import { DEFAULT_PANELS as CYBER_PANELS, DEFAULT_MAP_LAYERS as CYBER_MAP_LAYERS } from './variants/cyber';
 import type { PanelConfig, MapLayers, DataSourceId } from '@/types';
 import { SITE_VARIANT } from './variant';
 import { IS_PLANETSLAM } from './brand';
@@ -1156,7 +1157,7 @@ const ENERGY_MOBILE_MAP_LAYERS: MapLayers = {
 // UNIFIED PANEL REGISTRY
 // ============================================
 
-type PanelVariant = 'full' | 'tech' | 'finance' | 'commodity' | 'energy' | 'happy' | 'space';
+type PanelVariant = 'full' | 'tech' | 'finance' | 'commodity' | 'energy' | 'happy' | 'space' | 'cyber';
 
 const VARIANT_PANEL_CONFIGS: Record<PanelVariant, Record<string, PanelConfig>> = {
   full: FULL_PANELS,
@@ -1165,6 +1166,7 @@ const VARIANT_PANEL_CONFIGS: Record<PanelVariant, Record<string, PanelConfig>> =
   commodity: COMMODITY_PANELS,
   energy: ENERGY_PANELS,
   space: SPACE_PANELS,
+  cyber: CYBER_PANELS,
   happy: HAPPY_PANELS,
 };
 
@@ -1182,6 +1184,7 @@ export function isPanelNativeToVariant(panelId: string, variant: string): boolea
 
 /** All panels from all variants — canonical cross-variant registry. */
 export const ALL_PANELS: Record<string, PanelConfig> = {
+  ...CYBER_PANELS,
   ...SPACE_PANELS,
   ...HAPPY_PANELS,
   ...COMMODITY_PANELS,
@@ -1199,6 +1202,7 @@ export const VARIANT_DEFAULTS: Record<string, string[]> = {
   commodity: Object.keys(VARIANT_PANEL_CONFIGS.commodity),
   energy:    Object.keys(VARIANT_PANEL_CONFIGS.energy),
   space:     Object.keys(VARIANT_PANEL_CONFIGS.space),
+  cyber:     Object.keys(VARIANT_PANEL_CONFIGS.cyber),
   happy:     Object.keys(VARIANT_PANEL_CONFIGS.happy),
 };
 
@@ -1476,7 +1480,7 @@ export const DEFAULT_PANELS: Record<string, PanelConfig> = Object.fromEntries(
   )
 );
 
-export const DEFAULT_MAP_LAYERS = SITE_VARIANT === 'space'
+export const DEFAULT_MAP_LAYERS = SITE_VARIANT === 'cyber' ? CYBER_MAP_LAYERS : SITE_VARIANT === 'space'
   ? SPACE_MAP_LAYERS
   : SITE_VARIANT === 'happy'
   ? HAPPY_MAP_LAYERS
@@ -1490,7 +1494,7 @@ export const DEFAULT_MAP_LAYERS = SITE_VARIANT === 'space'
           ? ENERGY_MAP_LAYERS
           : FULL_MAP_LAYERS;
 
-export const MOBILE_DEFAULT_MAP_LAYERS = SITE_VARIANT === 'space'
+export const MOBILE_DEFAULT_MAP_LAYERS = SITE_VARIANT === 'cyber' ? CYBER_MAP_LAYERS : SITE_VARIANT === 'space'
   ? SPACE_MOBILE_MAP_LAYERS
   : SITE_VARIANT === 'happy'
   ? HAPPY_MOBILE_MAP_LAYERS
@@ -1527,6 +1531,7 @@ export const LAYER_TO_SOURCE: Partial<Record<keyof MapLayers, DataSourceId[]>> =
 // Maps category keys to panel keys. Only categories with at least one
 // matching panel in the user's active panel settings are shown.
 export const PANEL_CATEGORY_MAP: Record<string, { labelKey: string; panelKeys: string[]; variants?: string[] }> = {
+  cyber: { labelKey: 'header.panelCatCyber', panelKeys: Object.keys(CYBER_PANELS).filter(key => key !== 'map'), variants: ['cyber'] },
   // All variants — essential panels
   core: {
     labelKey: 'header.panelCatCore',

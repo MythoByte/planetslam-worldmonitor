@@ -382,7 +382,8 @@
     "panelCatHappyNews": "Добри Вести",
     "panelCatHappyPlanet": "Планета & Давање",
     "embed": "Вграждане",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "panels": {
     "liveNews": "Живи новини",
@@ -4721,6 +4722,9 @@
     },
     "happy": {
       "map": "Карта на добрите новини"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

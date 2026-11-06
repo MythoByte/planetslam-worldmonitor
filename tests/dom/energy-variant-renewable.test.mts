@@ -107,6 +107,6 @@ describe('energy variant renewable panel', () => {
   it('is created by the layout through the same panel-setting read', () => {
     const layout = readFileSync(resolve(process.cwd(), 'src/app/panel-layout.ts'), 'utf8');
     expect(layout).toMatch(/if \(this\.shouldCreatePanel\('renewable'\)\) \{\s*this\.lazyImportedPanel\('renewable'/);
-    expect(layout).toMatch(/private shouldCreatePanel\(key: string\): boolean \{\s*return hasPanelSettingEntry\(this\.ctx\.panelSettings, key\);/);
+    expect(layout).toMatch(/private shouldCreatePanel\(key: string\): boolean \{\s*return !isPanelHiddenForBrand\(key\) && hasPanelSettingEntry\(this\.ctx\.panelSettings, key\);/);
   });
 });

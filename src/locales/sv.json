@@ -3888,7 +3888,8 @@
     "panelCatHappyNews": "Goda Nyheter",
     "panelCatHappyPlanet": "Planet & Välgörenhet",
     "embed": "Bädda in",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "countryBrief": {
     "identifying": "Identifierar land...",
@@ -4721,6 +4722,9 @@
     },
     "happy": {
       "map": "Karta över goda nyheter"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

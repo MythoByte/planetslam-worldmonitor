@@ -380,7 +380,8 @@
     "panelCatHappyNews": "Tin tốt",
     "panelCatHappyPlanet": "Hành tinh & Trao tặng",
     "embed": "Nhúng",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "panels": {
     "liveNews": "Tin tức Trực tiếp",
@@ -4700,6 +4701,9 @@
     },
     "happy": {
       "map": "Bản đồ Tin tức Tích cực"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

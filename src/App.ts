@@ -2456,8 +2456,9 @@ export class App {
     // the accessible <h1> are baked in English before the app boots; once i18n
     // is ready we swap them to the user's locale.
     const spaceEdition = IS_PLANETSLAM && SITE_VARIANT === 'space';
-    const documentTitle = spaceEdition ? 'PlanetSlam Space — Live Space Dashboard' : t('shell.documentTitle');
-    const description = spaceEdition
+    const cyberEdition = IS_PLANETSLAM && SITE_VARIANT === 'cyber';
+    const documentTitle = cyberEdition ? 'PlanetSlam Cyber — Cyber Security Dashboard' : spaceEdition ? 'PlanetSlam Space — Live Space Dashboard' : t('shell.documentTitle');
+    const description = cyberEdition ? 'Cyber security news, known exploited vulnerabilities, and your technology watchlist.' : spaceEdition
       ? 'Space cameras, launches, NASA imagery, space weather, satellites, and near-Earth objects.'
       : t('shell.metaDescription');
     document.title = documentTitle;

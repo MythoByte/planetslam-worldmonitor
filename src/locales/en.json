@@ -459,6 +459,7 @@
     "panelCatTopical": "Topical",
     "panelCatDataTracking": "Data & Tracking",
     "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security",
     "panelCatTechAi": "Tech & AI",
     "panelCatStartupsVc": "Startups & Venture capital",
     "panelCatSecurityPolicy": "Security & Policy",
@@ -605,6 +606,9 @@
       "map": "Energy Atlas Map",
       "liveNews": "Energy Headlines",
       "insights": "AI Energy Insights"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     },
     "happy": {
       "map": "Good News Map"

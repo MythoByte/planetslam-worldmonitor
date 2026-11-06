@@ -3907,7 +3907,8 @@
     "panelCatHappyNews": "Boas Notícias",
     "panelCatHappyPlanet": "Planeta & Doações",
     "embed": "Incorporar",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "countryBrief": {
     "identifying": "Identificando país...",
@@ -4742,6 +4743,9 @@
     },
     "happy": {
       "map": "Mapa de Boas Notícias"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

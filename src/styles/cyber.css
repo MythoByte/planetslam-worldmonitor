@@ -1,0 +1,36 @@
+/* Cyber panels keep shared theme tokens and remain isolated from other editions. */
+.cyber-panel { --cyber-accent: var(--semantic-info, #63c9d8); }
+.cyber-panel .panel-content { overflow-y: auto; }
+.cyber-body { padding: 4px; font-size: 13px; line-height: 1.55; overflow-wrap: anywhere; }
+.cyber-provenance { display: flex; flex-wrap: wrap; gap: 5px 12px; font-size: 11px; color: var(--text-dim); padding: 8px 0; border-bottom: 1px solid var(--border); }
+.cyber-provenance a { color: var(--text-secondary); }
+.cyber-status { color: var(--cyber-accent); font-weight: 700; }
+[data-cyber-status="stale"] > .cyber-status { color: var(--semantic-warning, #e5b966); }
+[data-cyber-status="unavailable"] > .cyber-status { color: var(--semantic-critical, #e47c83); }
+.cyber-card { padding: 16px 0; border-bottom: 1px solid var(--border); }
+.cyber-card h3 { margin: 5px 0; font-size: 13px; font-weight: 500; }
+.cyber-card p { margin: 8px 0; }
+.cyber-eyebrow { color: var(--text-dim); font-size: 10px; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 5px; }
+.cyber-headline { display: block; font-size: 14px; font-weight: 600; line-height: 1.45; color: var(--text-primary); text-decoration: none; }
+.cyber-headline:hover { color: var(--cyber-accent); text-decoration: underline; }
+.cyber-card time, .cyber-note { color: var(--text-dim); font-size: 11px; }
+.cyber-toolbar, .cyber-chips { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; margin: 12px 0; }
+.cyber-toolbar label { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; max-width: 100%; }
+.cyber-panel input, .cyber-panel select, .cyber-panel button { color: var(--text-primary); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; padding: 7px 9px; font: inherit; max-width: 100%; }
+.cyber-panel input[type="search"], .cyber-panel input[type="text"] { min-width: 0; width: 190px; }
+.cyber-panel button { cursor: pointer; }
+.cyber-panel button:hover { border-color: var(--cyber-accent); }
+.cyber-panel :focus-visible { outline: 2px solid var(--cyber-accent); outline-offset: 2px; }
+.cyber-panel button:disabled { opacity: .5; cursor: default; }
+.cyber-action { border-left: 2px solid var(--cyber-accent); padding: 6px 10px; background: var(--bg-secondary); }
+.cyber-action strong { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; }
+.cyber-reference { display: inline-block; margin: 4px 12px 4px 0; color: var(--cyber-accent); font-size: 11px; }
+.cyber-match { display: block; margin-top: 8px; color: var(--cyber-accent); font-size: 11px; }
+.cyber-empty { padding: 20px 8px; color: var(--text-dim); }
+.cyber-more { margin: 15px 0; }
+
+@media (min-width: 900px) {
+  html[data-brand="planetslam"][data-variant="cyber"] .main-content.map-hidden .panels-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

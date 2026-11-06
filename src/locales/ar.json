@@ -390,7 +390,8 @@
     "panelCatHappyNews": "أخبار إيجابية",
     "panelCatHappyPlanet": "الكوكب والعطاء",
     "embed": "تضمين",
-    "panelCatSpace": "Space"
+    "panelCatSpace": "Space",
+    "panelCatCyber": "Cyber Security"
   },
   "panels": {
     "liveNews": "أخبار مباشرة",
@@ -4805,6 +4806,9 @@
     },
     "happy": {
       "map": "خريطة الأخبار الإيجابية"
+    },
+    "space": {
+      "map": "Space & Orbit Map"
     }
   }
 }

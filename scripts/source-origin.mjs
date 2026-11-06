@@ -67,6 +67,11 @@ const INTERNATIONAL_HOST_SUFFIXES = [
 // Host → ISO 3166-1 alpha-2, 'EU', or null (international).
 // Only hosts that cannot be inferred from a real ccTLD or government suffix.
 const HOST_ORIGINS = Object.freeze({
+  // Cyber onboarding: publisher registered offices, and the US CVE Secretariat.
+  // Evidence links are recorded in docs/planetslam/cyber-dashboard.md.
+  'thehackernews.com': 'IN',
+  'www.bleepingcomputer.com': 'US',
+  'www.cve.org': 'US',
   'simaniger.net': 'NE',
   'data.1212.mn': 'MN',
   'www.ocpv-ci.com': 'CI',
