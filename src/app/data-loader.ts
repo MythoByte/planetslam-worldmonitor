@@ -1268,7 +1268,7 @@ export class DataLoaderManager implements AppModule {
     if (SITE_VARIANT !== 'happy' && CYBER_LAYER_ENABLED && this.ctx.mapLayers.cyberThreats) tasks.push({ name: 'cyberThreats', task: () => runGuarded('cyberThreats', () => this.loadCyberThreats()) });
     if (IRAN_ATTACKS_ENABLED && SITE_VARIANT !== 'happy' && !isDesktopRuntime() && (this.ctx.mapLayers.iranAttacks || shouldLoadAny(['cii', 'strategic-risk', 'strategic-posture']))) tasks.push({ name: 'iranAttacks', task: () => runGuarded('iranAttacks', () => this.loadIranEvents()) });
     if (SITE_VARIANT !== 'happy' && (this.ctx.mapLayers.techEvents || SITE_VARIANT === 'tech')) tasks.push({ name: 'techEvents', task: () => runGuarded('techEvents', () => this.loadTechEvents()) });
-    if (SITE_VARIANT !== 'happy' && this.ctx.mapLayers.satellites && this.ctx.map?.isGlobeMode?.()) tasks.push({ name: 'satellites', task: () => runGuarded('satellites', () => this.loadSatellites()) });
+    if (SITE_VARIANT !== 'happy' && SITE_VARIANT !== 'space' && this.ctx.mapLayers.satellites && this.ctx.map?.isGlobeMode?.()) tasks.push({ name: 'satellites', task: () => runGuarded('satellites', () => this.loadSatellites()) });
     if (SITE_VARIANT !== 'happy' && this.ctx.mapLayers.webcams) tasks.push({ name: 'webcams', task: () => runGuarded('webcams', () => this.loadWebcams()) });
     if (SITE_VARIANT !== 'happy' && (shouldLoad('sanctions-pressure') || this.ctx.mapLayers.sanctions)) {
       tasks.push({ name: 'sanctions', task: () => runGuarded('sanctions', () => this.loadSanctionsPressure()) });
@@ -1394,6 +1394,7 @@ export class DataLoaderManager implements AppModule {
           await this.loadIranEvents();
           break;
         case 'satellites': {
+          if (SITE_VARIANT === 'space') break;
           await this.loadSatellites();
           this.loadImageryFootprints();
           break;
@@ -1431,6 +1432,7 @@ export class DataLoaderManager implements AppModule {
 
   async loadSatellites(): Promise<void> {
     this.stopSatellitePropagation();
+    if (SITE_VARIANT === 'space') return;
     const data = await fetchSatelliteTLEs();
     if (!data || data.length === 0) {
       // Confirmed empty, expired, or unavailable without last-good data:
@@ -1462,6 +1464,7 @@ export class DataLoaderManager implements AppModule {
   private imageryRetryTimer: ReturnType<typeof setTimeout> | null = null;
 
   private loadImageryFootprints(retries = 2): void {
+    if (SITE_VARIANT === 'space') return;
     if (!this.ctx.mapLayers.satellites) return;
     if (this.ctx.map?.isGlobeMode()) return;
     const bbox = this.ctx.map?.getBbox();

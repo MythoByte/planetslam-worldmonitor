@@ -161,7 +161,7 @@ const PANEL_CLUSTER: Record<string, PanelChunkName> = {
   MilitaryCorrelation: 'panels-intel',
   Forecast: 'panels-intel',
   HeroSpotlight: 'panels-intel', Insights: 'panels-intel',
-  LiveWebcams: 'panels-intel', SpaceCameras: 'panels-intel', McpData: 'panels-intel',
+  LiveWebcams: 'panels-intel', SpaceCameras: 'panels-intel', SatelliteTracker: 'panels-intel', McpData: 'panels-intel',
   Monitor: 'panels-intel', PinnedWebcams: 'panels-intel',
   Prediction: 'panels-intel', ProgressCharts: 'panels-intel',
   RegionalIntelligenceBoard: 'panels-intel',

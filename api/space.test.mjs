@@ -47,7 +47,7 @@ test('missing Redis does not imply empty sky or zero storms; health keeps provid
     assert.equal(payload.data, null);
     const health = await (await handler(new Request('https://planetslam.com/api/space?dataset=health'))).json();
     assert.equal(health.dataset, 'health');
-    assert.equal(health.data.items.length, 8);
+    assert.equal(health.data.items.length, 9);
     assert.ok(health.data.items.every(row => row.status === 'unavailable' && row.provider));
   } finally {
     if (previous.url !== undefined) process.env.UPSTASH_REDIS_REST_URL = previous.url;

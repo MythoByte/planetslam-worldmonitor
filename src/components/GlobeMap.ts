@@ -1,3 +1,4 @@
+import type { SpaceOrbitSnapshot } from '@/types/space-orbits';
 import type { SpaceMapSnapshot } from '@/types/space-map';
 /**
  * GlobeMap - 3D interactive globe using globe.gl
@@ -459,7 +460,7 @@ interface GlobePath {
   id: string;
   name: string;
   points: number[][];
-  pathType: 'cable' | 'oil' | 'gas' | 'products' | 'orbit' | 'stormTrack' | 'stormHistory';
+  pathType: 'cable' | 'oil' | 'gas' | 'products' | 'orbit' | 'stormTrack' | 'stormHistory' | 'space-past' | 'space-future';
   status: string;
   country?: string;
   windKt?: number;
@@ -513,6 +514,14 @@ interface GlobeControlsLike {
 const SET_CENTER_ROTATION_MS = 1200;
 
 export class GlobeMap {
+  private spaceOrbits: SpaceOrbitSnapshot | null = null;
+
+  public setSpaceOrbitSnapshot(snapshot: SpaceOrbitSnapshot): void {
+    this.spaceOrbits = snapshot;
+    this.paintSpaceOverlay();
+    this.flushPaths();
+  }
+
   private spaceOverlay: SpaceMapSnapshot = { aurora: [], launches: [] };
 
   public setSpaceOverlay(snapshot: SpaceMapSnapshot): void {
@@ -525,9 +534,10 @@ export class GlobeMap {
     const points = [
       ...this.spaceOverlay.aurora.filter(point => Math.round(point.longitude) % 2 === 0 && Math.round(point.latitude) % 2 === 0).map(point => ({ ...point, kind: 'aurora', name: `Aurora forecast: model intensity ${point.probability} / 100. Not a local visibility guarantee.`, color: `rgba(65,235,140,${0.15 + point.probability / 150})`, radius: 0.32 })),
       ...this.spaceOverlay.launches.map(launch => ({ ...launch, kind: 'launch', name: `${launch.name} · ${launch.pad} · ${new Date(launch.net).toUTCString()}`, color: '#ffbc50', radius: 0.55 })),
+      ...(this.layers.satellites ? this.spaceOrbits?.positions ?? [] : []).map(orbit => ({ ...orbit, kind: 'satellite', name: `${orbit.name} · calculated position · ${orbit.altitudeKm.toFixed(1)} km · elements ${orbit.elementStatus}`, color: orbit.elementStatus === 'stale' ? '#ffbc50' : orbit.selected ? '#4be1ff' : '#82a0d7', radius: orbit.selected ? 0.65 : 0.32 })),
     ];
     this.globe.pointsData(points).pointLat('latitude').pointLng('longitude')
-      .pointColor('color').pointRadius('radius').pointAltitude(0.003)
+      .pointColor('color').pointRadius('radius').pointAltitude((point: object) => (point as { kind: string }).kind === 'satellite' ? (point as { altitudeKm: number }).altitudeKm / 6371 : 0.003)
       .pointLabel((point: object) => escapeHtml(String((point as { name: string }).name)))
       .pointsTransitionDuration(0);
   }
@@ -936,6 +946,8 @@ export class GlobeMap {
       )
       .pathColor((d: GlobePath) => {
         if (!d) return 'rgba(180,160,255,0.6)';
+        if (d.pathType === 'space-past') return 'rgba(85,150,210,0.7)';
+        if (d.pathType === 'space-future') return 'rgba(75,225,255,0.9)';
         if (d.pathType === 'orbit') {
           const colors: Record<string, string> = { CN: 'rgba(255,32,32,0.4)', RU: 'rgba(255,136,0,0.4)', US: 'rgba(68,136,255,0.4)', EU: 'rgba(68,204,68,0.4)' };
           return colors[d.country || ''] || 'rgba(200,200,255,0.3)';
@@ -2396,7 +2408,8 @@ export class GlobeMap {
       : this.globePaths.filter(p => p.pathType === 'cable' ? showCables : showPipelines);
     const orbitPaths = this.layers.satellites ? this.satelliteTrailPaths : [];
     const stormPaths = this.layers.natural ? this.stormTrackPaths : [];
-    (this.globe as any).pathsData([...paths, ...orbitPaths, ...stormPaths]);
+    const spacePaths: GlobePath[] = this.layers.satellites ? (this.spaceOrbits?.groundTracks ?? []).map((track, index) => ({ id: `space-track-${index}`, name: `Selected satellite ${track.phase} ground track (calculated)`, points: track.points, pathType: track.phase === 'past' ? 'space-past' : 'space-future', status: 'calculated' })) : [];
+    (this.globe as any).pathsData([...paths, ...orbitPaths, ...stormPaths, ...spacePaths]);
   }
 
   private static readonly CII_GLOBE_COLORS: Record<string, string> = {
@@ -3497,6 +3510,7 @@ export class GlobeMap {
   }
 
   private async fetchImageryForViewport(): Promise<void> {
+    if (SITE_VARIANT === 'space') return;
     if (this.destroyed) return;
     const center = this.getCenter();
     if (!center) return;

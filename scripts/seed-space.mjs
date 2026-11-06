@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { loadEnvFile, getRedisCredentials, redisCommand, acquireLock, releaseLock, writeExtraKeyWithMetaAtomically } from './_seed-utils.mjs';
 import { SPACE_DATASETS, spaceKey, validSpaceData } from '../api/_space-data.js';
 import { fetchSpaceDataset } from './_space-providers.mjs';
+import { seedOrbitCatalog } from './_space-orbits.mjs';
 
 export async function seedSpace({ now = Date.now(), names = Object.keys(SPACE_DATASETS), fetchDataset = fetchSpaceDataset,
   command, lock = acquireLock, unlock = releaseLock, publish = writeExtraKeyWithMetaAtomically } = {}) {
@@ -25,9 +26,9 @@ export async function seedSpace({ now = Date.now(), names = Object.keys(SPACE_DA
       if (!held) { results.push({ dataset, status: 'locked' }); continue; }
       const admission = await command(['SET', `space:attempt:${dataset}:v1`, String(now), 'NX', 'PX', config.intervalMs]);
       if (admission?.result !== 'OK') { results.push({ dataset, status: 'cooldown' }); continue; }
-      const response = await fetchDataset(dataset, { now });
+      const response = dataset === 'orbits' ? await seedOrbitCatalog({ command, publish, now }) : await fetchDataset(dataset, { now });
       if (!validSpaceData(dataset, response?.data)) throw new Error('Invalid normalized data');
-      const fetchedAt = Date.now();
+      const fetchedAt = dataset === 'orbits' ? response.fetchedAt : Date.now();
       const snapshot = { dataset, fetchedAt, observedAt: response.observedAt, data: response.data };
       const recordCount = response.data.items?.length ?? response.data.points?.length ?? response.data.kp?.length ?? 0;
       await publish({ key: spaceKey(dataset), data: snapshot, ttlSeconds: Math.ceil(config.maxAgeMs / 1000),

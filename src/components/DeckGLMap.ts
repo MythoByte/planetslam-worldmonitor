@@ -1,3 +1,4 @@
+import type { SpaceOrbitSnapshot, SpaceOrbitPosition, SpaceGroundTrack } from '@/types/space-orbits';
 import type { SpaceMapSnapshot, SpaceAuroraPoint, SpaceLaunchMarker } from '@/types/space-map';
 /**
  * DeckGLMap - WebGL-accelerated map visualization for desktop
@@ -609,6 +610,13 @@ function reportDeckLoopStop(error: Error, recovery: 'restart' | 'svg-fallback'):
 }
 
 export class DeckGLMap {
+  private spaceOrbits: SpaceOrbitSnapshot | null = null;
+
+  public setSpaceOrbitSnapshot(snapshot: SpaceOrbitSnapshot): void {
+    this.spaceOrbits = snapshot;
+    this.render();
+  }
+
   private spaceOverlay: SpaceMapSnapshot = { aurora: [], launches: [] };
 
   public setSpaceOverlay(snapshot: SpaceMapSnapshot): void {
@@ -2067,6 +2075,23 @@ export class DeckGLMap {
       getFillColor: [255, 188, 80, 235], getLineColor: [255, 240, 190, 255],
       stroked: true, lineWidthMinPixels: 1, radiusMinPixels: 7, radiusMaxPixels: 14, pickable: true,
     }));
+
+    if (mapLayers.satellites && this.spaceOrbits) {
+      layers.push(new PathLayer<SpaceGroundTrack>({
+        id: 'space-selected-ground-track', data: this.spaceOrbits.groundTracks,
+        getPath: track => track.points.map((point): [number, number] => [point[0], point[1]]),
+        getColor: track => track.phase === 'past' ? [85, 150, 210, 180] : [75, 225, 255, 220],
+        getWidth: 2, widthUnits: 'pixels', pickable: false,
+      }));
+      layers.push(new ScatterplotLayer<SpaceOrbitPosition>({
+        id: 'space-orbit-positions', data: this.spaceOrbits.positions,
+        getPosition: point => [point.longitude, point.latitude],
+        getRadius: point => point.selected ? 7 : 3,
+        radiusUnits: 'pixels', getFillColor: point => point.selected ? [75, 225, 255, 255] : [130, 160, 215, 200],
+        getLineColor: point => point.elementStatus === 'stale' ? [255, 188, 80, 255] : [225, 245, 255, 220],
+        stroked: true, lineWidthMinPixels: 1, pickable: true,
+      }));
+    }
 
     // FAA NMS airspace restrictions are area overlays (circles up to 250 NM):
     // they sit above only the day/night background, so cables, pipelines,
@@ -5164,6 +5189,7 @@ export class DeckGLMap {
   }
 
   private async fetchImageryForViewport(): Promise<void> {
+    if (SITE_VARIANT === 'space') return;
     const map = this.maplibreMap;
     if (!map) return;
     const bounds = map.getBounds();
@@ -5192,6 +5218,8 @@ export class DeckGLMap {
     };
 
     switch (layerId) {
+      case 'space-orbit-positions':
+        return { html: `<div class="deckgl-tooltip"><strong>${text(obj.name)}</strong><br/>Calculated position · NORAD ${text(obj.noradId)}<br/>${numericLabel(obj.altitudeKm, 1)} km · ${numericLabel(obj.velocityKmS, 2)} km/s<br/>Elements: ${text(obj.elementStatus)} · ${text(new Date(obj.epoch).toUTCString())}</div>` };
       case 'space-aurora-forecast':
         return { html: `<div class="deckgl-tooltip"><strong>Aurora forecast</strong><br/>Model intensity: ${numericLabel(obj.probability)} / 100<br/>Not a local visibility guarantee</div>` };
       case 'space-upcoming-launches':

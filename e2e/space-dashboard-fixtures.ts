@@ -20,9 +20,13 @@ export function spaceFixture(dataset: SpaceDataset): SpaceEnvelope<unknown> {
     solar: { items: [{ id: 'sun', title: 'Synthetic solar observation', url: 'https://example.com/space-test-image.png', sourceUrl: 'https://example.com/sdo', observedAt: now - 60000 }] },
     events: { items: [{ id: 'SYNTHETIC-FLARE', type: 'flare', time: now - 3600000, classType: 'M1.0', note: 'Synthetic flare record for acceptance.', url: 'https://example.com/donki' }] },
     neo: { items: [{ id: 'neo1', name: 'Synthetic asteroid', approachAt: now + 86400000, diameterMinKm: .03, diameterMaxKm: .08, missDistanceKm: 1200000, lunarDistance: 3.12, velocityKmS: 12.3, potentiallyHazardous: true, url: 'https://example.com/neo' }] },
+    orbits: { complete: true, items: [
+      { noradId: '25544', name: 'ISS (SYNTHETIC ACCEPTANCE)', objectId: '1998-067A', epoch: now, groups: ['stations'], elementStatus: 'fresh', omm: { OBJECT_NAME: 'ISS (SYNTHETIC ACCEPTANCE)', OBJECT_ID: '1998-067A', EPOCH: new Date(now).toISOString().replace('Z', ''), MEAN_MOTION: 15.5, ECCENTRICITY: 0.0004, INCLINATION: 51.64, RA_OF_ASC_NODE: 120, ARG_OF_PERICENTER: 50, MEAN_ANOMALY: 30, EPHEMERIS_TYPE: 0, CLASSIFICATION_TYPE: 'U', NORAD_CAT_ID: 25544, ELEMENT_SET_NO: 999, REV_AT_EPOCH: 1000, BSTAR: 0.0001, MEAN_MOTION_DOT: 0.00001, MEAN_MOTION_DDOT: 0 } },
+      { noradId: '100001', name: 'STARLINK SYNTHETIC ACCEPTANCE', objectId: '2026-001A', epoch: now, groups: ['starlink'], elementStatus: 'fresh', omm: { OBJECT_NAME: 'STARLINK SYNTHETIC ACCEPTANCE', OBJECT_ID: '2026-001A', EPOCH: new Date(now).toISOString().replace('Z', ''), MEAN_MOTION: 15.1, ECCENTRICITY: 0.0002, INCLINATION: 53, RA_OF_ASC_NODE: 80, ARG_OF_PERICENTER: 20, MEAN_ANOMALY: 40, EPHEMERIS_TYPE: 0, CLASSIFICATION_TYPE: 'U', NORAD_CAT_ID: 100001, ELEMENT_SET_NO: 999, REV_AT_EPOCH: 100, BSTAR: 0.0001, MEAN_MOTION_DOT: 0.00001, MEAN_MOTION_DDOT: 0 } },
+    ], groups: ['stations', 'weather', 'science', 'communications', 'starlink'].map(id => ({ id, label: id, providerGroup: id, sourceUrl: 'https://example.com/orbits', status: 'fresh', fetchedAt: now, objectCount: id === 'stations' || id === 'starlink' ? 1 : 0, totalCount: id === 'stations' || id === 'starlink' ? 1 : 0, truncated: false })) },
     health: { items: [] },
   };
-  if (dataset === 'health') data.health = { items: (['apod', 'news', 'launches', 'weather', 'aurora', 'solar', 'events', 'neo'] as SpaceDataset[]).map(key => ({ ...spaceFixture(key), data: null })) };
+  if (dataset === 'health') data.health = { items: (['apod', 'news', 'launches', 'weather', 'aurora', 'solar', 'events', 'neo', 'orbits'] as SpaceDataset[]).map(key => ({ ...spaceFixture(key), data: null })) };
   return { dataset, status: 'fresh', provider: 'Synthetic acceptance provider', sourceUrl: 'https://example.com/provider', fetchedAt: now, observedAt: now - 60000, expiresAt: now + 3600000, data: data[dataset] };
 }
 

@@ -1,3 +1,4 @@
+import type { SpaceOrbitSnapshot } from '@/types/space-orbits';
 import type { SpaceMapSnapshot } from '@/types/space-map';
 import * as d3 from 'd3';
 import { UKMTO_SOURCE_URL, ukmtoIncidentLabel, type UkmtoMapIncident } from '../../shared/ukmto-incidents';
@@ -179,6 +180,37 @@ export class MapComponent {
     };
 
   private static readonly SVG_MARKER_DOM_ZOOM_LAYERS = new Set<keyof MapLayers>(['bases', 'nuclear']);
+
+  private spaceOrbits: SpaceOrbitSnapshot | null = null;
+
+  public setSpaceOrbitSnapshot(snapshot: SpaceOrbitSnapshot): void {
+    this.spaceOrbits = snapshot;
+    this.render();
+  }
+
+  private renderSpaceOrbits(projection: d3.GeoProjection): void {
+    if (!this.state.layers.satellites || !this.spaceOrbits) return;
+    const group = this.dynamicLayerGroup?.append('g').attr('class', 'space-orbits-overlay');
+    if (!group) return;
+    const path = d3.geoPath().projection(projection);
+    for (const track of this.spaceOrbits.groundTracks) {
+      group.append('path').attr('class', `space-ground-track space-ground-track-${track.phase}`)
+        .attr('d', path({ type: 'LineString', coordinates: track.points.map(point => [point[0], point[1]]) }))
+        .attr('fill', 'none').attr('stroke', track.phase === 'past' ? '#5596d2' : '#4be1ff')
+        .attr('stroke-width', 1.5).attr('vector-effect', 'non-scaling-stroke')
+        .attr('stroke-dasharray', track.phase === 'future' ? '5 3' : null);
+    }
+    for (const orbit of this.spaceOrbits.positions) {
+      const point = projection([orbit.longitude, orbit.latitude]);
+      if (!point) continue;
+      group.append('circle').attr('class', orbit.selected ? 'space-orbit-marker selected' : 'space-orbit-marker')
+        .attr('cx', point[0]).attr('cy', point[1]).attr('r', (orbit.selected ? 6 : 3) / Math.max(1, this.state.zoom))
+        .attr('fill', orbit.selected ? '#4be1ff' : '#82a0d7')
+        .attr('stroke', orbit.elementStatus === 'stale' ? '#ffbc50' : '#e1f5ff')
+        .attr('stroke-width', 1).attr('vector-effect', 'non-scaling-stroke')
+        .append('title').text(`${orbit.name} · NORAD ${orbit.noradId} · calculated position · ${orbit.altitudeKm.toFixed(1)} km · ${orbit.velocityKmS.toFixed(2)} km/s · elements ${orbit.elementStatus}`);
+    }
+  }
 
   private spaceOverlay: SpaceMapSnapshot = { aurora: [], launches: [] };
 
@@ -1555,6 +1587,7 @@ export class MapComponent {
 
     const steps: Array<() => void> = [];
     steps.push(() => this.renderSpaceOverlay(projection));
+    steps.push(() => this.renderSpaceOrbits(projection));
     if (this.state.layers.cables) steps.push(() => this.renderCables(projection));
     if (this.state.layers.pipelines) steps.push(() => this.renderPipelines(projection));
     if (this.state.layers.conflicts) steps.push(() => this.renderConflicts(projection));

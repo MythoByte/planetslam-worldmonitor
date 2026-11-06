@@ -1,4 +1,5 @@
 // Shared wire contract. Seeders import this same-directory-safe edge module.
+import { projectOrbitCatalog, ORBIT_INTERVAL_MS, ORBIT_FETCH_MAX_AGE_MS } from './_space-orbits.js';
 const MINUTE = 60_000;
 export const SPACE_DATASETS = Object.freeze({
   apod: { provider: 'NASA APOD', sourceUrl: 'https://apod.nasa.gov/', intervalMs: 6 * 60 * MINUTE, maxAgeMs: 48 * 60 * MINUTE },
@@ -9,12 +10,14 @@ export const SPACE_DATASETS = Object.freeze({
   solar: { provider: 'NASA SDO', sourceUrl: 'https://sdo.gsfc.nasa.gov/data/', intervalMs: 15 * MINUTE, maxAgeMs: 6 * 60 * MINUTE },
   events: { provider: 'NASA DONKI', sourceUrl: 'https://kauai.ccmc.gsfc.nasa.gov/DONKI/', intervalMs: 60 * MINUTE, maxAgeMs: 24 * 60 * MINUTE },
   neo: { provider: 'NASA NeoWs', sourceUrl: 'https://cneos.jpl.nasa.gov/', intervalMs: 6 * 60 * MINUTE, maxAgeMs: 24 * 60 * MINUTE },
+  orbits: { provider: 'CelesTrak GP / OMM', sourceUrl: 'https://celestrak.org/NORAD/elements/', intervalMs: ORBIT_INTERVAL_MS, maxAgeMs: ORBIT_FETCH_MAX_AGE_MS },
 });
 
 export const spaceKey = dataset => `space:${dataset}:v1`;
 
 export function validSpaceData(dataset, data) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
+  if (dataset === 'orbits') return Array.isArray(data.items) && Array.isArray(data.groups);
   if (dataset === 'weather') return data.scales && ['G', 'R', 'S'].every(k => Number.isFinite(data.scales[k]) && data.scales[k] >= 0 && data.scales[k] <= 5)
     && ['kp', 'wind', 'alerts'].every(k => Array.isArray(data[k])) && data.kp.length > 0 && data.wind.length > 0;
   if (dataset === 'aurora') return Number.isFinite(data.forecastAt) && Number.isFinite(data.observationAt) && Array.isArray(data.points);
@@ -24,6 +27,11 @@ export function validSpaceData(dataset, data) {
 export function spaceEnvelope(dataset, snapshot, now = Date.now()) {
   const config = SPACE_DATASETS[dataset];
   if (!config) throw new Error('Unknown space dataset');
+  if (dataset === 'orbits') {
+    const projected = projectOrbitCatalog(snapshot?.dataset === dataset ? snapshot.data : null, now);
+    return { dataset, provider: config.provider, sourceUrl: config.sourceUrl, ...projected,
+      expiresAt: projected.fetchedAt ? projected.fetchedAt + ORBIT_FETCH_MAX_AGE_MS : null };
+  }
   const fetchedAt = snapshot?.fetchedAt;
   const valid = snapshot?.dataset === dataset && validSpaceData(dataset, snapshot?.data)
     && Number.isFinite(fetchedAt) && fetchedAt > 0 && fetchedAt <= now + MINUTE;

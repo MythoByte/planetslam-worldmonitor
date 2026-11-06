@@ -186,7 +186,9 @@ COPY scripts/_html-entities.mjs ./scripts/_html-entities.mjs
 COPY scripts/seed-climate-news.mjs ./scripts/seed-climate-news.mjs
 COPY scripts/seed-space.mjs ./scripts/seed-space.mjs
 COPY scripts/_space-providers.mjs ./scripts/_space-providers.mjs
+COPY scripts/_space-orbits.mjs ./scripts/_space-orbits.mjs
 COPY api/_space-data.js ./api/_space-data.js
+COPY api/_space-orbits.js ./api/_space-orbits.js
 COPY scripts/seed-chokepoint-flows.mjs ./scripts/seed-chokepoint-flows.mjs
 COPY scripts/seed-ember-electricity.mjs ./scripts/seed-ember-electricity.mjs
 COPY scripts/seed-yield-curve-au.mjs ./scripts/seed-yield-curve-au.mjs
