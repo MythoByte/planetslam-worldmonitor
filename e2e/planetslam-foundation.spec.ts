@@ -28,7 +28,10 @@ for (const width of [1440, 768, 390]) {
     if (branded) {
       await expect(page.locator('.auth-signin-btn:visible, .auth-signup-link:visible, .mobile-auth-fallback:visible')).toHaveCount(0);
       await expect(page.locator('.site-footer nav a')).toHaveText(['PlanetSlam source · AGPL-3.0', 'Powered by World Monitor']);
-      await expect(page.locator('.site-footer a[href*="x.com"], #footerDownloadMount')).toHaveCount(0);
+      await expect(page.locator('.site-footer-credit')).toHaveText('@mythobyte');
+      await expect(page.locator('.site-footer-credit')).toHaveAttribute('href', 'https://x.com/mythobyte');
+      await expect(page.locator('.site-footer-copy')).toHaveText(`© ${await page.evaluate(() => new Date().getFullYear())} PlanetSlam`);
+      await expect(page.locator('#footerDownloadMount')).toHaveCount(0);
       await expect(page.locator('.pro-banner')).toHaveCount(0);
       await expect(page.locator('#panelsGrid [data-panel="stock-analysis"], #panelsGrid [data-panel="latest-brief"]')).toHaveCount(0);
       await expect(page.locator('.mobile-panel-nav-chip-pro')).toHaveCount(0);
@@ -64,7 +67,9 @@ for (const width of [1440, 768, 390]) {
     await page.selectOption('#us-theme', 'light');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     expect(await page.evaluate(() => localStorage.getItem('worldmonitor-theme'))).toBe('light');
+    if (branded) await page.clock.setFixedTime(new Date('2031-07-01T12:00:00Z'));
     await page.reload();
+    if (branded) await expect(page.locator('.site-footer-copy')).toHaveText('© 2031 PlanetSlam');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     await expect(page.locator('#panelsGrid .panel').first()).toBeVisible({ timeout: 60_000 });
     await page.screenshot({ path: `docs/planetslam/evidence/${branded ? 'planetslam' : 'upstream'}-${width}-light.png` });
