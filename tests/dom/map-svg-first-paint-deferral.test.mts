@@ -204,10 +204,10 @@ describe('SVG map first-paint deferral (#4429/#4442)', () => {
     // The first pass has flipped initialDynamicRendered, so this render builds
     // every layer synchronously and bumps the render token.
     map.render();
-    expect(callOrder(map)).toEqual(['renderCables', ...LAYER_STEPS]);
+    expect(callOrder(map)).toEqual([LAYER_STEPS[0], ...LAYER_STEPS]);
 
     await releaseYield();
-    expect(callOrder(map)).toEqual(['renderCables', ...LAYER_STEPS]);
+    expect(callOrder(map)).toEqual([LAYER_STEPS[0], ...LAYER_STEPS]);
   });
 
   it('builds no further layer once the map is destroyed while the chunked pass waits on a yield', async () => {
