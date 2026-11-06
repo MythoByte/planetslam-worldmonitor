@@ -1,0 +1,10 @@
+2026-11-04
+TypeScript: passed
+Architecture boundaries: passed
+Production frontend: VITE_BRAND=planetslam VITE_VARIANT=full vite build passed
+Existing map preference suite: 6 passed
+PlanetSlam browser acceptance: 3 passed (1440/768/390px), no saved banner dismissal
+Unbranded browser acceptance: 3 passed (1440/768/390px)
+Live HTTPS review: fresh 2D, no banner or reserved class, explicit 3D choice persists after reload.
+Controlled acceptance screenshots use fixture news; ui-defaults screenshots exercise the live review.
+No claim of comprehensive provider or API regression coverage.

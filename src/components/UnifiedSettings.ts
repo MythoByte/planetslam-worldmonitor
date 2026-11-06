@@ -1,3 +1,6 @@
+import { isPanelSourceUnavailable, subscribePanelSourceAvailability } from '@/services/panel-source-availability';
+import { IS_PLANETSLAM } from '@/config/brand';
+import { isPanelHiddenForBrand } from '@/config/panels';
 import { CANONICAL_FEEDS, INTEL_SOURCES, SOURCE_REGION_MAP } from '@/config/feeds';
 import { WEB_APP_ORIGIN } from '@/config/web-origin';
 import { openExternalUrl } from '@/services/external-navigation';
@@ -182,6 +185,7 @@ export class UnifiedSettings {
   private accountUserId: string | null = getAuthState().user?.id ?? null;
   private accountDataGeneration = 0;
   private accountEntitlementRefreshPending = false;
+  private unsubscribeSourceAvailability: (() => void) | null = null;
   private unsubscribeAuth: (() => void) | null = null;
   private unsubscribeEntitlement: (() => void) | null = null;
   private unsubscribeEntitlementVerification: (() => void) | null = null;
@@ -205,6 +209,9 @@ export class UnifiedSettings {
     this.focusTrap = createFocusTrap(this.overlay);
     this.businessSeatsSection = new BusinessSeatsSection(this.overlay);
 
+    this.unsubscribeSourceAvailability = subscribePanelSourceAvailability(() => {
+      if (this.overlay.isConnected && this.activeTab === 'panels') this.renderPanelsTab();
+    });
     this.resetPanelDraft();
 
     this.escapeHandler = (e: KeyboardEvent) => {
@@ -802,6 +809,8 @@ export class UnifiedSettings {
   }
 
   public destroy(): void {
+    this.unsubscribeSourceAvailability?.();
+    this.unsubscribeSourceAvailability = null;
     if (this.historyRegistered) overlayHistory.close('settings');
     this.historyRegistered = false;
     if (this.savedTimeout) clearTimeout(this.savedTimeout);
@@ -1095,6 +1104,7 @@ export class UnifiedSettings {
   }
 
   private renderUpgradeSection(): string {
+    if (IS_PLANETSLAM) return '';
     // Non-Dodo premium (API key / tester key / Clerk pro role without a
     // Convex subscription): neither "Upgrade" nor "Manage Billing" is
     // actionable. Still explain the account state here; a hidden billing
@@ -1424,6 +1434,7 @@ export class UnifiedSettings {
   private getVisiblePanelEntries(): Array<[string, PanelConfig]> {
     const panelSettings = this.draftPanelSettings;
     let entries = Object.entries(panelSettings)
+      .filter(([key]) => !isPanelHiddenForBrand(key) && !isPanelSourceUnavailable(key))
       .filter(([key]) => key !== 'runtime-config' || this.config.isDesktopApp)
       .filter(([key]) => !key.startsWith('cw-'));
 

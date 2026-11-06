@@ -1,3 +1,4 @@
+import { isPanelHiddenForBrand } from '@/config/panels';
 import { BRAND, IS_PLANETSLAM } from '@/config/brand';
 import { clearTelegramIntelCache } from '@/services/telegram-intel';
 import { subscribeRuntimeConfig } from '@/services/runtime-config';
@@ -255,6 +256,7 @@ export function variantSwitcherHref(
   currentVariant: string,
   isLocal: boolean,
 ): string {
+  if (IS_PLANETSLAM) return `/dashboard?variant=${targetVariant}`;
   return isLocal || currentVariant === targetVariant ? '#' : VARIANT_SWITCHER_DASHBOARD_URLS[targetVariant];
 }
 
@@ -1230,7 +1232,7 @@ export class PanelLayoutManager implements AppModule {
           <span class="mobile-menu-item-icon">${getCurrentTheme() === 'dark' ? '☀️' : '🌙'}</span>
           <span class="mobile-menu-item-label">${getCurrentTheme() === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
         </button>
-        <a class="mobile-menu-item" href="https://x.com/eliehabib" target="_blank" rel="noopener">
+        ${IS_PLANETSLAM ? '' : `<a class="mobile-menu-item" href="https://x.com/eliehabib" target="_blank" rel="noopener">
           <span class="mobile-menu-item-icon"><svg class="x-logo" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></span>
           <span class="mobile-menu-item-label">@eliehabib</span>
         </a>
@@ -1241,7 +1243,7 @@ export class PanelLayoutManager implements AppModule {
           <a href="https://www.worldmonitor.app/blog/" target="_blank" rel="noopener">Blog</a>
           <a href="https://www.worldmonitor.app/docs/documentation" target="_blank" rel="noopener">Docs</a>
           <a href="https://status.worldmonitor.app/" target="_blank" rel="noopener">Status</a>
-        </div>
+        </div>`}
         <div class="mobile-menu-version">v${__APP_VERSION__}</div>
       </nav>
       <div class="region-sheet-backdrop" id="regionSheetBackdrop"></div>
@@ -1320,19 +1322,19 @@ export class PanelLayoutManager implements AppModule {
           <img src="/favico/android-chrome-96x96.png" alt="" width="28" height="28" loading="lazy" decoding="async" class="site-footer-icon" />
           <div class="site-footer-brand-text">
             <span class="site-footer-name">${BRAND.name.toUpperCase()}</span>
-            <span class="site-footer-sub">v${__APP_VERSION__} &middot; <a href="https://x.com/eliehabib" target="_blank" rel="noopener" class="site-footer-credit">@eliehabib</a></span>
+            <span class="site-footer-sub">v${__APP_VERSION__} &middot; ${IS_PLANETSLAM ? '@eliehabib' : '<a href="https://x.com/eliehabib" target="_blank" rel="noopener" class="site-footer-credit">@eliehabib</a>'}</span>
           </div>
         </div>
         <nav aria-label="World Monitor references">
           ${IS_PLANETSLAM ? `<a href="${BRAND.source}" target="_blank" rel="noopener">PlanetSlam source · AGPL-3.0</a><a href="https://github.com/koala73/worldmonitor" target="_blank" rel="noopener">Powered by World Monitor</a>` : ''}
-          ${referenceLinksHtml}
+          ${IS_PLANETSLAM ? '' : `${referenceLinksHtml}
           <a href="${referenceOrigin}/pro#pricing" target="_blank" rel="noopener">Pricing</a>
           <a href="https://www.worldmonitor.app/blog/" target="_blank" rel="noopener">Blog</a>
           <a href="https://www.worldmonitor.app/docs/documentation" target="_blank" rel="noopener">Docs</a>
           <a href="https://status.worldmonitor.app/" target="_blank" rel="noopener">Status</a>
           <a href="https://github.com/koala73/worldmonitor" target="_blank" rel="noopener">GitHub</a>
           <a href="https://x.com/worldmonitorai" target="_blank" rel="noopener">X</a>
-          ${this.ctx.isDesktopApp ? '' : `<span id="footerDownloadMount"></span>`}
+          ${this.ctx.isDesktopApp ? '' : `<span id="footerDownloadMount"></span>`}`}
         </nav>
         <span class="site-footer-copy">&copy; ${new Date().getFullYear()} World Monitor</span>
       </footer>
@@ -2261,6 +2263,7 @@ export class PanelLayoutManager implements AppModule {
 
   applyPanelSettings(): void {
     Object.entries(this.ctx.panelSettings).forEach(([key, config]) => {
+      if (isPanelHiddenForBrand(key)) config.enabled = false;
       if (key === 'map') {
         const mapSection = document.getElementById('mapSection');
         if (mapSection) {
@@ -2347,7 +2350,7 @@ export class PanelLayoutManager implements AppModule {
   }
 
   private shouldCreatePanel(key: string): boolean {
-    return hasPanelSettingEntry(this.ctx.panelSettings, key);
+    return !isPanelHiddenForBrand(key) && hasPanelSettingEntry(this.ctx.panelSettings, key);
   }
 
   private static readonly NEWS_PANEL_TOOLTIPS: Record<string, string> = {
@@ -2440,6 +2443,7 @@ export class PanelLayoutManager implements AppModule {
   }
 
   private insertInitialPanelByKey(grid: HTMLElement, key: string): void {
+    if (isPanelHiddenForBrand(key)) return;
     const panel = this.ctx.panels[key];
     if (panel && !panel.getElement().parentElement) {
       this.insertInitialPanel(grid, key, panel);
@@ -2469,6 +2473,7 @@ export class PanelLayoutManager implements AppModule {
    * content re-renders never touch it.
    */
   private syncMissionPreview(key: string, panel: Panel, activeMissionId?: string | null): void {
+    if (IS_PLANETSLAM) return;
     const missionId = activeMissionId !== undefined ? activeMissionId : (loadStoredMissionPreset()?.id ?? null);
     syncPanelPreview(
       this.missionPreviews,
@@ -3480,7 +3485,7 @@ export class PanelLayoutManager implements AppModule {
     const proBlocks = [proBlock, mcpBlock];
     const applyProBlockGating = (isPro: boolean) => {
       for (const block of proBlocks) {
-        block.style.display = isPro ? '' : 'none';
+        block.style.display = isPro && !IS_PLANETSLAM ? '' : 'none';
       }
     };
     const reapply = () => applyProBlockGating(hasPremiumAccess(getAuthState()));
@@ -4041,6 +4046,7 @@ export class PanelLayoutManager implements AppModule {
     exportName: K,
     createPanel: (PanelClass: PanelExport<M, K>, module: M) => ImportedPanel<M, K> | null,
   ): Promise<ImportedPanel<M, K> | null> {
+    if (isPanelHiddenForBrand(key)) return Promise.resolve(null);
     return importer().then((module) => {
       const PanelClass = module[exportName];
       if (typeof PanelClass !== 'function') {

@@ -3,10 +3,13 @@ import type { Plugin } from 'vite';
 function brandDashboard(html: string): string {
   return html
     .replace('<html', '<html data-brand="planetslam"')
+    // Match the runtime URL selector before paint to avoid the wrong theme
+    // flashing on LAN hosts. The existing nonce still authorizes this script.
+    .replace('if(v)document.documentElement.dataset.variant=v;', "var q=new URLSearchParams(location.search).get('variant');v=['full','tech','finance','commodity','energy','happy'].includes(q)?q:'full';if(v)document.documentElement.dataset.variant=v;")
     .replace(/<title>.*?<\/title>/, '<title>PlanetSlam — Global Intelligence</title>')
     .replace(/<meta name="application-name" content=".*?" \/>/, '<meta name="application-name" content="PlanetSlam" />')
     .replace(/<link rel="canonical"[^>]*>/g, '')
-    .replace('</head>', '<meta name="robots" content="noindex, nofollow" /></head>')
+    .replace('</head>', '<meta name="robots" content="noindex, nofollow" /><style>html[data-brand="planetslam"]{--wm-pro-banner-slot-height:0px}html[data-brand="planetslam"].wm-pro-banner-reserved #app::before{display:none}</style></head>')
     .replace('<span>World Monitor</span>', '<span>PlanetSlam</span>')
     .replace(/<link rel="icon"[^>]*>/g, '')
     .replace('</head>', '<link rel="icon" type="image/svg+xml" href="/branding/planetslam/mark.svg" /></head>');

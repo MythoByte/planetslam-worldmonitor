@@ -1,4 +1,3 @@
-import { IS_PLANETSLAM } from '../brand';
 // Base configuration shared across all variants
 import type { PanelConfig, MapLayers } from '@/types';
 
@@ -130,7 +129,7 @@ export const STORAGE_KEYS = {
 } as const;
 
 export type MapModePreference = 'flat' | 'globe';
-export const DEFAULT_MAP_MODE: MapModePreference = IS_PLANETSLAM ? 'globe' : 'flat';
+export const DEFAULT_MAP_MODE: MapModePreference = 'flat';
 
 // Type definitions for variant configs
 export interface VariantConfig {

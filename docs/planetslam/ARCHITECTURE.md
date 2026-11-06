@@ -16,7 +16,13 @@ Browser -> existing generated RPC clients -> existing Vite local handlers / self
 
 `VITE_BRAND=planetslam` selects identity in `src/config/brand.ts`; unset retains World Monitor. `src/styles/planetslam.css` centralizes Deep Space tokens, maps them onto upstream semantic variables and scopes every rule to `html[data-brand="planetslam"]`. `public/branding/planetslam/mark.svg` is an original code-native asset. Light mode retains the upstream palette with accessible cyan/amber/red overrides. Theme preference, Auto system changes and persistence reuse the upstream implementation and keys.
 
-`branding/vite-plugin.ts` sets dashboard HTML identity and noindex, removes dashboard canonical claims and supplies the SVG icon. Small hooks in Vite, main, panel layout and map defaults select the brand and existing globe. Explicit stored map choice wins, and upstream capability/failure fallbacks stay in place. Existing responsive panels, map controls, search, layer selection and feeds are reused. Other upstream marketing/reference pages and PWA identities are retained unless explicitly documented as customized: this is a dashboard foundation, not a complete public-site rebrand.
+`branding/vite-plugin.ts` sets dashboard HTML identity and noindex, removes dashboard canonical claims and supplies the SVG icon. Small hooks in Vite, main, panel layout and banner select the brand and suppress the upstream Pro launch promotion. The brand HTML transform also disables its prepaint reservation to prevent a blank strip. New visits default to the existing 2D map. Explicit stored map choice wins, and upstream capability/failure fallbacks stay in place. Existing responsive panels, map controls, search, layer selection and feeds are reused. Other upstream marketing/reference pages and PWA identities are retained unless explicitly documented as customized: this is a dashboard foundation, not a complete public-site rebrand.
+
+## Module availability
+
+PlanetSlam hides locked upstream premium panels and their upgrade entry points. It also hides a module when its panel reports a request/configuration failure or an unavailable data badge, or when all of its health-mapped sources report errors, disabled status, or confirmed missing data. The same session-only state filters panel settings. It never infers server API-key configuration from browser secrets.
+
+Unknown source health, usable stale data, successful empty event feeds, and panels with a working fallback remain visible. Hidden modules retain their saved enabled state and remain eligible for scheduled probes; a successful render or recovered health restores them. The policy covers existing explicit panel and mapped-health signals, not a complete independent provider inventory. Modules without such evidence are left visible until they report a failure. Default World Monitor builds retain their upstream behavior.
 
 ## Untrusted data
 

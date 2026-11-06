@@ -1,4 +1,5 @@
 import { isDesktopRuntime } from '@/config/desktop-runtime';
+import { IS_PLANETSLAM } from '@/config/brand';
 
 /**
  * Every variant a user can switch to. One desktop binary ships and switches
@@ -42,6 +43,13 @@ export const SITE_VARIANT: string = (() => {
     const stored = loadStoredVariant();
     if (isSiteVariant(stored)) return stored;
     return buildVariant;
+  }
+
+  // PlanetSlam editions share one origin. The URL is authoritative so copied
+  // links and browser history work independently of a visitor's stored choice.
+  if (IS_PLANETSLAM) {
+    const selected = new URLSearchParams(window.location?.search).get('variant');
+    return isSiteVariant(selected) ? selected : 'full';
   }
 
   // window.location, not bare `location`: node-based tests stub `window`

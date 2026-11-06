@@ -106,6 +106,10 @@ interface ApplyVariantPanelLayoutTransitionOptions {
   getDefaultPanel: (key: string) => PanelConfig;
   persistPanels: (panels: Record<string, PanelConfig>) => void;
   persistAppliedVariant: (variant: string) => void;
+  editionProfiles?: {
+    previousVariant: string;
+    storage: Pick<Storage, 'getItem' | 'setItem'>;
+  };
 }
 
 /**
@@ -116,12 +120,35 @@ interface ApplyVariantPanelLayoutTransitionOptions {
 export function applyVariantPanelLayoutTransition(
   options: ApplyVariantPanelLayoutTransitionOptions,
 ): Record<string, PanelConfig> {
-  const next = Object.fromEntries(
+  let next = Object.fromEntries(
     Object.entries(options.panelSettings).map(([key, config]) => [key, { ...config }]),
   );
 
+  let restoredProfile = false;
+  if (options.editionProfiles) {
+    const { previousVariant, storage } = options.editionProfiles;
+    try {
+      // Archive before replacing the shared working preferences. A failed
+      // archive leaves those preferences intact for the normal transition.
+      storage.setItem(`planetslam-panels:${previousVariant}`, JSON.stringify(next));
+      const raw = storage.getItem(`planetslam-panels:${options.currentVariant}`);
+      const saved: unknown = raw ? JSON.parse(raw) : null;
+      if (saved && typeof saved === 'object' && !Array.isArray(saved)
+        && Object.values(saved).every(config => config && typeof config === 'object'
+          && typeof config.enabled === 'boolean' && typeof config.name === 'string')) {
+        next = saved as Record<string, PanelConfig>;
+        restoredProfile = true;
+      } else {
+        // New editions start with their own defaults, retaining custom widgets.
+        next = Object.fromEntries(Object.entries(next).filter(([key]) => options.isDynamicPanel(key)));
+      }
+    } catch {
+      // Storage can be unavailable; retain the ordinary in-memory transition.
+    }
+  }
+
   for (const [key, config] of Object.entries(next)) {
-    if (!options.variantPanelKeys.has(key) && !options.isDynamicPanel(key)) {
+    if (!restoredProfile && !options.variantPanelKeys.has(key) && !options.isDynamicPanel(key)) {
       userSetPanelEnabled(config, false);
     }
   }

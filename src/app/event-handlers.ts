@@ -60,6 +60,8 @@ import {
 } from '@/config';
 import { resolveNewsCategories, enabledNewsCategoryKeys } from '@/config/feed-resolution';
 import { VARIANT_META } from '@/config/variant-meta';
+import { IS_PLANETSLAM } from '@/config/brand';
+import { isSiteVariant } from '@/config/variant';
 import { isDesktopRuntime } from '@/services/runtime';
 import {
   getMissionPresetsForVariant,
@@ -1640,7 +1642,7 @@ export class EventHandlerManager implements AppModule {
     // A deep-linked brief loads a lazy chunk and its data first; until it
     // shows, keep its country in the URL so a refresh or copied link keeps it.
     const pending = isCountryVisible ? null : this.ctx.pendingCountryBrief;
-    return buildMapUrl(baseUrl, {
+    const url = new URL(buildMapUrl(baseUrl, {
       view: state.view,
       zoom: state.zoom,
       center,
@@ -1649,7 +1651,9 @@ export class EventHandlerManager implements AppModule {
       country: isCountryVisible ? code : pending?.code,
       expanded: (isCountryVisible ? briefPage?.getIsMaximized?.() : pending?.expanded) ? true : undefined,
       chokepoint: !isCountryVisible && !pending ? (this.ctx.activeChokepoint ?? undefined) : undefined,
-    });
+    }));
+    if (IS_PLANETSLAM) url.searchParams.set('variant', SITE_VARIANT);
+    return url.toString();
   }
 
   private getEmbedUrl(): string | null {
@@ -2013,6 +2017,13 @@ export class EventHandlerManager implements AppModule {
   ): Promise<'reload' | 'assign' | 'blocked'> {
     trackVariantSwitch(SITE_VARIANT, variant);
     await this.exitFullscreenForNavigation();
+
+    if (IS_PLANETSLAM && !this.ctx.isDesktopApp) {
+      if (!isSiteVariant(variant)) return 'blocked';
+      stageVariantSelection(SITE_VARIANT, variant, writeStorageValue);
+      window.location.href = new URL(`/dashboard?variant=${variant}`, window.location.origin).toString();
+      return 'assign';
+    }
 
     if (this.ctx.isDesktopApp || options.isLocalDev) {
       if (stageVariantSelection(SITE_VARIANT, variant, writeStorageValue)) {

@@ -79,3 +79,26 @@ html[data-brand="planetslam"] .site-footer-name { color: var(--accent); }
   }
   html[data-brand="planetslam"] .logo::before { width: 22px; height: 22px; }
 }
+
+/* Paid upstream features are not offered by the PlanetSlam dashboard. */
+html[data-brand="planetslam"] .panel-is-locked,
+html[data-brand="planetslam"] .panel-source-unavailable,
+html[data-brand="planetslam"] .pro-preview,
+html[data-brand="planetslam"] .layer-toggle-locked,
+html[data-brand="planetslam"] .resilience-widget__locked,
+html[data-brand="planetslam"] .upgrade-pro-section,
+html[data-brand="planetslam"] .upgrade-pro-cta,
+html[data-brand="planetslam"] .ai-widget-block-pro,
+html[data-brand="planetslam"] .mcp-panel-block,
+html[data-brand="planetslam"] #us-tab-api-keys,
+html[data-brand="planetslam"] #us-tab-embeds,
+html[data-brand="planetslam"] #us-tab-mcp-clients {
+  display: none !important;
+}
+
+/* Anonymous PlanetSlam visitors do not need account entry buttons. */
+html[data-brand="planetslam"] .auth-header-widget:not(:has(.auth-clerk-user-button)),
+html[data-brand="planetslam"] .mobile-auth-fallback,
+html[data-brand="planetslam"] .mobile-menu-account:not(:has(.auth-clerk-user-button)) {
+  display: none !important;
+}

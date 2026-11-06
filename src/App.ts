@@ -10,6 +10,7 @@ import { normalizeExclusiveChoropleths } from '@/components/resilience-choroplet
 import type { AppContext } from '@/app/app-context';
 import type { LoadAllDataTrigger } from '@/app/viewport-hydration-ledger';
 import { applyVisibleMapDimension } from '@/app/map-dimension-control';
+import { IS_PLANETSLAM } from '@/config/brand';
 import {
   REFRESH_INTERVALS,
   DEFAULT_PANELS,
@@ -1077,6 +1078,10 @@ export class App {
         || localStorage.getItem(PANEL_SPANS_KEY) !== null;
       panelSettings = applyVariantPanelLayoutTransition({
         currentVariant,
+        editionProfiles: IS_PLANETSLAM && appliedPanelLayoutVariant ? {
+          previousVariant: appliedPanelLayoutVariant,
+          storage: localStorage,
+        } : undefined,
         panelSettings: loadFromStorage<Record<string, PanelConfig>>(STORAGE_KEYS.panels, {}),
         variantPanelKeys: newVariantKeys,
         isDynamicPanel,
