@@ -4,6 +4,7 @@ import type { VariantConfig } from './base';
 
 export const DEFAULT_PANELS: Record<string, PanelConfig> = {
   map: { name: 'Space & Orbit Map', enabled: true, priority: 1 },
+  'space-brief': { name: 'Space Daily Brief', enabled: true, priority: 1 },
   'space-satellites': { name: 'Satellite Tracker', enabled: true, priority: 1 },
   'space-observing': { name: 'Tonight’s Sky & Observing', enabled: true, priority: 1 },
   'space-cameras': { name: 'Space Live', enabled: true, priority: 1 },

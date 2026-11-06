@@ -1,5 +1,5 @@
 /** Public, cached Space datasets. Provider credentials never enter browser payloads. */
-export type SpaceDataset = 'apod' | 'news' | 'launches' | 'weather' | 'aurora' | 'solar' | 'events' | 'neo' | 'orbits' | 'missions' | 'health';
+export type SpaceDataset = 'apod' | 'news' | 'launches' | 'weather' | 'aurora' | 'solar' | 'events' | 'neo' | 'orbits' | 'missions' | 'brief' | 'health';
 export interface SpaceEnvelope<T> {
   dataset: SpaceDataset;
   status: 'fresh' | 'stale' | 'unavailable';
@@ -90,3 +90,38 @@ export interface OrbitGroupHealth {
   message?: string;
 }
 export interface OrbitCatalogData { items: OrbitObject[]; groups: OrbitGroupHealth[]; complete: boolean }
+
+/** Dated central source snapshot; never a live space-weather or viewing forecast. */
+export type SpaceBriefInputDataset = Exclude<SpaceDataset, 'brief' | 'health'>;
+export interface SpaceBriefSource {
+  id: string;
+  dataset: SpaceBriefInputDataset;
+  title: string;
+  url: string;
+  fetchedAt: number;
+  observedAt: number | null;
+  expiresAt: number;
+  freshUntil: number;
+  status: 'fresh' | 'stale';
+}
+export interface SpaceBriefSection { id: string; heading: string; summary: string; sourceIds: string[] }
+export interface SpaceBriefCoverage {
+  dataset: SpaceBriefInputDataset;
+  status: 'fresh' | 'stale' | 'unavailable';
+  fetchedAt: number | null;
+  observedAt: number | null;
+  expiresAt: number | null;
+  freshUntil: number | null;
+  itemCount: number;
+}
+export interface SpaceBriefData {
+  date: string;
+  generatedAt: number;
+  mode: 'ai' | 'source-summary';
+  model: string | null;
+  title: string;
+  items: SpaceBriefSection[];
+  sources: SpaceBriefSource[];
+  coverage: SpaceBriefCoverage[];
+  limitations: string[];
+}

@@ -1,4 +1,5 @@
 import type { SpaceOrbitSnapshot, SpaceOrbitPosition, SpaceGroundTrack } from '@/types/space-orbits';
+import { BRAND } from '@/config/brand';
 import type { SpaceMapSnapshot, SpaceAuroraPoint, SpaceLaunchMarker } from '@/types/space-map';
 /**
  * DeckGLMap - WebGL-accelerated map visualization for desktop
@@ -6125,7 +6126,7 @@ export class DeckGLMap {
 
     const authorBadge = document.createElement('div');
     authorBadge.className = 'map-author-badge';
-    authorBadge.textContent = '© Elie Habib · Someone™';
+    authorBadge.textContent = BRAND.mapCredit;
     toggles.appendChild(authorBadge);
 
     this.container.appendChild(toggles);

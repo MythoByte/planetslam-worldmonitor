@@ -4,4 +4,5 @@ export const BRAND = {
   name: IS_PLANETSLAM ? 'PlanetSlam' : 'World Monitor',
   wordmark: IS_PLANETSLAM ? 'PLANETSLAM' : 'MONITOR',
   source: 'https://github.com/MythoByte/planetslam-worldmonitor',
+  mapCredit: IS_PLANETSLAM ? '© MythoByte' : '© Elie Habib · Someone™',
 } as const;

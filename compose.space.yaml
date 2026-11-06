@@ -14,6 +14,9 @@ services:
       UPSTASH_ALLOW_INSECURE_HTTP: "true"
       NASA_API_KEY: "${NASA_API_KEY:-}"
       SPACEDEVS_API_KEY: "${SPACEDEVS_API_KEY:-}"
+      # Optional AI enrichment; without it the daily brief is a labeled source summary.
+      OPENROUTER_API_KEY: "${OPENROUTER_API_KEY:-}"
+      SPACE_BRIEF_MODEL: "${SPACE_BRIEF_MODEL:-deepseek/deepseek-v4-flash}"
     depends_on:
       redis-rest:
         condition: service_started

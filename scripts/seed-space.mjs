@@ -6,8 +6,9 @@ import { SPACE_DATASETS, spaceKey, validSpaceData } from '../api/_space-data.js'
 import { fetchSpaceDataset } from './_space-providers.mjs';
 import { seedOrbitCatalog } from './_space-orbits.mjs';
 import { admitTsdRequest } from './_space-missions.mjs';
+import { generateSpaceBrief } from './_space-brief.mjs';
 
-export async function seedSpace({ now = Date.now(), names = Object.keys(SPACE_DATASETS), fetchDataset = fetchSpaceDataset,
+export async function seedSpace({ now = Date.now(), names = [...Object.keys(SPACE_DATASETS).filter(name => name !== 'brief'), 'brief'], fetchDataset = fetchSpaceDataset, generateBrief = generateSpaceBrief,
   command, lock = acquireLock, unlock = releaseLock, publish = writeExtraKeyWithMetaAtomically } = {}) {
   const runId = randomUUID();
   const results = [];
@@ -30,7 +31,8 @@ export async function seedSpace({ now = Date.now(), names = Object.keys(SPACE_DA
       if (['launches', 'missions'].includes(dataset) && !await admitTsdRequest(command, `${dataset}:${runId}`)) {
         results.push({ dataset, status: 'provider-budget' }); continue;
       }
-      const response = dataset === 'orbits' ? await seedOrbitCatalog({ command, publish, now }) : await fetchDataset(dataset, { now });
+      const response = dataset === 'brief' ? await generateBrief({ command, now }) : dataset === 'orbits' ? await seedOrbitCatalog({ command, publish, now }) : await fetchDataset(dataset, { now });
+      if (response?.skipped) { results.push({ dataset, status: response.skipped }); continue; }
       if (!validSpaceData(dataset, response?.data)) throw new Error('Invalid normalized data');
       const fetchedAt = dataset === 'orbits' ? response.fetchedAt : Date.now();
       const snapshot = { dataset, fetchedAt, observedAt: response.observedAt, data: response.data };
