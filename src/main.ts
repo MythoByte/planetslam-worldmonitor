@@ -1,3 +1,4 @@
+import { installPlanetSlamLinks } from '@/services/planetslam-links';
 import './styles/planetslam.css';
 import './styles/base-layer.css';
 import './bootstrap/zod-csp';
@@ -672,6 +673,7 @@ if (urlParams.get('settings') === '1') {
   // Start the first dashboard data now instead of after the App chunk loads.
   primeBootstrapFastTier();
   installUtmInterceptor();
+  installPlanetSlamLinks(document.body);
   let resolveBindings!: (bindings: WebMcpAppBindings) => void;
   let rejectBindings!: (error: unknown) => void;
   const bindings = new Promise<WebMcpAppBindings>((resolve, reject) => {

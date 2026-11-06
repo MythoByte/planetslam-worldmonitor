@@ -1242,7 +1242,7 @@ export class Panel {
     const ctaBtn = h('button', { type: 'button', className: 'panel-locked-cta' }, 'Upgrade to Pro');
     ctaBtn.addEventListener('click', () => {
       import('@/services/upgrade-flow').then((m) => m.openUpgradeCheckout()).catch(() => {
-        window.open('https://worldmonitor.app/pro', '_blank', 'noopener,noreferrer');
+        if (!IS_PLANETSLAM) window.open('https://worldmonitor.app/pro', '_blank', 'noopener,noreferrer');
       });
     });
     lockedChildren.push(ctaBtn);

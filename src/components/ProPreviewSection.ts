@@ -1,3 +1,4 @@
+import { IS_PLANETSLAM } from '@/config/brand';
 import { type AuthSession, getAuthState, subscribeAuthState } from '@/services/auth-state';
 import {
   getEntitlementVerificationStatus,
@@ -277,7 +278,7 @@ export class ProPreviewSection {
         panelKey: this.props.panelKey,
       });
     } catch {
-      window.open('https://worldmonitor.app/pro', '_blank', 'noopener,noreferrer');
+      if (!IS_PLANETSLAM) window.open('https://worldmonitor.app/pro', '_blank', 'noopener,noreferrer');
     }
   }
 }

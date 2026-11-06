@@ -1,3 +1,4 @@
+import { IS_PLANETSLAM } from '@/config/brand';
 import { type AuthSession, getAuthState, subscribeAuthState } from '@/services/auth-state';
 import {
   getEntitlementVerificationStatus,
@@ -320,7 +321,7 @@ export class ResilienceWidget {
         const crisisDesk = this.isCrisisDeskMissionActive();
         if (crisisDesk) trackProPreviewCta('crisis-desk', 'cii');
         void this.openUpgradeFlow(crisisDesk).catch(() => {
-          window.open('https://worldmonitor.app/pro', '_blank', 'noopener,noreferrer');
+          if (!IS_PLANETSLAM) window.open('https://worldmonitor.app/pro', '_blank', 'noopener,noreferrer');
         });
       },
     }, cta) as HTMLButtonElement;

@@ -1,3 +1,4 @@
+import { installPlanetSlamLinks } from '@/services/planetslam-links';
 import './styles/base-layer.css';
 import './styles/happy-theme.css';
 import './styles/embed.css';
@@ -110,3 +111,5 @@ async function bootEmbed(): Promise<void> {
 }
 
 void bootEmbed();
+
+installPlanetSlamLinks(document.body);

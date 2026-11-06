@@ -7719,6 +7719,20 @@
       ]
     },
     {
+      "host": "planetslam.com",
+      "provider": "PlanetSlam web app",
+      "kind": "structured",
+      "observed": true,
+      "license": "Excluded: PlanetSlam own web application",
+      "attribution": "Excluded from the external-provider count: first-party web origin.",
+      "status": "excluded",
+      "references": [
+        {
+          "path": "src/embed/embed-url.ts"
+        }
+      ]
+    },
+    {
       "host": "pncp.gov.br",
       "provider": "pncp.gov.br",
       "kind": "structured",

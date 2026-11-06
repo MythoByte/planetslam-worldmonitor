@@ -1,3 +1,4 @@
+import { IS_PLANETSLAM } from '@/config/brand';
 /**
  * Canvas 2D renderer for branded happy story share cards.
  * Generates a 1080x1080 PNG from a NewsItem with warm gradient,
@@ -176,7 +177,7 @@ export async function renderHappyShareCard(item: NewsItem): Promise<HTMLCanvasEl
 
   ctx.font = '400 22px Nunito, system-ui, sans-serif';
   ctx.fillStyle = '#A0AEC0';
-  ctx.fillText('happy.worldmonitor.app', PAD, brandY + 34);
+  ctx.fillText(IS_PLANETSLAM ? 'planetslam.com' : 'happy.worldmonitor.app', PAD, brandY + 34);
 
   return canvas;
 }

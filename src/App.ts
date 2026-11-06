@@ -3386,6 +3386,7 @@ export class App {
 
   /** Reconcile or restore the persisted 80-source cap without losing user intent. */
   private reconcileSourceLimitForTier(pro: boolean): boolean {
+    pro = pro || IS_PLANETSLAM;
     let ownershipMetadataExists = false;
     try {
       ownershipMetadataExists = localStorage.getItem(STORAGE_KEYS.sourceGateOwnership) !== null;
@@ -3463,7 +3464,7 @@ export class App {
     }
     if (disabledPersisted || ownershipPersisted) {
       console.log(pro
-        ? `[App] Pro: restored ${gateOwned.size} source(s) disabled by the free-tier gate`
+        ? `[App] ${IS_PLANETSLAM ? 'PlanetSlam' : 'Pro'}: restored ${gateOwned.size} source(s) disabled by the free-tier gate`
         : `[App] Free tier: reconciled ${nextGateOwned.size} gate-owned source disable(s)`);
     }
     return disabledPersisted || ownershipPersisted;
