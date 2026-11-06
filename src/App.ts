@@ -2455,16 +2455,21 @@ export class App {
     // Localize the static index.html shell — <title>, meta description, and
     // the accessible <h1> are baked in English before the app boots; once i18n
     // is ready we swap them to the user's locale.
-    document.title = t('shell.documentTitle');
+    const spaceEdition = IS_PLANETSLAM && SITE_VARIANT === 'space';
+    const documentTitle = spaceEdition ? 'PlanetSlam Space — Live Space Dashboard' : t('shell.documentTitle');
+    const description = spaceEdition
+      ? 'Space cameras, launches, NASA imagery, space weather, satellites, and near-Earth objects.'
+      : t('shell.metaDescription');
+    document.title = documentTitle;
     const setMeta = (sel: string, val: string) => {
       const el = document.querySelector(sel);
       if (el) el.setAttribute('content', val);
     };
-    setMeta('meta[name="description"]', t('shell.metaDescription'));
-    setMeta('meta[property="og:title"]', t('shell.documentTitle'));
-    setMeta('meta[property="og:description"]', t('shell.metaDescription'));
-    setMeta('meta[name="twitter:title"]', t('shell.documentTitle'));
-    setMeta('meta[name="twitter:description"]', t('shell.metaDescription'));
+    setMeta('meta[name="description"]', description);
+    setMeta('meta[property="og:title"]', documentTitle);
+    setMeta('meta[property="og:description"]', description);
+    setMeta('meta[name="twitter:title"]', documentTitle);
+    setMeta('meta[name="twitter:description"]', description);
     // Mirror of OG_LOCALE in pro-test/src/i18n.ts. The two packages have
     // separate Vite roots and bundlers and can't share an import — keep the
     // tables aligned by hand when adding a locale here OR there.

@@ -379,7 +379,8 @@
     "panelCatCommodityEcon": "경제 & 무역",
     "panelCatHappyNews": "좋은 소식",
     "panelCatHappyPlanet": "지구 & 기부",
-    "embed": "삽입"
+    "embed": "삽입",
+    "panelCatSpace": "Space"
   },
   "panels": {
     "liveNews": "실시간 뉴스",

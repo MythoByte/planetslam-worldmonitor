@@ -1,3 +1,4 @@
+import type { SpaceMapSnapshot, SpaceAuroraPoint, SpaceLaunchMarker } from '@/types/space-map';
 /**
  * DeckGLMap - WebGL-accelerated map visualization for desktop
  * Uses deck.gl for high-performance rendering of large datasets
@@ -608,6 +609,13 @@ function reportDeckLoopStop(error: Error, recovery: 'restart' | 'svg-fallback'):
 }
 
 export class DeckGLMap {
+  private spaceOverlay: SpaceMapSnapshot = { aurora: [], launches: [] };
+
+  public setSpaceOverlay(snapshot: SpaceMapSnapshot): void {
+    this.spaceOverlay = snapshot;
+    this.render();
+  }
+
   private static readonly MAX_CLUSTER_LEAVES = 200;
 
   private container: HTMLElement;
@@ -2045,6 +2053,20 @@ export class DeckGLMap {
       if (this.dayNightIntervalId) this.stopDayNightTimer();
       this.layerCache.delete('day-night-layer');
     }
+
+    // Native geographic layers follow MapLibre pan/zoom; never screen-positioned dots.
+    if (this.spaceOverlay.aurora.length) layers.push(new ScatterplotLayer<SpaceAuroraPoint>({
+      id: 'space-aurora-forecast', data: this.spaceOverlay.aurora,
+      getPosition: point => [point.longitude, point.latitude], getRadius: 42_000,
+      getFillColor: point => [65, 235, 140, Math.round(35 + point.probability * 1.5)],
+      radiusMinPixels: 1, pickable: true,
+    }));
+    if (this.spaceOverlay.launches.length) layers.push(new ScatterplotLayer<SpaceLaunchMarker>({
+      id: 'space-upcoming-launches', data: this.spaceOverlay.launches,
+      getPosition: launch => [launch.longitude, launch.latitude], getRadius: 15_000,
+      getFillColor: [255, 188, 80, 235], getLineColor: [255, 240, 190, 255],
+      stroked: true, lineWidthMinPixels: 1, radiusMinPixels: 7, radiusMaxPixels: 14, pickable: true,
+    }));
 
     // FAA NMS airspace restrictions are area overlays (circles up to 250 NM):
     // they sit above only the day/night background, so cables, pipelines,
@@ -5170,6 +5192,10 @@ export class DeckGLMap {
     };
 
     switch (layerId) {
+      case 'space-aurora-forecast':
+        return { html: `<div class="deckgl-tooltip"><strong>Aurora forecast</strong><br/>Model intensity: ${numericLabel(obj.probability)} / 100<br/>Not a local visibility guarantee</div>` };
+      case 'space-upcoming-launches':
+        return { html: `<div class="deckgl-tooltip"><strong>${text(obj.name)}</strong><br/>${text(obj.pad)}<br/>${text(new Date(obj.net).toUTCString())}</div>` };
       case 'hotspots-layer':
         return { html: `<div class="deckgl-tooltip"><strong>${text(obj.name)}</strong><br/>${text(obj.subtext)}</div>` };
       case 'earthquakes-layer':

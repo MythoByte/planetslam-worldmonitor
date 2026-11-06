@@ -3906,7 +3906,8 @@
     "panelCatCommodityEcon": "Economia & Comércio",
     "panelCatHappyNews": "Boas Notícias",
     "panelCatHappyPlanet": "Planeta & Doações",
-    "embed": "Incorporar"
+    "embed": "Incorporar",
+    "panelCatSpace": "Space"
   },
   "countryBrief": {
     "identifying": "Identificando país...",

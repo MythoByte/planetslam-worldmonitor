@@ -213,6 +213,61 @@ export const PROVIDER_IDENTITY_GROUPS = Object.freeze({
 });
 
 const PROVIDER_OVERRIDES = {
+  // PlanetSlam Space sources. Public access is distinct from content reuse rights.
+  "api.nasa.gov": {
+    provider: "NASA Open APIs (APOD, NeoWs, DONKI)",
+    license: "NASA API access limits apply. NASA-produced media generally carries no U.S. copyright, but APOD and other third-party material can retain separate copyrights; item-specific notices control. https://api.nasa.gov/ and https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    attribution: "Credit NASA and the relevant APOD photographer or other named rights holder; retain returned copyright and original source links. No implication of NASA endorsement.",
+    status: "terms-review",
+  },
+  "api.spaceflightnewsapi.net": {
+    provider: "Spaceflight News API (The Space Devs)",
+    license: "Public aggregation API; free API access does not license underlying publisher articles or images. Publisher-specific terms and permissions still apply. https://www.spaceflightnewsapi.net/",
+    attribution: "Credit Spaceflight News API and each original publisher; link to the original article. Display metadata and brief excerpts without implying rights to redistribute full articles or publisher images.",
+    status: "terms-review",
+  },
+  "ll.thespacedevs.com": {
+    provider: "Launch Library 2 (The Space Devs)",
+    license: "Free access is documented up to 15 unauthenticated requests per hour. Underlying media credits and service terms apply; unrestricted republication is not established by free API access. https://thespacedevs.com/llapi",
+    attribution: "Credit The Space Devs / Launch Library 2; retain mission source and webcast links, media credits, and launch schedule uncertainty.",
+    status: "terms-review",
+  },
+  "sdo.gsfc.nasa.gov": {
+    provider: "NASA Solar Dynamics Observatory",
+    license: "SDO images and movies are generally not copyrighted unless specifically noted; the data-use policy encourages public information and educational use with attribution. Browse products are not science-analysis products. https://sdo.gsfc.nasa.gov/data/rules.php",
+    attribution: "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams. Retain observation time and link to the SDO source; respect item-specific notices.",
+    status: "reviewed",
+  },
+  "spacelaunchnow.me": {
+    provider: "Space Launch Now mission links",
+    license: "Outbound launch-detail link only; no Space Launch Now page scraping, article redistribution, or media-reuse grant is established. https://spacelaunchnow.me/",
+    attribution: "Identify Space Launch Now when linking to its mission pages. Launch facts are credited separately to Launch Library 2; do not imply this link grants rights to site content.",
+    status: "terms-review",
+  },
+  "www.esa.int": {
+    provider: "European Space Agency news",
+    license: "ESA website content is copyrighted by ESA or the credited third party; RSS availability is not a blanket republication licence. https://www.esa.int/Services/Terms_and_conditions",
+    attribution: "Credit ESA and any credited author or rights holder; link to the original news item. Limit aggregation to headline metadata and permitted excerpts; retain separate image notices.",
+    status: "terms-review",
+  },
+  "www.nasa.gov": {
+    provider: "NASA news and official live links",
+    license: "NASA-produced media generally carries no U.S. copyright, subject to third-party, identity, trademark and other item-specific restrictions. https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    attribution: "Credit NASA and any named third-party author or rights holder; link to the original NASA news item or official live page. Preserve third-party credits and do not imply NASA endorsement.",
+    status: "terms-review",
+  },
+  "www.spaceweather.gov": {
+    provider: "NOAA Space Weather Prediction Center source links",
+    license: "NOAA/NWS information is generally U.S. public-domain material unless otherwise noted; third-party content and marks retain their restrictions. https://www.weather.gov/disclaimer",
+    attribution: "Credit NOAA/NWS Space Weather Prediction Center; retain product timestamps and official source links. Distinguish derived displays and forecasts from official unmodified products; do not imply endorsement.",
+    status: "reviewed",
+  },
+  "www.spacex.com": {
+    provider: "SpaceX official mission and webcast links",
+    license: "Outbound official mission links only; SpaceX names and marks do not imply endorsement, and no grant to redistribute SpaceX media is established here. https://www.spacex.com/trademark",
+    attribution: "Identify SpaceX as the official mission/webcast source and link to its page; credit independent camera operators separately. Do not imply affiliation or redistribute media outside provider-supported playback.",
+    status: "terms-review",
+  },
   // Food-price publishers (#9892) whose own terms we recorded at onboarding.
   'stat.uz': {
     provider: 'stat.uz',
@@ -1059,7 +1114,7 @@ const PROVIDER_OVERRIDES = {
 // a provider-bearing override a separate, explicit lifecycle event instead of
 // something `--write` can silently normalize into the manifest.
 export const PROVIDER_IDENTITY_REVIEW = Object.freeze({
-  sha256: 'ccac1f3191f4e0aa0142a4887c48645b4d5ffbe02e85de875d25ce54d22466c4',
+  sha256: '14bf864722669cf64226fdd7e87eea11fee27025357e8b62d09ae784ad90b915',
   // 2026-11-02 (#10051): group the Philippine DOE with the CloudFront media
   // host that serves its weekly PDFs, and SONABHY with the Strapi CMS its
   // tariff page reads from.
@@ -1071,12 +1126,14 @@ export const PROVIDER_IDENTITY_REVIEW = Object.freeze({
   // republisher; PBOC source credit is preserved under /BQSM/index.html section 2.
   // 2026-11-06: owner-requested PlanetSlam navigation uses its own web origin.
   // This is application UI, not an ingested external provider or dataset.
-  reason: 'Classify planetslam.com as the first-party PlanetSlam web application, excluded from external data-provider counts. Preserve all reviewed provider identities, including Shanghai Financial Portal with PBOC source attribution (2026-10-24 review). Add the Uzbekistan Statistics Agency as one identity across stat.uz and api.siat.stat.uz, with its CC BY 4.0 terms, and record the citation and reserved-rights terms that SIMA Niger and Greater Amman Municipality state on their sites (#9892). Add the Algerian Ministry of Agriculture (madr.gov.dz) and the National Statistics Office of Mongolia data host (data.1212.mn) as food-price publishers in terms review (#10050). Add the Philippine Department of Energy as one identity across doe.gov.ph and its CloudFront media host, and SONABHY as one identity across www.sonabhy.bf and the Strapi CMS its tariff page reads (#10051). Move Ember electricity data to files.ember-energy.org, where Ember now publishes its monthly release; storage.googleapis.com now serves only GDELT bulk files and joins api.gdeltproject.org as one GDELT identity (2026-11-03).',
+  // 2026-11-06: record distinct Space API, imagery, news, and link-out identities.
+  // Preserve reserved-rights review for third-party content and public API services.
+  reason: 'Add the PlanetSlam Space provider identities for NASA Open APIs, NASA news, SDO, NOAA SWPC, ESA news, The Space Devs launch/news APIs, and official mission link destinations, with source-specific rights and attribution rather than blanket unrestricted-use claims. Classify planetslam.com as the first-party PlanetSlam web application, excluded from external data-provider counts. Preserve all reviewed provider identities, including Shanghai Financial Portal with PBOC source attribution (2026-10-24 review). Add the Uzbekistan Statistics Agency as one identity across stat.uz and api.siat.stat.uz, with its CC BY 4.0 terms, and record the citation and reserved-rights terms that SIMA Niger and Greater Amman Municipality state on their sites (#9892). Add the Algerian Ministry of Agriculture (madr.gov.dz) and the National Statistics Office of Mongolia data host (data.1212.mn) as food-price publishers in terms review (#10050). Add the Philippine Department of Energy as one identity across doe.gov.ph and its CloudFront media host, and SONABHY as one identity across www.sonabhy.bf and the Strapi CMS its tariff page reads (#10051). Move Ember electricity data to files.ember-energy.org, where Ember now publishes its monthly release; storage.googleapis.com now serves only GDELT bulk files and joins api.gdeltproject.org as one GDELT identity (2026-11-03).',
   // A URL cited here is scanned like any other: this file sits inside
   // SOURCE_ROOTS, so citing a host that is not already a registered source
   // invents a provider row for it. The B.C. catalogue URLs above are safe
   // because that host is itself an observed source; parallel.ai is not.
-  reviewReference: 'Issue #6449 BGS provenance review; plus Issue #7371 country corpus identity review; plus Issue #7005 IMD cyclone/marine source-rights probe; plus Issues #7012, #7036, and #6682 Toronto safety sources; plus PR #7576 source migration review; plus Issue #7000 publisher-centric source catalog; plus Issue #7001, Issue #6437, Issue #6622, Issue #6659, PR #6447, the 2026-09-01 FAOSTAT transport identity review, the 2026-09-04 FIRMS partial-coverage incident, and the 2026-09-05 Barchart WAF outage that moved S&P 500 breadth to the TradingView screener scan; plus Issue #7838, which added the read-only Sentry resolve-pin audit; plus PR #8394 JODI publication catalog lineage; plus the 2026-10-17 /verify audit that added the Al Jazeera claim-pool depth search; plus Issue #9352 part C, the US Consolidated Screening List export-control lists; plus Issue #10051 fuel-price batch 3, the DOE media host and SONABHY CMS groups; plus the 2026-11-06 PlanetSlam owner-requested first-party navigation review.',
+  reviewReference: 'Issue #6449 BGS provenance review; plus Issue #7371 country corpus identity review; plus Issue #7005 IMD cyclone/marine source-rights probe; plus Issues #7012, #7036, and #6682 Toronto safety sources; plus PR #7576 source migration review; plus Issue #7000 publisher-centric source catalog; plus Issue #7001, Issue #6437, Issue #6622, Issue #6659, PR #6447, the 2026-09-01 FAOSTAT transport identity review, the 2026-09-04 FIRMS partial-coverage incident, and the 2026-09-05 Barchart WAF outage that moved S&P 500 breadth to the TradingView screener scan; plus Issue #7838, which added the read-only Sentry resolve-pin audit; plus PR #8394 JODI publication catalog lineage; plus the 2026-10-17 /verify audit that added the Al Jazeera claim-pool depth search; plus Issue #9352 part C, the US Consolidated Screening List export-control lists; plus Issue #10051 fuel-price batch 3, the DOE media host and SONABHY CMS groups; plus the 2026-11-06 PlanetSlam owner-requested first-party navigation review; plus the 2026-11-06 PlanetSlam Space phase 1-3 source onboarding review of official NASA media guidance, SDO data rules, NWS disclaimer, ESA terms, and The Space Devs service documentation.',
 });
 
 export function providerIdentityDigest(providerOverrides = PROVIDER_OVERRIDES) {

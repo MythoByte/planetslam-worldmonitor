@@ -389,7 +389,8 @@
     "panelCatCommodityEcon": "الاقتصاد والتجارة",
     "panelCatHappyNews": "أخبار إيجابية",
     "panelCatHappyPlanet": "الكوكب والعطاء",
-    "embed": "تضمين"
+    "embed": "تضمين",
+    "panelCatSpace": "Space"
   },
   "panels": {
     "liveNews": "أخبار مباشرة",

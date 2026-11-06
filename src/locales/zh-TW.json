@@ -379,7 +379,8 @@
     "panelCatCommodityEcon": "經濟與貿易",
     "panelCatHappyNews": "好訊息",
     "panelCatHappyPlanet": "地球與慈善",
-    "embed": "嵌入"
+    "embed": "嵌入",
+    "panelCatSpace": "Space"
   },
   "panels": {
     "liveNews": "即時新聞",

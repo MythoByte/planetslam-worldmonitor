@@ -1,3 +1,4 @@
+import type { SpaceMapSnapshot } from '@/types/space-map';
 /**
  * GlobeMap - 3D interactive globe using globe.gl
  *
@@ -512,6 +513,25 @@ interface GlobeControlsLike {
 const SET_CENTER_ROTATION_MS = 1200;
 
 export class GlobeMap {
+  private spaceOverlay: SpaceMapSnapshot = { aurora: [], launches: [] };
+
+  public setSpaceOverlay(snapshot: SpaceMapSnapshot): void {
+    this.spaceOverlay = snapshot;
+    this.paintSpaceOverlay();
+  }
+
+  private paintSpaceOverlay(): void {
+    if (!this.globe || !this.initialized || this.destroyed || this.webglLost) return;
+    const points = [
+      ...this.spaceOverlay.aurora.filter(point => Math.round(point.longitude) % 2 === 0 && Math.round(point.latitude) % 2 === 0).map(point => ({ ...point, kind: 'aurora', name: `Aurora forecast: model intensity ${point.probability} / 100. Not a local visibility guarantee.`, color: `rgba(65,235,140,${0.15 + point.probability / 150})`, radius: 0.32 })),
+      ...this.spaceOverlay.launches.map(launch => ({ ...launch, kind: 'launch', name: `${launch.name} · ${launch.pad} · ${new Date(launch.net).toUTCString()}`, color: '#ffbc50', radius: 0.55 })),
+    ];
+    this.globe.pointsData(points).pointLat('latitude').pointLng('longitude')
+      .pointColor('color').pointRadius('radius').pointAltitude(0.003)
+      .pointLabel((point: object) => escapeHtml(String((point as { name: string }).name)))
+      .pointsTransitionDuration(0);
+  }
+
   private container: HTMLElement;
   private globe: GlobeInstance | null = null;
   private initPromise: Promise<void> = Promise.resolve();
@@ -2238,6 +2258,7 @@ export class GlobeMap {
   private flushMarkersImmediate(): void {
     if (!this.globe || !this.initialized || this.destroyed || this.webglLost) return;
     this.wakeGlobe();
+    this.paintSpaceOverlay();
 
     // Grouped rather than concatenated so the budget can trim the feeds that are
     // actually oversized (#5368). Every marker here becomes a DOM node that

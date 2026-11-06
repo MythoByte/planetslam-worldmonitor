@@ -91,6 +91,16 @@ export const COMMANDS: Command[] = [
   { id: 'layer:no2Activity', keywords: ['no2', 'nitrogen dioxide', 'industrial activity', 'emissions', 'sentinel', 'pollution'], label: 'Toggle industrial activity (NO2)', icon: '\u{1F3ED}', category: 'layers' },
 
   // Panel navigation (matching actual DEFAULT_PANELS keys)
+  { id: 'panel:space-cameras', keywords: ["space cameras", "iss camera", "starbase camera"], label: 'Panel: Space Live', icon: '\u{1F680}', category: 'panels' },
+  { id: 'panel:space-apod', keywords: ["apod", "astronomy picture", "nasa picture"], label: 'Panel: Astronomy Picture of the Day', icon: '\u{1F680}', category: 'panels' },
+  { id: 'panel:space-news', keywords: ["space news", "nasa news", "spaceflight headlines"], label: 'Panel: Space News', icon: '\u{1F680}', category: 'panels' },
+  { id: 'panel:space-launches', keywords: ["launches", "rocket launch", "countdown"], label: 'Panel: Launch Countdown', icon: '\u{1F680}', category: 'panels' },
+  { id: 'panel:space-spacex', keywords: ["spacex", "starship", "falcon"], label: 'Panel: SpaceX Watch', icon: '\u{1F680}', category: 'panels' },
+  { id: 'panel:space-weather', keywords: ["space weather", "aurora", "geomagnetic"], label: 'Panel: Space Weather', icon: '\u{1F680}', category: 'panels' },
+  { id: 'panel:space-neo', keywords: ["asteroids", "near earth objects", "neo"], label: 'Panel: Near-Earth Objects', icon: '\u{1F680}', category: 'panels' },
+  { id: 'panel:space-solar', keywords: ["sun now", "solar imagery", "sdo"], label: 'Panel: Sun Now', icon: '\u{1F680}', category: 'panels' },
+  { id: 'panel:space-events', keywords: ["solar flares", "coronal mass ejections", "solar events"], label: 'Panel: Solar Event History', icon: '\u{1F680}', category: 'panels' },
+  { id: 'panel:space-health', keywords: ["space data", "space provider status", "freshness"], label: 'Panel: Space Data Status', icon: '\u{1F680}', category: 'panels' },
   { id: 'panel:live-news', keywords: ['news', 'live news', 'headlines'], label: 'Panel: Live News', icon: '\u{1F4F0}', category: 'panels' },
   { id: 'panel:intel', keywords: ['intel', 'intel feed', 'intelligence', 'osint'], label: 'Panel: Intel Feed', icon: '\u{1F50E}', category: 'panels' },
   { id: 'panel:gdelt-intel', keywords: ['gdelt', 'intelligence feed', 'live intelligence', 'global events'], label: 'Panel: Live Intelligence', icon: '\u{1F50D}', category: 'panels' },

@@ -1,6 +1,7 @@
 import type { PanelConfig, MapLayers, DataSourceId } from '@/types';
 import { SITE_VARIANT } from './variant';
 import { IS_PLANETSLAM } from './brand';
+import { DEFAULT_PANELS as SPACE_PANELS, DEFAULT_MAP_LAYERS as SPACE_MAP_LAYERS, MOBILE_DEFAULT_MAP_LAYERS as SPACE_MOBILE_MAP_LAYERS } from './variants/space';
 // boundary-ignore: isDesktopRuntime is a pure env probe with no service dependencies
 import { isDesktopRuntime } from '@/services/runtime';
 // boundary-ignore: getSecretState is a pure env/keychain probe with no service dependencies
@@ -1155,7 +1156,7 @@ const ENERGY_MOBILE_MAP_LAYERS: MapLayers = {
 // UNIFIED PANEL REGISTRY
 // ============================================
 
-type PanelVariant = 'full' | 'tech' | 'finance' | 'commodity' | 'energy' | 'happy';
+type PanelVariant = 'full' | 'tech' | 'finance' | 'commodity' | 'energy' | 'happy' | 'space';
 
 const VARIANT_PANEL_CONFIGS: Record<PanelVariant, Record<string, PanelConfig>> = {
   full: FULL_PANELS,
@@ -1163,6 +1164,7 @@ const VARIANT_PANEL_CONFIGS: Record<PanelVariant, Record<string, PanelConfig>> =
   finance: FINANCE_PANELS,
   commodity: COMMODITY_PANELS,
   energy: ENERGY_PANELS,
+  space: SPACE_PANELS,
   happy: HAPPY_PANELS,
 };
 
@@ -1180,6 +1182,7 @@ export function isPanelNativeToVariant(panelId: string, variant: string): boolea
 
 /** All panels from all variants — canonical cross-variant registry. */
 export const ALL_PANELS: Record<string, PanelConfig> = {
+  ...SPACE_PANELS,
   ...HAPPY_PANELS,
   ...COMMODITY_PANELS,
   ...ENERGY_PANELS,
@@ -1195,6 +1198,7 @@ export const VARIANT_DEFAULTS: Record<string, string[]> = {
   finance:   Object.keys(VARIANT_PANEL_CONFIGS.finance),
   commodity: Object.keys(VARIANT_PANEL_CONFIGS.commodity),
   energy:    Object.keys(VARIANT_PANEL_CONFIGS.energy),
+  space:     Object.keys(VARIANT_PANEL_CONFIGS.space),
   happy:     Object.keys(VARIANT_PANEL_CONFIGS.happy),
 };
 
@@ -1222,6 +1226,9 @@ export const VARIANT_PANEL_OVERRIDES: Partial<Record<string, Partial<Record<stri
     map:         { name: 'Energy Atlas Map' },
     'live-news': { name: 'Energy Headlines' },
     insights:    { name: 'AI Energy Insights' },
+  },
+  space: {
+    map:         { name: 'Space & Orbit Map' },
   },
   happy: {
     map:         { name: 'Good News Map' },
@@ -1469,7 +1476,9 @@ export const DEFAULT_PANELS: Record<string, PanelConfig> = Object.fromEntries(
   )
 );
 
-export const DEFAULT_MAP_LAYERS = SITE_VARIANT === 'happy'
+export const DEFAULT_MAP_LAYERS = SITE_VARIANT === 'space'
+  ? SPACE_MAP_LAYERS
+  : SITE_VARIANT === 'happy'
   ? HAPPY_MAP_LAYERS
   : SITE_VARIANT === 'tech'
     ? TECH_MAP_LAYERS
@@ -1481,7 +1490,9 @@ export const DEFAULT_MAP_LAYERS = SITE_VARIANT === 'happy'
           ? ENERGY_MAP_LAYERS
           : FULL_MAP_LAYERS;
 
-export const MOBILE_DEFAULT_MAP_LAYERS = SITE_VARIANT === 'happy'
+export const MOBILE_DEFAULT_MAP_LAYERS = SITE_VARIANT === 'space'
+  ? SPACE_MOBILE_MAP_LAYERS
+  : SITE_VARIANT === 'happy'
   ? HAPPY_MOBILE_MAP_LAYERS
   : SITE_VARIANT === 'tech'
     ? TECH_MOBILE_MAP_LAYERS
@@ -1520,6 +1531,12 @@ export const PANEL_CATEGORY_MAP: Record<string, { labelKey: string; panelKeys: s
   core: {
     labelKey: 'header.panelCatCore',
     panelKeys: ['map', 'live-news', 'live-webcams', 'windy-webcams', 'insights', 'strategic-posture', 'latest-brief'],
+  },
+
+  space: {
+    labelKey: 'header.panelCatSpace',
+    panelKeys: ['space-cameras', 'space-launches', 'space-weather', 'space-apod', 'space-news', 'space-spacex', 'space-neo', 'space-solar', 'space-events', 'space-health'],
+    variants: ['space'],
   },
 
   // Full (geopolitical) variant — marketsFinance/topical/dataTracking are

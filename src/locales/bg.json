@@ -381,7 +381,8 @@
     "panelCatCommodityEcon": "Економија & Трговија",
     "panelCatHappyNews": "Добри Вести",
     "panelCatHappyPlanet": "Планета & Давање",
-    "embed": "Вграждане"
+    "embed": "Вграждане",
+    "panelCatSpace": "Space"
   },
   "panels": {
     "liveNews": "Живи новини",

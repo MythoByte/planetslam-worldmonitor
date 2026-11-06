@@ -1036,6 +1036,20 @@
       ]
     },
     {
+      "host": "api.nasa.gov",
+      "provider": "NASA Open APIs (APOD, NeoWs, DONKI)",
+      "kind": "structured",
+      "observed": true,
+      "license": "NASA API access limits apply. NASA-produced media generally carries no U.S. copyright, but APOD and other third-party material can retain separate copyrights; item-specific notices control. https://api.nasa.gov/ and https://www.nasa.gov/nasa-brand-center/images-and-media/",
+      "attribution": "Credit NASA and the relevant APOD photographer or other named rights holder; retain returned copyright and original source links. No implication of NASA endorsement.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "scripts/_space-providers.mjs"
+        }
+      ]
+    },
+    {
       "host": "api.open511.gov.bc.ca",
       "provider": "BC Open511",
       "kind": "structured",
@@ -1243,6 +1257,20 @@
       "references": [
         {
           "path": "scripts/lib/food-prices-adapters/statuz.mjs"
+        }
+      ]
+    },
+    {
+      "host": "api.spaceflightnewsapi.net",
+      "provider": "Spaceflight News API (The Space Devs)",
+      "kind": "structured",
+      "observed": true,
+      "license": "Public aggregation API; free API access does not license underlying publisher articles or images. Publisher-specific terms and permissions still apply. https://www.spaceflightnewsapi.net/",
+      "attribution": "Credit Spaceflight News API and each original publisher; link to the original article. Display metadata and brief excerpts without implying rights to redistribute full articles or publisher images.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "scripts/_space-providers.mjs"
         }
       ]
     },
@@ -6270,6 +6298,20 @@
       ]
     },
     {
+      "host": "ll.thespacedevs.com",
+      "provider": "Launch Library 2 (The Space Devs)",
+      "kind": "structured",
+      "observed": true,
+      "license": "Free access is documented up to 15 unauthenticated requests per hour. Underlying media credits and service terms apply; unrestricted republication is not established by free API access. https://thespacedevs.com/llapi",
+      "attribution": "Credit The Space Devs / Launch Library 2; retain mission source and webcast links, media credits, and launch schedule uncertainty.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "scripts/_space-providers.mjs"
+        }
+      ]
+    },
+    {
       "host": "lnc-abc-news.tubi.video",
       "provider": "lnc-abc-news.tubi.video",
       "kind": "feed",
@@ -8756,6 +8798,20 @@
       "status": "excluded"
     },
     {
+      "host": "sdo.gsfc.nasa.gov",
+      "provider": "NASA Solar Dynamics Observatory",
+      "kind": "structured",
+      "observed": true,
+      "license": "SDO images and movies are generally not copyrighted unless specifically noted; the data-use policy encourages public information and educational use with attribution. Browse products are not science-analysis products. https://sdo.gsfc.nasa.gov/data/rules.php",
+      "attribution": "Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams. Retain observation time and link to the SDO source; respect item-specific notices.",
+      "status": "reviewed",
+      "references": [
+        {
+          "path": "scripts/_space-providers.mjs"
+        }
+      ]
+    },
+    {
       "host": "sealevel.nasa.gov",
       "provider": "sealevel.nasa.gov",
       "kind": "structured",
@@ -9150,6 +9206,20 @@
       "references": [
         {
           "path": "shared/news-catalog.json"
+        }
+      ]
+    },
+    {
+      "host": "spacelaunchnow.me",
+      "provider": "Space Launch Now mission links",
+      "kind": "structured",
+      "observed": true,
+      "license": "Outbound launch-detail link only; no Space Launch Now page scraping, article redistribution, or media-reuse grant is established. https://spacelaunchnow.me/",
+      "attribution": "Identify Space Launch Now when linking to its mission pages. Launch facts are credited separately to Launch Library 2; do not imply this link grants rights to site content.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "scripts/_space-providers.mjs"
         }
       ]
     },
@@ -12384,6 +12454,23 @@
       ]
     },
     {
+      "host": "www.esa.int",
+      "provider": "European Space Agency news",
+      "kind": "structured",
+      "observed": true,
+      "license": "ESA website content is copyrighted by ESA or the credited third party; RSS availability is not a blanket republication licence. https://www.esa.int/Services/Terms_and_conditions",
+      "attribution": "Credit ESA and any credited author or rights holder; link to the original news item. Limit aggregation to headline metadata and permitted excerpts; retain separate image notices.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "scripts/_space-providers.mjs"
+        },
+        {
+          "path": "scripts/source-attribution.mjs"
+        }
+      ]
+    },
+    {
       "host": "www.eskom.co.za",
       "provider": "www.eskom.co.za",
       "kind": "structured",
@@ -13481,6 +13568,20 @@
       ]
     },
     {
+      "host": "www.nasa.gov",
+      "provider": "NASA news and official live links",
+      "kind": "structured",
+      "observed": true,
+      "license": "NASA-produced media generally carries no U.S. copyright, subject to third-party, identity, trademark and other item-specific restrictions. https://www.nasa.gov/nasa-brand-center/images-and-media/",
+      "attribution": "Credit NASA and any named third-party author or rights holder; link to the original NASA news item or official live page. Preserve third-party credits and do not imply NASA endorsement.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "scripts/_space-providers.mjs"
+        }
+      ]
+    },
+    {
       "host": "www.nationalarchives.gov.uk",
       "provider": "www.nationalarchives.gov.uk",
       "kind": "structured",
@@ -14305,6 +14406,34 @@
       "references": [
         {
           "path": "scripts/shared/regional-energy-feeds.json"
+        }
+      ]
+    },
+    {
+      "host": "www.spaceweather.gov",
+      "provider": "NOAA Space Weather Prediction Center source links",
+      "kind": "structured",
+      "observed": true,
+      "license": "NOAA/NWS information is generally U.S. public-domain material unless otherwise noted; third-party content and marks retain their restrictions. https://www.weather.gov/disclaimer",
+      "attribution": "Credit NOAA/NWS Space Weather Prediction Center; retain product timestamps and official source links. Distinguish derived displays and forecasts from official unmodified products; do not imply endorsement.",
+      "status": "reviewed",
+      "references": [
+        {
+          "path": "src/components/SpaceDashboardPanels.ts"
+        }
+      ]
+    },
+    {
+      "host": "www.spacex.com",
+      "provider": "SpaceX official mission and webcast links",
+      "kind": "structured",
+      "observed": true,
+      "license": "Outbound official mission links only; SpaceX names and marks do not imply endorsement, and no grant to redistribute SpaceX media is established here. https://www.spacex.com/trademark",
+      "attribution": "Identify SpaceX as the official mission/webcast source and link to its page; credit independent camera operators separately. Do not imply affiliation or redistribute media outside provider-supported playback.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "src/components/SpaceDashboardPanels.ts"
         }
       ]
     },

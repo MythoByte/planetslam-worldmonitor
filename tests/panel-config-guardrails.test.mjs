@@ -18,7 +18,7 @@ const panelLayoutSrc = readFileSync(resolve(__dirname, '../src/app/panel-layout.
 const panelsSrc = readFileSync(resolve(__dirname, '../src/config/panels.ts'), 'utf-8');
 const commandsSrc = readFileSync(resolve(__dirname, '../src/config/commands.ts'), 'utf-8');
 
-const VARIANT_FILES = ['full', 'tech', 'finance', 'commodity', 'energy', 'happy'];
+const VARIANT_FILES = ['full', 'tech', 'finance', 'commodity', 'energy', 'happy', 'space'];
 const PANEL_WIDE_CLASS_RE = /className:\s*['"][^'"]*\bpanel-wide\b/;
 const COMPONENT_SOURCE_RE = /\.tsx?$/;
 
@@ -26,17 +26,23 @@ const COMPONENT_SOURCE_RE = /\.tsx?$/;
 // object literal — i.e. the panel ids, not nested config keys like
 // `defaultLayout`. Brace-walks the block so nested objects never leak in.
 function topLevelPanelIds(variant) {
-  const tag = variant.toUpperCase() + '_PANELS';
-  const m = panelsSrc.match(new RegExp(`const ${tag}[^{]*\\{`));
+  let source = panelsSrc;
+  let tag = variant.toUpperCase() + '_PANELS';
+  // Space imports one canonical definition rather than duplicating its map.
+  if (!source.includes(`const ${tag}`)) {
+    source = readFileSync(resolve(__dirname, `../src/config/variants/${variant}.ts`), 'utf-8');
+    tag = 'DEFAULT_PANELS';
+  }
+  const m = source.match(new RegExp(`const ${tag}[^{]*\\{`));
   if (!m) return [];
-  const open = panelsSrc.indexOf('{', m.index);
+  const open = source.indexOf('{', m.index);
   let depth = 0, end = open;
-  for (let i = open; i < panelsSrc.length; i++) {
-    const c = panelsSrc[i];
+  for (let i = open; i < source.length; i++) {
+    const c = source[i];
     if (c === '{') depth++;
     else if (c === '}') { depth--; if (depth === 0) { end = i; break; } }
   }
-  const body = panelsSrc.slice(open + 1, end);
+  const body = source.slice(open + 1, end);
   const depthAt = new Array(body.length).fill(0);
   let cur = 0;
   for (let i = 0; i < body.length; i++) { depthAt[i] = cur; if (body[i] === '{') cur++; else if (body[i] === '}') cur--; }
@@ -372,6 +378,7 @@ function primedPanelIds(source = appSrc) {
 }
 
 function parsePanelKeys(variant) {
+  if (variant === 'space') return topLevelPanelIds(variant);
   const src = readFileSync(resolve(__dirname, '../src/config/panels.ts'), 'utf-8');
   const tag = variant.toUpperCase() + '_PANELS';
   const start = src.indexOf(`const ${tag}`);
@@ -852,6 +859,9 @@ describe('panel-config guardrails', () => {
       'fin-regulation|ai-regulation',
       'intel|x-intel',
       'x-intel|intel',
+      // Near-Earth Objects and news are distinct Space datasets.
+      'space-news|space-neo',
+      'space-neo|space-news',
     ]);
     const typos = [];
     for (let i = 0; i < keys.length; i++) {

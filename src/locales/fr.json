@@ -383,7 +383,8 @@
     "panelCatCommodityEcon": "Économie & Commerce",
     "panelCatHappyNews": "Bonnes Nouvelles",
     "panelCatHappyPlanet": "Planète & Solidarité",
-    "embed": "Intégrer"
+    "embed": "Intégrer",
+    "panelCatSpace": "Space"
   },
   "panels": {
     "liveNews": "Actualités en direct",

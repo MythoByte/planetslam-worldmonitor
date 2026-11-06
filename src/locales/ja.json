@@ -379,7 +379,8 @@
     "panelCatCommodityEcon": "経済・貿易",
     "panelCatHappyNews": "ニュース",
     "panelCatHappyPlanet": "地球・社会貢献",
-    "embed": "埋め込む"
+    "embed": "埋め込む",
+    "panelCatSpace": "Space"
   },
   "panels": {
     "liveNews": "ライブニュース",

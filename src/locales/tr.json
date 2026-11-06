@@ -381,7 +381,8 @@
     "panelCatCommodityEcon": "Ekonomi & Ticaret",
     "panelCatHappyNews": "İyi Haberler",
     "panelCatHappyPlanet": "Gezegen & Hayırseverlik",
-    "embed": "Göm"
+    "embed": "Göm",
+    "panelCatSpace": "Space"
   },
   "panels": {
     "liveNews": "Canli Haberler",

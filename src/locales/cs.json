@@ -385,7 +385,8 @@
     "panelCatCommodityEcon": "Ekonomika a obchod",
     "panelCatHappyNews": "Dobré zprávy",
     "panelCatHappyPlanet": "Planeta a dárcovství",
-    "embed": "Vložit"
+    "embed": "Vložit",
+    "panelCatSpace": "Space"
   },
   "panels": {
     "liveNews": "Živé zprávy",
