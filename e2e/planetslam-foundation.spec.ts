@@ -26,6 +26,7 @@ for (const width of [1440, 768, 390]) {
     await expect(page.locator('#panelsGrid .panel').first()).toBeVisible();
     await expect(page.locator(width <= 768 ? '.logo-mobile' : '.logo')).toHaveText(branded ? (width <= 768 ? 'PlanetSlam' : 'PLANETSLAM') : (width <= 768 ? 'World Monitor' : 'MONITOR'));
     if (branded) {
+      await expect(page.locator('.auth-signin-btn:visible, .auth-signup-link:visible, .mobile-auth-fallback:visible')).toHaveCount(0);
       await expect(page.locator('.pro-banner')).toHaveCount(0);
       await expect(page.locator('#panelsGrid [data-panel="stock-analysis"], #panelsGrid [data-panel="latest-brief"]')).toHaveCount(0);
       await expect(page.locator('.mobile-panel-nav-chip-pro')).toHaveCount(0);
@@ -40,6 +41,11 @@ for (const width of [1440, 768, 390]) {
     const openSettings = async () => {
       if (width <= 768) {
         await page.locator('[data-mobile-tab="more"]').click();
+        if (branded) {
+          await expect(page.locator('.auth-signin-btn:visible, .auth-signup-link:visible, .mobile-auth-fallback:visible')).toHaveCount(0);
+          await expect.poll(() => page.locator('#mobileMenu').evaluate(el => el.getBoundingClientRect().left)).toBeGreaterThanOrEqual(-1);
+          await page.screenshot({ path: `docs/planetslam/evidence/planetslam-${width}-menu.png` });
+        }
         await page.locator('#mobileMenuSettings').click();
       } else await page.locator('#unifiedSettingsBtn').click();
     };

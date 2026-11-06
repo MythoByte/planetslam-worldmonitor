@@ -95,3 +95,10 @@ html[data-brand="planetslam"] #us-tab-embeds,
 html[data-brand="planetslam"] #us-tab-mcp-clients {
   display: none !important;
 }
+
+/* Anonymous PlanetSlam visitors do not need account entry buttons. */
+html[data-brand="planetslam"] .auth-header-widget:not(:has(.auth-clerk-user-button)),
+html[data-brand="planetslam"] .mobile-auth-fallback,
+html[data-brand="planetslam"] .mobile-menu-account:not(:has(.auth-clerk-user-button)) {
+  display: none !important;
+}
