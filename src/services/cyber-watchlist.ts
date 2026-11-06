@@ -1,3 +1,4 @@
+import { safeStorageGet, safeStorageSetChecked, isStorageAvailable } from '@/utils/safe-storage';
 const KEY = 'planetslam-cyber-watchlist-v1';
 const EVENT = 'planetslam:cyber-watchlist';
 export const CYBER_WATCH_LIMIT = 20;
@@ -7,10 +8,11 @@ function normalize(value: unknown): string[] {
     .map(v => v.trim().replace(/\s+/g, ' ').slice(0, 60)).filter(v => v.length >= 2).map(v => v.toLowerCase()))].slice(0, CYBER_WATCH_LIMIT) : [];
 }
 export function getCyberWatchlist(): string[] {
-  try { return normalize(JSON.parse(localStorage.getItem(KEY) || '[]')); } catch { return []; }
+  try { return normalize(JSON.parse(safeStorageGet(KEY) || '[]')); } catch { return []; }
 }
 export function saveCyberWatchlist(terms: string[]): boolean {
-  try { localStorage.setItem(KEY, JSON.stringify(normalize(terms))); window.dispatchEvent(new Event(EVENT)); return true; } catch { return false; }
+  if (!isStorageAvailable() || !safeStorageSetChecked(KEY, JSON.stringify(normalize(terms)))) return false;
+  window.dispatchEvent(new Event(EVENT)); return true;
 }
 export function subscribeCyberWatchlist(callback: () => void): () => void {
   const storage = (e: StorageEvent) => { if (e.key === KEY || e.key === null) callback(); };
