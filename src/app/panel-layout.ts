@@ -1232,18 +1232,18 @@ export class PanelLayoutManager implements AppModule {
           <span class="mobile-menu-item-icon">${getCurrentTheme() === 'dark' ? '☀️' : '🌙'}</span>
           <span class="mobile-menu-item-label">${getCurrentTheme() === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
         </button>
-        <a class="mobile-menu-item" href="https://x.com/eliehabib" target="_blank" rel="noopener">
+        ${IS_PLANETSLAM ? '' : `<a class="mobile-menu-item" href="https://x.com/eliehabib" target="_blank" rel="noopener">
           <span class="mobile-menu-item-icon"><svg class="x-logo" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></span>
           <span class="mobile-menu-item-label">@eliehabib</span>
         </a>
         <div class="mobile-menu-divider"></div>
         <div class="mobile-menu-footer-links">
           ${referenceLinksHtml}
-          ${IS_PLANETSLAM ? '' : `<a href="${referenceOrigin}/pro#pricing" target="_blank" rel="noopener">Pricing</a>`}
+          <a href="${referenceOrigin}/pro#pricing" target="_blank" rel="noopener">Pricing</a>
           <a href="https://www.worldmonitor.app/blog/" target="_blank" rel="noopener">Blog</a>
           <a href="https://www.worldmonitor.app/docs/documentation" target="_blank" rel="noopener">Docs</a>
           <a href="https://status.worldmonitor.app/" target="_blank" rel="noopener">Status</a>
-        </div>
+        </div>`}
         <div class="mobile-menu-version">v${__APP_VERSION__}</div>
       </nav>
       <div class="region-sheet-backdrop" id="regionSheetBackdrop"></div>
@@ -1322,19 +1322,19 @@ export class PanelLayoutManager implements AppModule {
           <img src="/favico/android-chrome-96x96.png" alt="" width="28" height="28" loading="lazy" decoding="async" class="site-footer-icon" />
           <div class="site-footer-brand-text">
             <span class="site-footer-name">${BRAND.name.toUpperCase()}</span>
-            <span class="site-footer-sub">v${__APP_VERSION__} &middot; <a href="https://x.com/eliehabib" target="_blank" rel="noopener" class="site-footer-credit">@eliehabib</a></span>
+            <span class="site-footer-sub">v${__APP_VERSION__} &middot; ${IS_PLANETSLAM ? '@eliehabib' : '<a href="https://x.com/eliehabib" target="_blank" rel="noopener" class="site-footer-credit">@eliehabib</a>'}</span>
           </div>
         </div>
         <nav aria-label="World Monitor references">
           ${IS_PLANETSLAM ? `<a href="${BRAND.source}" target="_blank" rel="noopener">PlanetSlam source · AGPL-3.0</a><a href="https://github.com/koala73/worldmonitor" target="_blank" rel="noopener">Powered by World Monitor</a>` : ''}
-          ${referenceLinksHtml}
-          ${IS_PLANETSLAM ? '' : `<a href="${referenceOrigin}/pro#pricing" target="_blank" rel="noopener">Pricing</a>`}
+          ${IS_PLANETSLAM ? '' : `${referenceLinksHtml}
+          <a href="${referenceOrigin}/pro#pricing" target="_blank" rel="noopener">Pricing</a>
           <a href="https://www.worldmonitor.app/blog/" target="_blank" rel="noopener">Blog</a>
           <a href="https://www.worldmonitor.app/docs/documentation" target="_blank" rel="noopener">Docs</a>
           <a href="https://status.worldmonitor.app/" target="_blank" rel="noopener">Status</a>
           <a href="https://github.com/koala73/worldmonitor" target="_blank" rel="noopener">GitHub</a>
           <a href="https://x.com/worldmonitorai" target="_blank" rel="noopener">X</a>
-          ${this.ctx.isDesktopApp ? '' : `<span id="footerDownloadMount"></span>`}
+          ${this.ctx.isDesktopApp ? '' : `<span id="footerDownloadMount"></span>`}`}
         </nav>
         <span class="site-footer-copy">&copy; ${new Date().getFullYear()} World Monitor</span>
       </footer>
