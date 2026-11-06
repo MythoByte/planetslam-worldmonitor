@@ -607,6 +607,9 @@
       "liveNews": "Energy Headlines",
       "insights": "AI Energy Insights"
     },
+    "space": {
+      "map": "Space & Orbit Map"
+    },
     "happy": {
       "map": "Good News Map"
     }
