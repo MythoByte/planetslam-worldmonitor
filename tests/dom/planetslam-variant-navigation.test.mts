@@ -24,7 +24,7 @@ describe('PlanetSlam same-origin editions', () => {
     const panels = await import('@/config/panels');
     const { getAllowedLayerKeys } = await import('@/config/map-layer-definitions');
     const settings = panels.getInitialPanelSettingsForVariant('space');
-    const expected = ['map', 'space-cameras', 'space-launches', 'space-weather',
+    const expected = ['map', 'space-satellites', 'space-cameras', 'space-launches', 'space-weather',
       'space-apod', 'space-news', 'space-spacex', 'space-neo', 'space-solar',
       'space-events', 'space-health'];
     expect(Object.entries(settings).filter(([, value]) => value.enabled).map(([key]) => key).sort())

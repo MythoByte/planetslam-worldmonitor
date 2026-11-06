@@ -1,3 +1,4 @@
+import type { SpaceOrbitSnapshot } from '@/types/space-orbits';
 import type { SpaceMapSnapshot } from '@/types/space-map';
 import { SITE_VARIANT } from '@/config/variant';
 /**
@@ -176,6 +177,19 @@ type CIIScore = { code: string; score: number; level: string };
  * based on device capabilities
  */
 export class MapContainer {
+  private cachedSpaceOrbits: SpaceOrbitSnapshot | null = null;
+  private readonly onSpaceOrbitSnapshot = (event: Event): void => {
+    const snapshot = (event as CustomEvent<SpaceOrbitSnapshot>).detail;
+    if (snapshot && Array.isArray(snapshot.positions) && Array.isArray(snapshot.groundTracks)) this.setSpaceOrbitSnapshot(snapshot);
+  };
+
+  public setSpaceOrbitSnapshot(snapshot: SpaceOrbitSnapshot): void {
+    this.cachedSpaceOrbits = snapshot;
+    if (this.useGlobe) this.globeMap?.setSpaceOrbitSnapshot(snapshot);
+    else if (this.useDeckGL) this.deckGLMap?.setSpaceOrbitSnapshot(snapshot);
+    else this.svgMap?.setSpaceOrbitSnapshot(snapshot);
+  }
+
   private cachedSpaceOverlay: SpaceMapSnapshot = { aurora: [], launches: [] };
   private spaceOverlayController: import('./SpaceMapOverlay').SpaceMapOverlay | null = null;
 
@@ -343,6 +357,10 @@ export class MapContainer {
     // so the constructor does not need to start it separately.
     void this.init();
     if (SITE_VARIANT === 'space') {
+      window.addEventListener('planetslam:space-orbits', this.onSpaceOrbitSnapshot);
+      void import('@/services/space-orbits').then(({ getPublishedSpaceOrbitSnapshot }) => {
+        if (!this.destroyed) this.setSpaceOrbitSnapshot(getPublishedSpaceOrbitSnapshot());
+      });
       void import('./SpaceMapOverlay').then(({ SpaceMapOverlay }) => {
         if (!this.destroyed) this.spaceOverlayController = new SpaceMapOverlay(this.container, snapshot => this.setSpaceOverlay(snapshot));
       });
@@ -837,6 +855,7 @@ export class MapContainer {
   }
 
   private rehydrateActiveMap(): void {
+    if (this.cachedSpaceOrbits) this.setSpaceOrbitSnapshot(this.cachedSpaceOrbits);
     this.setSpaceOverlay(this.cachedSpaceOverlay);
     // 1. Re-wire callbacks (through own public methods for adapter safety)
     if (this.cachedOnStateChanged) this.onStateChanged(this.cachedOnStateChanged);
@@ -1922,6 +1941,7 @@ export class MapContainer {
   }
 
   public destroy(): void {
+    window.removeEventListener('planetslam:space-orbits', this.onSpaceOrbitSnapshot);
     this.spaceOverlayController?.destroy();
     this.spaceOverlayController = null;
     this.emergencyLayer.destroy();

@@ -91,6 +91,7 @@ export const COMMANDS: Command[] = [
   { id: 'layer:no2Activity', keywords: ['no2', 'nitrogen dioxide', 'industrial activity', 'emissions', 'sentinel', 'pollution'], label: 'Toggle industrial activity (NO2)', icon: '\u{1F3ED}', category: 'layers' },
 
   // Panel navigation (matching actual DEFAULT_PANELS keys)
+  { id: 'panel:space-satellites', keywords: ['satellites', 'iss', 'norad', 'starlink', 'orbit tracker'], label: 'Panel: Satellite Tracker', icon: '\u{1F6F0}', category: 'panels' },
   { id: 'panel:space-cameras', keywords: ["space cameras", "iss camera", "starbase camera"], label: 'Panel: Space Live', icon: '\u{1F680}', category: 'panels' },
   { id: 'panel:space-apod', keywords: ["apod", "astronomy picture", "nasa picture"], label: 'Panel: Astronomy Picture of the Day', icon: '\u{1F680}', category: 'panels' },
   { id: 'panel:space-news', keywords: ["space news", "nasa news", "spaceflight headlines"], label: 'Panel: Space News', icon: '\u{1F680}', category: 'panels' },

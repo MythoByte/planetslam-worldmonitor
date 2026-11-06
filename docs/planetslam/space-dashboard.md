@@ -4,9 +4,9 @@ Space is a PlanetSlam edition at `/dashboard?variant=space`. It uses the existin
 edition switcher, panel layout, settings persistence, theme, and map renderers.
 There is no separate upstream Space hostname.
 
-## Delivered scope: phases 1–3
+## Delivered scope: phases 1–4
 
-- Foundation: ten movable/resizable panels, shared cached data, attribution,
+- Foundation: eleven movable/resizable panels, shared cached data, attribution,
   observation/fetch times, explicit fresh/stale/unavailable states, source status.
 - Space Live: on-demand NASA ISS and independent NASASpaceflight Starbase/Space
   Coast players, source links, saved favorites, offscreen pause and disconnect.
@@ -27,8 +27,12 @@ There is no separate upstream Space hostname.
 - Near-Earth Objects: seven days of approaches, estimated size range, lunar/km miss
   distance, velocity and classification. Potentially hazardous is not an impact
   prediction.
-- Existing satellite and spaceport map layers remain available. Advanced satellite
-  catalogs, OMM migration, pass prediction, missions, personalized observing,
+- Satellite Tracker: searchable names and NORAD IDs, ISS selected by default,
+  curated Stations/Weather/Science/Communications (GEO)/Starlink groups, selected
+  calculated position and ground track, orbit details, source and element age.
+  The Space tracker consumes CelesTrak GP JSON/OMM with SGP4; it does not depend
+  on five-digit legacy TLE identifiers. The existing World intelligence satellite
+  pipeline remains separate. Pass predictions, missions, personalized observing,
   notifications, and AI daily briefs belong to later phases.
 
 ## Data path and failure behavior
@@ -45,7 +49,7 @@ The worker retains last-good data on fetch/validation failure, with its original
 clock. The API labels delayed snapshots stale and hides expired data. Weather,
 aurora and solar snapshots also check observation/file-update age independently
 of fetch age. Missing observations never become zero severity or an empty sky.
-`dataset=health` returns all eight dataset states, even when all are unavailable.
+`dataset=health` returns all dataset states, even when all are unavailable.
 
 | Dataset | Scheduled attempts | Maximum retained age |
 | --- | --- | --- |
@@ -57,12 +61,34 @@ of fetch age. Missing observations never become zero severity or an empty sky.
 | Solar images | 15 minutes | 6 hours |
 | DONKI events | 1 hour | 24 hours |
 | NEO approaches | 6 hours | 24 hours |
+| Orbital GP catalog | 6 hours per group | 48 hours per source snapshot |
 
 An atomic shared Redis admission token limits attempts across worker replicas and
 restarts. Launch Library uses one upcoming-launch request per 15 minutes without
 pagination fanout, leaving room within its documented 15/hour unauthenticated
 allowance. Request and lock timeouts bound failure impact. No raw provider errors
 are logged because NASA request URLs contain a credential.
+
+## Satellite tracking (phase 4)
+
+The Space worker centrally retrieves five CelesTrak groups on a six-hour cadence.
+The communications selector is explicitly the GEO catalog, not a complete list of
+all communications spacecraft. No browser queries CelesTrak. Per-group original
+fetch times and failures remain visible: one failed group does not erase other
+usable groups or imply a confirmed-empty orbital catalog. Bounded catalog subsets
+report truncation and provider totals explicitly.
+
+Positions are SGP4 calculations from mean orbital elements, not live telemetry.
+Element epoch age is independent of download time. Elements older than 48 hours
+are stale and elements older than seven days are excluded. These are dashboard
+freshness limits, not guarantees of positional accuracy. Re-fetching an old orbit
+does not reset its epoch. The selected object alone receives a detailed ground
+track; group drawing is capped and updates pause while hidden to bound CPU work.
+Dateline crossings are split rather than drawing a line across the whole world.
+
+No NASA key is needed for the satellite catalog. A worker rebuild and restart is
+required when deploying phase 4; an app-only update cannot populate orbital data.
+Provider rejection must remain visible rather than falling back to demo orbits.
 
 ## Operator setup
 
@@ -103,9 +129,14 @@ collection; the endpoint naturally ages its previous snapshots out.
 Focused tests cover provider normalization, real/invalid empty responses, cached
 freshness and expiry, atomic publication/admission, cache-only API behavior,
 health diagnostics, coordinate validation, and relay-image import closure.
+Phase 4 also checks OMM propagation against a published SGP4 reference and an
+independent equivalent TLE, six-digit catalog IDs, UTC epochs, dateline seams,
+source and element expiry, partial-group failures, and bounded marker workload.
 Browser fixtures are visibly synthetic and exercise edition boot, desktop/mobile
 layout, APOD video/archive, news filtering, favorites, overlay settings,
-stale/unavailable states and retry recovery. Fixture evidence proves those UI
+stale/unavailable states and retry recovery. Satellite tests cover ISS default,
+NORAD search, group/selection persistence, rendered map markers/tracks, and
+upgrading an existing Space layout without undoing explicitly hidden panels. Fixture evidence proves those UI
 paths; it does not certify live feeds, camera playback or production deployment.
 
 Run the focused browser suite with `VITE_BRAND=planetslam npx playwright test
@@ -121,3 +152,6 @@ verification skill supports isolated manual drives and screenshots.
 - [Launch Library 2](https://lldev.thespacedevs.com/docs)
 - [NOAA products](https://www.spaceweather.gov/products)
 - [NOAA RTSW endpoint migration notice](https://www.weather.gov/media/notification/pdf_2026/scn26-21_Data_Format_Changes_Impacting_SWPC_Products.pdf)
+
+- [CelesTrak GP JSON and OMM formats](https://celestrak.org/NORAD/documentation/gp-data-formats.php)
+- [Satellite.js propagation documentation](https://github.com/shashwatak/satellite-js)

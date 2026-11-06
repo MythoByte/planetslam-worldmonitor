@@ -274,6 +274,7 @@ export function variantSwitcherHref(
 // constructor and this map, removing the duplication entirely (see #4490).
 export const DEFERRED_PANEL_NATURAL_FOOTPRINTS: Readonly<Record<string, DeferredPanelShellFootprint>> = {
   'space-cameras': { rowSpan: 3 },
+  'space-satellites': { rowSpan: 3 },
   cii: { rowSpan: 2 },
   'chat-analyst': { rowSpan: 2 },
   'china-corridors': { rowSpan: 2, className: 'panel-wide' },
@@ -2801,6 +2802,7 @@ export class PanelLayoutManager implements AppModule {
         (SpaceDataPanel) => new SpaceDataPanel(key, title, dataset));
     }
     this.lazyDefaultPanel('space-cameras', () => import('@/components/SpaceCamerasPanel'), 'SpaceCamerasPanel');
+    this.lazyDefaultPanel('space-satellites', () => import('@/components/SatelliteTrackerPanel'), 'SatelliteTrackerPanel');
 
     this.lazyDefaultPanel('commodities', () => import('@/components/MarketPanel'), 'CommoditiesPanel');
     this.lazyDefaultPanel('energy-complex', () => import('@/components/EnergyComplexPanel'), 'EnergyComplexPanel');

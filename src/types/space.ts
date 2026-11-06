@@ -1,5 +1,5 @@
 /** Public, cached Space datasets. Provider credentials never enter browser payloads. */
-export type SpaceDataset = 'apod' | 'news' | 'launches' | 'weather' | 'aurora' | 'solar' | 'events' | 'neo' | 'health';
+export type SpaceDataset = 'apod' | 'news' | 'launches' | 'weather' | 'aurora' | 'solar' | 'events' | 'neo' | 'orbits' | 'health';
 export interface SpaceEnvelope<T> {
   dataset: SpaceDataset;
   status: 'fresh' | 'stale' | 'unavailable';
@@ -23,3 +23,48 @@ export interface SolarData { items: { id: string; title: string; url: string; so
 export interface SpaceEventsData { items: { id: string; type: 'flare' | 'cme'; time: number; classType: string; note: string; url: string }[] }
 export interface NeoData { items: { id: string; name: string; approachAt: number; diameterMinKm: number; diameterMaxKm: number; missDistanceKm: number; lunarDistance: number; velocityKmS: number; potentiallyHazardous: boolean; url: string }[] }
 export interface SpaceHealthData { items: SpaceEnvelope<never>[] }
+
+export type OrbitGroupId = 'stations' | 'weather' | 'science' | 'communications' | 'starlink';
+/** CelesTrak GP JSON uses OMM keywords. Numeric units follow CCSDS OMM/SGP4. */
+export interface SpaceOmmRecord {
+  OBJECT_NAME: string;
+  OBJECT_ID: string;
+  EPOCH: string;
+  NORAD_CAT_ID: number;
+  MEAN_MOTION: number;
+  ECCENTRICITY: number;
+  INCLINATION: number;
+  RA_OF_ASC_NODE: number;
+  ARG_OF_PERICENTER: number;
+  MEAN_ANOMALY: number;
+  BSTAR: number;
+  MEAN_MOTION_DOT: number;
+  MEAN_MOTION_DDOT: number;
+  ELEMENT_SET_NO: number;
+  EPHEMERIS_TYPE?: 0;
+  CLASSIFICATION_TYPE?: 'U' | 'C';
+  REV_AT_EPOCH?: number;
+}
+export interface OrbitObject {
+  noradId: string;
+  name: string;
+  objectId: string;
+  epoch: number;
+  groups: OrbitGroupId[];
+  omm: SpaceOmmRecord;
+  elementStatus: 'fresh' | 'stale';
+}
+export interface OrbitGroupHealth {
+  id: OrbitGroupId;
+  label: string;
+  providerGroup: string;
+  sourceUrl: string;
+  status: 'fresh' | 'stale' | 'unavailable';
+  fetchedAt: number | null;
+  objectCount: number;
+  totalCount: number;
+  truncated: boolean;
+  refreshFailed?: boolean;
+  message?: string;
+}
+export interface OrbitCatalogData { items: OrbitObject[]; groups: OrbitGroupHealth[]; complete: boolean }
