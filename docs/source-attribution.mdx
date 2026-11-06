@@ -12,7 +12,7 @@ The inventory is **generated, not hand-written**: `scripts/source-attribution.mj
 ## Observed Source Inventory
 
 {/* BEGIN GENERATED SOURCE ATTRIBUTION */}
-This generated inventory covers **857 active source hosts** representing **838 active providers** (**373 structured/API**, **468 feed**, and **30 operational-status** hosts). It is derived from source declarations in `scripts/`, `server/`, `api/`, and `src/`. Each row shows the configured provider identity and where the source is referenced. Syndication transports such as FeedBurner and Google News remain listed as hosts and are not counted as publishers.
+This generated inventory covers **860 active source hosts** representing **841 active providers** (**378 structured/API**, **468 feed**, and **30 operational-status** hosts). It is derived from source declarations in `scripts/`, `server/`, `api/`, and `src/`. Each row shows the configured provider identity and where the source is referenced. Syndication transports such as FeedBurner and Google News remain listed as hosts and are not counted as publishers.
 
 | Provider | Observed surface |
 | --- | --- |
@@ -299,7 +299,7 @@ This generated inventory covers **857 active source hosts** representing **838 a
 | feeds.arstechnica.com (feeds.arstechnica.com) | feed — shared/news-catalog.json |
 | feeds.content.dowjones.io (feeds.content.dowjones.io) | feed — shared/news-catalog.json |
 | feeds.elpais.com (feeds.elpais.com) | feed — shared/news-catalog.json |
-| feeds.feedburner.com (feeds.feedburner.com) | feed (syndication transport) — shared/news-catalog.json |
+| feeds.feedburner.com (feeds.feedburner.com) | feed+structured (syndication transport) — api/_cyber-data.js, shared/news-catalog.json |
 | feeds.folha.uol.com.br (feeds.folha.uol.com.br) | feed — shared/news-catalog.json |
 | feeds.megaphone.fm (feeds.megaphone.fm) | feed — shared/news-catalog.json |
 | feeds.nbcnews.com (feeds.nbcnews.com) | feed — shared/news-catalog.json |
@@ -416,7 +416,7 @@ This generated inventory covers **857 active source hosts** representing **838 a
 | kathimerini.gr (kathimerini.gr) | feed — shared/news-catalog.json |
 | kitco.com (kitco.com) | feed — shared/news-catalog.json |
 | kr-asia.com (kr-asia.com) | feed — shared/news-catalog.json |
-| krebsonsecurity.com (krebsonsecurity.com) | feed — shared/news-catalog.json |
+| krebsonsecurity.com (krebsonsecurity.com) | feed+structured — api/_cyber-data.js, shared/news-catalog.json |
 | kyivindependent.com (kyivindependent.com) | feed — shared/news-catalog.json |
 | L'Orient Today (lorientlejour.com) | feed — shared/news-catalog.json |
 | Launch Library 2 (The Space Devs) (ll.thespacedevs.com) | structured — scripts/_space-missions.mjs, scripts/_space-providers.mjs |
@@ -548,7 +548,7 @@ This generated inventory covers **857 active source hosts** representing **838 a
 | pitchbook.com (pitchbook.com) | feed — shared/news-catalog.json |
 | pk.usembassy.gov (pk.usembassy.gov) | structured — scripts/seed-security-advisories.mjs |
 | pl.usembassy.gov (pl.usembassy.gov) | structured — scripts/seed-security-advisories.mjs |
-| PlanetSlam web app (planetslam.com) | structured — scripts/_space-missions.mjs, scripts/_space-providers.mjs, src/embed/embed-url.ts |
+| PlanetSlam web app (planetslam.com) | structured — scripts/_cyber-providers.mjs, scripts/_space-missions.mjs, scripts/_space-providers.mjs, src/embed/embed-url.ts |
 | pncp.gov.br (pncp.gov.br) | structured — scripts/_global-tender-feeds.mjs |
 | Polityka (polityka.pl) | feed — shared/news-catalog.json |
 | polymarket.com (polymarket.com) | structured — api/mcp/skill-extension/generated.ts, scripts/_bet-templates-markets.mjs, scripts/seed-prediction-markets.mjs |
@@ -576,7 +576,7 @@ This generated inventory covers **857 active source hosts** representing **838 a
 | railway.instatus.com (railway.instatus.com) | operational-status — server/worldmonitor/infrastructure/v1/list-service-statuses.ts |
 | rakuten-guardian-1-ie.samsung.wurl.tv (rakuten-guardian-1-ie.samsung.wurl.tv) | Excluded / candidate — No current fetch observed |
 | ransomware.live (ransomware.live) | feed — shared/news-catalog.json |
-| raw.githubusercontent.com (raw.githubusercontent.com) | structured — scripts/ais-relay.cjs, scripts/fetch-country-boundary-overrides.mjs, scripts/generate-airline-codes.mjs, scripts/generate-oref-locations.mjs, +2 more |
+| raw.githubusercontent.com (raw.githubusercontent.com) | structured — scripts/_cyber-providers.mjs, scripts/ais-relay.cjs, scripts/fetch-country-boundary-overrides.mjs, scripts/generate-airline-codes.mjs, +3 more |
 | reasonstobecheerful.world (reasonstobecheerful.world) | feed — shared/news-catalog.json |
 | reddit.com (reddit.com) | structured — scripts/ais-relay.cjs, src/services/story-share.ts |
 | registry.modelcontextprotocol.io (registry.modelcontextprotocol.io) | structured — scripts/publish-mcp-registry.mjs |
@@ -712,6 +712,7 @@ This generated inventory covers **857 active source hosts** representing **838 a
 | thebulletin.org (thebulletin.org) | feed — shared/news-catalog.json |
 | thedefiant.io (thedefiant.io) | feed — shared/news-catalog.json |
 | thediplomat.com (thediplomat.com) | feed — shared/news-catalog.json |
+| thehackernews.com (thehackernews.com) | structured — api/_cyber-data.js |
 | thehill.com (thehill.com) | feed — shared/news-catalog.json |
 | theinformation.com (theinformation.com) | feed — shared/news-catalog.json |
 | thejakartapost.com (thejakartapost.com) | feed — shared/news-catalog.json |
@@ -829,6 +830,7 @@ This generated inventory covers **857 active source hosts** representing **838 a
 | www.bi.go.id (www.bi.go.id) | structured — scripts/lib/food-prices-fetch.mjs |
 | www.bild.de (www.bild.de) | feed — shared/news-catalog.json |
 | www.bing.com (www.bing.com) | Excluded / candidate — No current fetch observed |
+| www.bleepingcomputer.com (www.bleepingcomputer.com) | structured — api/_cyber-data.js |
 | www.brasilparalelo.com.br (www.brasilparalelo.com.br) | feed — shared/news-catalog.json |
 | www.cac.gov.cn (www.cac.gov.cn) | structured — scripts/china-policy/adapters.mjs |
 | www.carbonbrief.org (www.carbonbrief.org) | structured — scripts/seed-climate-news.mjs |
@@ -856,6 +858,7 @@ This generated inventory covers **857 active source hosts** representing **838 a
 | www.corriere.it (www.corriere.it) | Excluded / candidate — No current fetch observed |
 | www.crisisgroup.org (www.crisisgroup.org) | feed — shared/news-catalog.json |
 | www.csis.org (www.csis.org) | feed — shared/news-catalog.json |
+| www.cve.org (www.cve.org) | structured — scripts/_cyber-providers.mjs |
 | www.da.gov.ph (www.da.gov.ph) | structured — scripts/lib/food-prices.mjs |
 | www.dabangasudan.org (www.dabangasudan.org) | feed — shared/news-catalog.json |
 | www.dailygood.org (www.dailygood.org) | feed — shared/news-catalog.json |

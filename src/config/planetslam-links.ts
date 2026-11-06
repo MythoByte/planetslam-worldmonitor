@@ -6,7 +6,7 @@ export const PLANETSLAM_NAVIGATION_PATHS = new Set(
   '/', '/dashboard', '/embed', '/settings.html', '/blog', '/sources', '/accuracy',
 ]);
 const EDITIONS: Record<string, string> = {
-  tech: 'tech', finance: 'finance', commodity: 'commodity', energy: 'energy', happy: 'happy', space: 'space',
+  tech: 'tech', finance: 'finance', commodity: 'commodity', energy: 'energy', happy: 'happy', space: 'space', cyber: 'cyber',
 };
 function pagePath(path: string): string {
   return path === '/' ? '/' : path.replace(/\/$/, '');

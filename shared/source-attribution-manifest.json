@@ -4431,12 +4431,15 @@
     {
       "host": "feeds.feedburner.com",
       "provider": "feeds.feedburner.com",
-      "kind": "feed",
+      "kind": "feed+structured",
       "observed": true,
       "license": "Provider terms for this feed publisher; verify before redistribution",
       "attribution": "Credit feeds.feedburner.com and link to the original feed publisher.",
       "status": "terms-review",
       "references": [
+        {
+          "path": "api/_cyber-data.js"
+        },
         {
           "path": "shared/news-catalog.json"
         }
@@ -5984,12 +5987,15 @@
     {
       "host": "krebsonsecurity.com",
       "provider": "krebsonsecurity.com",
-      "kind": "feed",
+      "kind": "feed+structured",
       "observed": true,
       "license": "Provider terms for this feed publisher; verify before redistribution",
       "attribution": "Credit krebsonsecurity.com and link to the original feed publisher.",
       "status": "terms-review",
       "references": [
+        {
+          "path": "api/_cyber-data.js"
+        },
         {
           "path": "shared/news-catalog.json"
         }
@@ -7776,6 +7782,9 @@
       "status": "excluded",
       "references": [
         {
+          "path": "scripts/_cyber-providers.mjs"
+        },
+        {
           "path": "scripts/_space-missions.mjs"
         },
         {
@@ -8287,6 +8296,9 @@
       "attribution": "Credit raw.githubusercontent.com and link to the original upstream API/dataset.",
       "status": "terms-review",
       "references": [
+        {
+          "path": "scripts/_cyber-providers.mjs"
+        },
         {
           "path": "scripts/ais-relay.cjs"
         },
@@ -10029,6 +10041,20 @@
       ]
     },
     {
+      "host": "thehackernews.com",
+      "provider": "thehackernews.com",
+      "kind": "structured",
+      "observed": true,
+      "license": "Publisher RSS content; public feed access does not establish rights to republish full articles or images. Publisher-specific terms remain applicable.",
+      "attribution": "Credit The Hacker News on every item; display headline metadata and short feed-provided excerpts with the original article link. Do not copy full articles or publisher images.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "api/_cyber-data.js"
+        }
+      ]
+    },
+    {
       "host": "thehill.com",
       "provider": "thehill.com",
       "kind": "feed",
@@ -11691,6 +11717,20 @@
       "status": "excluded"
     },
     {
+      "host": "www.bleepingcomputer.com",
+      "provider": "www.bleepingcomputer.com",
+      "kind": "structured",
+      "observed": true,
+      "license": "Publisher RSS content; public feed access does not establish rights to republish full articles or images. Publisher-specific terms remain applicable.",
+      "attribution": "Credit BleepingComputer on every item; display headline metadata and short feed-provided excerpts with the original article link. Do not copy full articles or publisher images.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "api/_cyber-data.js"
+        }
+      ]
+    },
+    {
       "host": "www.brasilparalelo.com.br",
       "provider": "www.brasilparalelo.com.br",
       "kind": "feed",
@@ -12103,6 +12143,20 @@
       "references": [
         {
           "path": "shared/news-catalog.json"
+        }
+      ]
+    },
+    {
+      "host": "www.cve.org",
+      "provider": "www.cve.org",
+      "kind": "structured",
+      "observed": true,
+      "license": "Outbound CVE record reference only; this integration does not fetch or republish CVE.org page content.",
+      "attribution": "Link the CVE identifier to its original CVE Program record. Attribute the exploited-vulnerability catalog facts separately to CISA KEV.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "scripts/_cyber-providers.mjs"
         }
       ]
     },

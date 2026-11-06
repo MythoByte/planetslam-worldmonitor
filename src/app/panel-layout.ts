@@ -250,6 +250,7 @@ export const VARIANT_SWITCHER_DASHBOARD_URLS = {
   energy: 'https://energy.worldmonitor.app/dashboard',
   happy: 'https://happy.worldmonitor.app/dashboard',
   space: 'https://planetslam.com/dashboard?variant=space',
+  cyber: 'https://planetslam.com/dashboard?variant=cyber',
 } as const;
 
 export function variantSwitcherHref(
@@ -278,6 +279,10 @@ export const DEFERRED_PANEL_NATURAL_FOOTPRINTS: Readonly<Record<string, Deferred
   'space-observing': { rowSpan: 3 },
   'space-missions': { rowSpan: 2 },
   'space-brief': { rowSpan: 3 },
+  'cyber-news': { rowSpan: 2 },
+  'cyber-kev': { rowSpan: 2 },
+  'cyber-watchlist': { rowSpan: 2 },
+  'cyber-health': { rowSpan: 2 },
   cii: { rowSpan: 2 },
   'chat-analyst': { rowSpan: 2 },
   'china-corridors': { rowSpan: 2, className: 'panel-wide' },
@@ -1150,6 +1155,9 @@ export class PanelLayoutManager implements AppModule {
                data-variant="space" title="Space${SITE_VARIANT === 'space' ? ` ${t('common.currentVariant')}` : ''}">
               <span class="variant-icon">🚀</span>
               <span class="variant-label">Space</span>
+            </a><span class="variant-divider"></span>
+            <a href="${vHref('cyber')}" class="variant-option ${SITE_VARIANT === 'cyber' ? 'active' : ''}" data-variant="cyber" title="Cyber Security">
+              <span class="variant-icon">🛡️</span><span class="variant-label">Cyber</span>
             </a>` : ''}`;
       })()}</div>
           <span class="logo">${BRAND.wordmark}</span><span class="logo-mobile">${BRAND.name}</span><span class="version">v${__APP_VERSION__}</span>${BETA_MODE ? '<span class="beta-badge">BETA</span>' : ''}
@@ -1218,7 +1226,7 @@ export class PanelLayoutManager implements AppModule {
           { key: 'commodity', icon: '⛏️', label: t('header.commodity') },
           { key: 'energy', icon: '⚡', label: t('header.energy') },
           { key: 'happy', icon: '☀️', label: 'Good News' },
-          ...(IS_PLANETSLAM ? [{ key: 'space', icon: '🚀', label: 'Space' }] : []),
+          ...(IS_PLANETSLAM ? [{ key: 'space', icon: '🚀', label: 'Space' }, { key: 'cyber', icon: '🛡️', label: 'Cyber' }] : []),
         ];
         return variants.map(v =>
           `<button class="mobile-menu-item mobile-menu-variant ${v.key === SITE_VARIANT ? 'active' : ''}" data-variant="${v.key}">
@@ -2789,6 +2797,14 @@ export class PanelLayoutManager implements AppModule {
 
     // Space datasets are self-refreshing and stay off the global bootstrap path.
     // One lazy module supplies the cards; shared service requests are deduplicated.
+    const cyberPanels = [
+      ['cyber-news', 'Cyber News', 'news'], ['cyber-kev', 'Exploited Vulnerabilities', 'kev'],
+      ['cyber-watchlist', 'My Technology Watchlist', 'watchlist'], ['cyber-health', 'Cyber Data Status', 'health'],
+    ] as const;
+    for (const [key, title, dataset] of cyberPanels) {
+      this.lazyImportedPanel(key, () => import('@/components/CyberDashboardPanel'), 'CyberDashboardPanel',
+        (CyberDashboardPanel) => new CyberDashboardPanel(key, title, dataset));
+    }
     const spacePanels = [
       ['space-apod', 'NASA Picture of the Day', 'apod'],
       ['space-news', 'Space News', 'news'],

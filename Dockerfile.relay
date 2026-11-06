@@ -184,6 +184,9 @@ COPY scripts/_climate-news-helpers.mjs ./scripts/_climate-news-helpers.mjs
 # other seeders migrated in #5436). Same ERR_MODULE_NOT_FOUND risk as above.
 COPY scripts/_html-entities.mjs ./scripts/_html-entities.mjs
 COPY scripts/seed-climate-news.mjs ./scripts/seed-climate-news.mjs
+COPY scripts/seed-cyber-dashboard.mjs ./scripts/seed-cyber-dashboard.mjs
+COPY scripts/_cyber-providers.mjs ./scripts/_cyber-providers.mjs
+COPY api/_cyber-data.js ./api/_cyber-data.js
 COPY scripts/seed-space.mjs ./scripts/seed-space.mjs
 COPY scripts/_space-providers.mjs ./scripts/_space-providers.mjs
 COPY scripts/_space-orbits.mjs ./scripts/_space-orbits.mjs

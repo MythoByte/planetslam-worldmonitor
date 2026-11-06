@@ -19,6 +19,21 @@ async function select(url: string) {
 }
 
 describe('PlanetSlam same-origin editions', () => {
+  it('seeds Cyber with four free panels and no implied attack-map data', async () => {
+    const { SITE_VARIANT } = await select('https://planetslam.com/dashboard?variant=cyber');
+    expect(SITE_VARIANT).toBe('cyber');
+    const panels = await import('@/config/panels');
+    const settings = panels.getInitialPanelSettingsForVariant('cyber');
+    expect(Object.entries(settings).filter(([, value]) => value.enabled).map(([key]) => key).sort())
+      .toEqual(['cyber-health', 'cyber-kev', 'cyber-news', 'cyber-watchlist']);
+    expect(settings.map?.enabled).toBe(false);
+    expect(Object.values(panels.DEFAULT_MAP_LAYERS).every(value => value === false)).toBe(true);
+    for (const key of ['cyber-health', 'cyber-kev', 'cyber-news', 'cyber-watchlist']) {
+      expect(panels.isPanelNativeToVariant(key, 'cyber')).toBe(true);
+      expect(panels.isPanelEntitled(key, settings[key]!, false)).toBe(true);
+    }
+  });
+
   it('seeds the Space dashboard with free panels and focused map layers', async () => {
     await select('https://planetslam.com/dashboard?variant=space');
     const panels = await import('@/config/panels');
@@ -45,8 +60,8 @@ describe('PlanetSlam same-origin editions', () => {
     expect(panels.DEFAULT_MAP_LAYERS.military).toBe(false);
   });
 
-  it('opens all seven edition deep links on the LAN host', async () => {
-    for (const edition of ['full', 'tech', 'finance', 'commodity', 'energy', 'happy', 'space']) {
+  it('opens all eight edition deep links on the LAN host', async () => {
+    for (const edition of ['full', 'tech', 'finance', 'commodity', 'energy', 'happy', 'space', 'cyber']) {
       const { SITE_VARIANT } = await select(`https://10.10.10.50:18003/dashboard?variant=${edition}`);
       expect(SITE_VARIANT).toBe(edition);
     }
@@ -63,7 +78,7 @@ describe('PlanetSlam same-origin editions', () => {
   it('uses shareable same-origin edition links including World', async () => {
     await select('https://planetslam.com/dashboard?variant=happy');
     const { variantSwitcherHref } = await import('@/app/panel-layout');
-    for (const edition of ['full', 'tech', 'finance', 'commodity', 'energy', 'happy', 'space'] as const) {
+    for (const edition of ['full', 'tech', 'finance', 'commodity', 'energy', 'happy', 'space', 'cyber'] as const) {
       expect(variantSwitcherHref(edition, 'happy', false)).toBe(`/dashboard?variant=${edition}`);
     }
   });
