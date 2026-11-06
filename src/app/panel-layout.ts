@@ -1,3 +1,4 @@
+import { isPanelHiddenForBrand } from '@/config/panels';
 import { BRAND, IS_PLANETSLAM } from '@/config/brand';
 import { clearTelegramIntelCache } from '@/services/telegram-intel';
 import { subscribeRuntimeConfig } from '@/services/runtime-config';
@@ -1238,7 +1239,7 @@ export class PanelLayoutManager implements AppModule {
         <div class="mobile-menu-divider"></div>
         <div class="mobile-menu-footer-links">
           ${referenceLinksHtml}
-          <a href="${referenceOrigin}/pro#pricing" target="_blank" rel="noopener">Pricing</a>
+          ${IS_PLANETSLAM ? '' : `<a href="${referenceOrigin}/pro#pricing" target="_blank" rel="noopener">Pricing</a>`}
           <a href="https://www.worldmonitor.app/blog/" target="_blank" rel="noopener">Blog</a>
           <a href="https://www.worldmonitor.app/docs/documentation" target="_blank" rel="noopener">Docs</a>
           <a href="https://status.worldmonitor.app/" target="_blank" rel="noopener">Status</a>
@@ -1327,7 +1328,7 @@ export class PanelLayoutManager implements AppModule {
         <nav aria-label="World Monitor references">
           ${IS_PLANETSLAM ? `<a href="${BRAND.source}" target="_blank" rel="noopener">PlanetSlam source · AGPL-3.0</a><a href="https://github.com/koala73/worldmonitor" target="_blank" rel="noopener">Powered by World Monitor</a>` : ''}
           ${referenceLinksHtml}
-          <a href="${referenceOrigin}/pro#pricing" target="_blank" rel="noopener">Pricing</a>
+          ${IS_PLANETSLAM ? '' : `<a href="${referenceOrigin}/pro#pricing" target="_blank" rel="noopener">Pricing</a>`}
           <a href="https://www.worldmonitor.app/blog/" target="_blank" rel="noopener">Blog</a>
           <a href="https://www.worldmonitor.app/docs/documentation" target="_blank" rel="noopener">Docs</a>
           <a href="https://status.worldmonitor.app/" target="_blank" rel="noopener">Status</a>
@@ -2262,6 +2263,7 @@ export class PanelLayoutManager implements AppModule {
 
   applyPanelSettings(): void {
     Object.entries(this.ctx.panelSettings).forEach(([key, config]) => {
+      if (isPanelHiddenForBrand(key)) config.enabled = false;
       if (key === 'map') {
         const mapSection = document.getElementById('mapSection');
         if (mapSection) {
@@ -2348,7 +2350,7 @@ export class PanelLayoutManager implements AppModule {
   }
 
   private shouldCreatePanel(key: string): boolean {
-    return hasPanelSettingEntry(this.ctx.panelSettings, key);
+    return !isPanelHiddenForBrand(key) && hasPanelSettingEntry(this.ctx.panelSettings, key);
   }
 
   private static readonly NEWS_PANEL_TOOLTIPS: Record<string, string> = {
@@ -2441,6 +2443,7 @@ export class PanelLayoutManager implements AppModule {
   }
 
   private insertInitialPanelByKey(grid: HTMLElement, key: string): void {
+    if (isPanelHiddenForBrand(key)) return;
     const panel = this.ctx.panels[key];
     if (panel && !panel.getElement().parentElement) {
       this.insertInitialPanel(grid, key, panel);
@@ -2470,6 +2473,7 @@ export class PanelLayoutManager implements AppModule {
    * content re-renders never touch it.
    */
   private syncMissionPreview(key: string, panel: Panel, activeMissionId?: string | null): void {
+    if (IS_PLANETSLAM) return;
     const missionId = activeMissionId !== undefined ? activeMissionId : (loadStoredMissionPreset()?.id ?? null);
     syncPanelPreview(
       this.missionPreviews,
@@ -3481,7 +3485,7 @@ export class PanelLayoutManager implements AppModule {
     const proBlocks = [proBlock, mcpBlock];
     const applyProBlockGating = (isPro: boolean) => {
       for (const block of proBlocks) {
-        block.style.display = isPro ? '' : 'none';
+        block.style.display = isPro && !IS_PLANETSLAM ? '' : 'none';
       }
     };
     const reapply = () => applyProBlockGating(hasPremiumAccess(getAuthState()));
@@ -4042,6 +4046,7 @@ export class PanelLayoutManager implements AppModule {
     exportName: K,
     createPanel: (PanelClass: PanelExport<M, K>, module: M) => ImportedPanel<M, K> | null,
   ): Promise<ImportedPanel<M, K> | null> {
+    if (isPanelHiddenForBrand(key)) return Promise.resolve(null);
     return importer().then((module) => {
       const PanelClass = module[exportName];
       if (typeof PanelClass !== 'function') {

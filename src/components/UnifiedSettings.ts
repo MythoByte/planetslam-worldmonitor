@@ -1,3 +1,5 @@
+import { IS_PLANETSLAM } from '@/config/brand';
+import { isPanelHiddenForBrand } from '@/config/panels';
 import { CANONICAL_FEEDS, INTEL_SOURCES, SOURCE_REGION_MAP } from '@/config/feeds';
 import { WEB_APP_ORIGIN } from '@/config/web-origin';
 import { openExternalUrl } from '@/services/external-navigation';
@@ -1095,6 +1097,7 @@ export class UnifiedSettings {
   }
 
   private renderUpgradeSection(): string {
+    if (IS_PLANETSLAM) return '';
     // Non-Dodo premium (API key / tester key / Clerk pro role without a
     // Convex subscription): neither "Upgrade" nor "Manage Billing" is
     // actionable. Still explain the account state here; a hidden billing
@@ -1424,6 +1427,7 @@ export class UnifiedSettings {
   private getVisiblePanelEntries(): Array<[string, PanelConfig]> {
     const panelSettings = this.draftPanelSettings;
     let entries = Object.entries(panelSettings)
+      .filter(([key]) => !isPanelHiddenForBrand(key))
       .filter(([key]) => key !== 'runtime-config' || this.config.isDesktopApp)
       .filter(([key]) => !key.startsWith('cw-'));
 

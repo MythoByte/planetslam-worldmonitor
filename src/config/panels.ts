@@ -1,5 +1,6 @@
 import type { PanelConfig, MapLayers, DataSourceId } from '@/types';
 import { SITE_VARIANT } from './variant';
+import { IS_PLANETSLAM } from './brand';
 // boundary-ignore: isDesktopRuntime is a pure env probe with no service dependencies
 import { isDesktopRuntime } from '@/services/runtime';
 // boundary-ignore: getSecretState is a pure env/keychain probe with no service dependencies
@@ -1235,7 +1236,15 @@ export function getEffectivePanelConfig(key: string, variant: string): PanelConf
   const base = getVariantPanelConfigs(variant)?.[key] ?? ALL_PANELS[key];
   if (!base) return { name: key, enabled: false, priority: 2 };
   const override = VARIANT_PANEL_OVERRIDES[variant]?.[key] ?? {};
-  return { ...base, ...override };
+  const config = { ...base, ...override };
+  return IS_PLANETSLAM && config.premium === 'locked'
+    ? { ...config, enabled: false }
+    : config;
+}
+
+/** PlanetSlam does not advertise panels requiring an upstream paid plan. */
+export function isPanelHiddenForBrand(key: string, variant = SITE_VARIANT): boolean {
+  return IS_PLANETSLAM && getEffectivePanelConfig(key, variant).premium === 'locked';
 }
 
 /**
@@ -1662,6 +1671,7 @@ export function getProPanelKeys(
   panelSettings: Record<string, PanelConfig>,
   variant: string,
 ): string[] {
+  if (IS_PLANETSLAM) return [];
   return Object.keys(panelSettings).filter((key) =>
     panelSettings[key]?.enabled && Boolean(getEffectivePanelConfig(key, variant).premium),
   );

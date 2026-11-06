@@ -9,7 +9,7 @@ for (const width of [1440, 768, 390]) {
     await seedAnonymousDashboard(page, 'full', {
       initializeOnce: { sessionKey: 'ps-profile', clearStorage: true, localStorage: {
         'worldmonitor-theme': 'dark', 'mobile-map-collapsed': 'false',
-        'worldmonitor-panels': JSON.stringify({ politics: { name: 'World News', enabled: true, priority: 0 } }),
+        'worldmonitor-panels': JSON.stringify({ politics: { name: 'World News', enabled: true, priority: 0 }, 'stock-analysis': { name: 'Stock Analysis', enabled: true, priority: 1 }, 'latest-brief': { name: 'Latest Brief', enabled: true, priority: 1 } }),
       } },
     });
     // Exercise the brand policy with no remembered dismissal.
@@ -27,6 +27,9 @@ for (const width of [1440, 768, 390]) {
     await expect(page.locator(width <= 768 ? '.logo-mobile' : '.logo')).toHaveText(branded ? (width <= 768 ? 'PlanetSlam' : 'PLANETSLAM') : (width <= 768 ? 'World Monitor' : 'MONITOR'));
     if (branded) {
       await expect(page.locator('.pro-banner')).toHaveCount(0);
+      await expect(page.locator('#panelsGrid [data-panel="stock-analysis"], #panelsGrid [data-panel="latest-brief"]')).toHaveCount(0);
+      await expect(page.locator('.mobile-panel-nav-chip-pro')).toHaveCount(0);
+      await expect(page.locator('.ai-widget-block-pro')).toBeHidden();
       await expect(page.locator('html')).not.toHaveClass(/wm-pro-banner-reserved/);
     }
     if (branded) await expect(page.locator('html')).toHaveAttribute('data-brand', 'planetslam');
@@ -42,6 +45,13 @@ for (const width of [1440, 768, 390]) {
     };
     await openSettings();
     await expect(page.locator('#us-theme')).toBeVisible();
+    if (branded) {
+      await expect(page.locator('.upgrade-pro-section')).toHaveCount(0);
+      await page.locator('#us-tab-panels').click();
+      await expect(page.locator('#usPanelToggles [data-panel="stock-analysis"], #usPanelToggles [data-panel="latest-brief"]')).toHaveCount(0);
+      await page.screenshot({ path: `docs/planetslam/evidence/planetslam-${width}-panels.png` });
+      await page.locator('#us-tab-settings').click();
+    }
     await page.selectOption('#us-theme', 'light');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     expect(await page.evaluate(() => localStorage.getItem('worldmonitor-theme'))).toBe('light');
