@@ -1101,6 +1101,21 @@
       ]
     },
     {
+      "host": "api.osv.dev",
+      "provider": "Open Source Vulnerabilities (OSV)",
+      "kind": "structured",
+      "observed": true,
+      "license": "Public OSV query API; originating advisory database terms still apply. Browser sends package identity/version only after explicit lookup-plan confirmation.",
+      "attribution": "OSV API and originating database; preserve incomplete/failed lookup coverage and evidence dates. No raw SBOM, asset labels or private remediation notes are sent.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "src/services/cyber-environment.ts"
+        }
+      ],
+      "role": "transport"
+    },
+    {
       "host": "api.planespotters.net",
       "provider": "api.planespotters.net",
       "kind": "structured",
@@ -7620,6 +7635,20 @@
       "references": [
         {
           "path": "src/config/basemap-styles.ts"
+        }
+      ]
+    },
+    {
+      "host": "osv.dev",
+      "provider": "Open Source Vulnerabilities (OSV)",
+      "kind": "structured",
+      "observed": true,
+      "license": "Aggregated vulnerability metadata; preserve originating database identifiers and source-specific terms review. No blanket redistribution licence inferred.",
+      "attribution": "OSV and originating advisory database; retain record ID, aliases, source modification date and local observation time. Version-query results are not proof of local exploitability.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "src/services/cyber-environment.ts"
         }
       ]
     },

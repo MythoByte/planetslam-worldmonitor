@@ -70,3 +70,5 @@ html[data-brand="planetslam"][data-variant="cyber"] .cyber-brief-section > h3 { 
 .cyber-panel [aria-pressed="true"] { border-color: var(--cyber-accent); }
 
 .cyber-panel .cyber-research-source { color: var(--cyber-accent); }
+
+.cyber-environment-plan { max-height: 240px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 11px; }
