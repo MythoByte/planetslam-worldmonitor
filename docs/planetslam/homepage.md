@@ -28,6 +28,8 @@ Health uses the existing per-source freshness tracker. It separates browser conn
 
 News summaries show the first three items with their original source and timestamp; Show full module reveals the remaining items. Rail charts and detailed groups use the same progressive disclosure. Disabled, unavailable or dedicated-edition modules remain accessible through the module directory and workspace links.
 
+News uses WindowedList chunks rather than one flat list. Homepage summaries hide later chunks as well as rows after the first three in the initial chunk. Their content container uses document sizing instead of dashboard scroll containment. Expanding a module dispatches the existing list scroll event after layout, allowing the same renderer to populate newly revealed chunks. The browser fixture includes twenty unrelated synthetic stories to cross the fifteen-item virtualization threshold and exercise three chunks, three visible summary items and all twenty expanded items.
+
 ### Evidence and checks
 
 Screenshots under `homepage-evidence/` use **controlled synthetic API responses**, including synthetic headlines under a registered source name so the real source-selection filter is exercised. They are UI evidence, not claims about live provider availability. `before-*` captures show the advanced dashboard; `overview-*` shows the homepage/map and `home-*` shows the intelligence cards after scrolling. Viewport screenshots are used because upstream content visibility deliberately defers offscreen rendering.

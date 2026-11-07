@@ -229,6 +229,9 @@ export function mountPlanetSlamHome(): () => void {
           const expanded = panel.classList.toggle('ps-expanded');
           more.textContent = expanded ? 'Show summary' : 'Show full module';
           more.setAttribute('aria-expanded', String(expanded));
+          // WindowedList normally listens to the dashboard's internal scroller.
+          // Home scrolls the document, so refresh newly revealed chunks here.
+          if (expanded) requestAnimationFrame(() => panel.querySelector('.windowed-list')?.dispatchEvent(new Event('scroll')));
         });
         more.setAttribute('aria-expanded', 'false');
         panel.append(more);
