@@ -2975,6 +2975,9 @@
         },
         {
           "path": "src/components/CyberIncidentsPanel.ts"
+        },
+        {
+          "path": "src/components/CyberResearchPanel.ts"
         }
       ]
     },

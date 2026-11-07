@@ -61,3 +61,12 @@ html[data-brand="planetslam"][data-variant="cyber"] .cyber-methodology { margin:
 html[data-brand="planetslam"][data-variant="cyber"] .cyber-methodology summary { cursor:pointer; color:var(--accent); overflow-wrap:anywhere; }
 html[data-brand="planetslam"][data-variant="cyber"] .cyber-brief-heading { display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; }
 html[data-brand="planetslam"][data-variant="cyber"] .cyber-brief-section > h3 { margin:20px 0 8px; color:var(--accent); }
+
+.cyber-research-chart { margin: 14px 0; }
+.cyber-research-bar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(50px, 1fr) 30px; gap: 8px; align-items: center; font-size: 11px; margin: 5px 0; }
+.cyber-research-bar meter { width: 100%; accent-color: var(--cyber-accent); }
+.cyber-research-label { display: flex; flex-direction: column; gap: 5px; margin: 12px 0; }
+.cyber-panel textarea { width: 100%; box-sizing: border-box; resize: vertical; color: var(--text-primary); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; padding: 8px; font: inherit; }
+.cyber-panel [aria-pressed="true"] { border-color: var(--cyber-accent); }
+
+.cyber-panel .cyber-research-source { color: var(--cyber-accent); }

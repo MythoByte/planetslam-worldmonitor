@@ -56,3 +56,10 @@ test('changing a digest schedule after today was delivered cannot trigger an ear
  const skipped=run(done,{},Date.parse('2026-11-07T09:05:00Z'));assert.equal(skipped.added.length,0);assert.equal(skipped.store.nextDigestAt,Date.parse('2026-11-08T08:00:00Z'));
  assert.equal(run(skipped.store,{},Date.parse('2026-11-08T00:05:00Z')).added.length,0);
 });
+test('a new alert at the digest cutoff is counted only in that digest',()=>{
+ const baselineAt=Date.parse('2026-11-07T07:00:00Z'),cutoff=baselineAt+3600000;
+ let s=run(start(),{kev:wrap('kev',{items:[item()]})},baselineAt).store;
+ const inputs={kev:wrap('kev',{items:[item(),item('CVE-2026-88888')]})};
+ const first=run(s,inputs,cutoff);assert.match(first.added.find(e=>e.kind==='digest')!.message,/1 vulnerabilities/);
+ const next=run(first.store,inputs,cutoff+DAY);assert.match(next.added.find(e=>e.kind==='digest')!.message,/0 vulnerabilities/);
+});

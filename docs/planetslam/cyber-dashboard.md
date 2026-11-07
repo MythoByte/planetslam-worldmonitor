@@ -1,4 +1,4 @@
-# PlanetSlam Cyber dashboard — Phases 1–5
+# PlanetSlam Cyber dashboard — Phases 1–6
 
 Open `/dashboard?variant=cyber` or choose **Cyber** in the PlanetSlam edition
 switcher. The edition uses the shared layout/settings/theme and movable,
@@ -335,3 +335,76 @@ controlled desktop/mobile browser permission and two-tab tests, storage failures
 service-worker delivery payloads, uncertain-delivery suppression and Phases 1–4
 regressions. Browser permission/platform support varies; these tests do not prove
 that every operating system displays notifications while the browser is suspended.
+
+## Phase 6: observed history, trends and investigations
+
+**Cyber Research Workbench** accumulates public incident records observed by this
+browser while the panel is enabled and open. It reads the same cache-only incident
+and news endpoints; no new keys, backend writes, AI calls or provider collection
+are introduced. It does not unlock historical provider downloads, backfill a global
+incident database, or turn the current 20-record monthly research sample into
+representative attack statistics. New profiles start without historical observations.
+
+Only fresh, unexpired, validated incident snapshots enter the local archive.
+Unavailable, stale, invalid and older provider snapshots cannot replace it. Records
+missing from a later sample remain available. Each source ID counts once, using its
+latest captured classification. The archive retains at most 200 records and removes
+records 180 days after their last local observation. Provider fetch, event and report
+dates remain separate from first/last browser observations. A first local observation
+is not a newly occurring incident. Source claims remain reported or claim-in-reporting,
+not independently verified.
+
+Country, sector, report-age and literal-search filters apply only to the workbench.
+They do not change the live tracker or map. Counts and bar charts describe filtered,
+retained sample records, including unknown countries and sectors. Weekly groups use
+UTC Monday-start weeks of provider report publication, not capture dates. The latest
+12 represented weeks are shown; missing weeks are omitted, not asserted to have zero
+incidents. Country and sector charts show the six largest represented groups with
+explicit truncation. No sample count is presented as a global rate or complete total.
+The first 20 newest reports are displayed; **Show more observed records** reveals
+older matching records. CSV always includes all filtered retained records.
+
+Meaningful source changes retain up to five changed-field observations per record.
+These identify changes to organization, country, sector, category, description,
+event/report dates, claim label, source links and provider change log. Retrieval and
+provider revision timestamps alone do not create changes. This is an observation
+log, not storage of every full historical version or edits that happened offline.
+
+**Save investigation** freezes a source snapshot and available related links.
+Up to 30 investigations can have a title and 4,000-character private notes. Use
+**Save notes** explicitly. Exports contain saved values, not unsaved edits.
+Feed changes, archive eviction and clearing observed history never rewrite or delete
+saved evidence. A local investigation may therefore differ from the current record.
+Saved cases retain their provider and local-observation dates and source claim labels.
+The same incident cannot be pinned twice; notes can be edited in its existing case.
+Deleting a saved investigation removes that case from this browser.
+
+Related reporting consists of at most five usable HTTPS news links from the seven-day
+cache whose title or summary contains the literal organization name with word
+boundaries. Generic/short organization names are excluded, and tracking variants of
+the same URL are deduplicated. It is labeled **keyword-related reporting**, not proof
+of the same incident, campaign or attribution. These links are frozen at save time
+with the news provider fetch date. No matches does not establish absent reporting.
+
+**Export filtered sample CSV** includes coverage, source links, claim labels, provider
+and observation dates, and descriptions. It excludes private notes. Spreadsheet cells
+are quoted, embedded separators/newlines are preserved and dangerous formula prefixes
+are neutralized. **Export saved investigation JSON** includes the saved case, notes,
+source evidence, related links, export time and coverage caveats. Exports download
+locally; there is no cloud upload or email delivery. Choose a destination with the
+knowledge that investigation JSON contains private notes.
+
+Research stays in `planetslam-cyber-research-v1` on this origin/device, with a bounded
+validated storage record. Read failures and corrupt profiles are not empty archives;
+saved data is preserved until explicit **Reset all research data**. Writes are checked
+and read back before reporting success. Failed writes retain the last readable saved
+state; **Retry research storage** retries that state. Cooperating tabs serialize writes
+using Web Locks where available; browsers without Web Locks have best-effort
+coordination. Conflicting note saves are rejected without discarding the unsaved draft;
+**Reload saved notes** loads the current saved version. Storage is local, not encrypted
+or account-synchronized, and clearing browser data removes it.
+
+**Pause capture** preserves history and investigations. **Clear observed history and
+pause** clears only observations and stops immediate recapture; saved cases remain.
+**Resume capture** admits the next usable current snapshot. Resetting all research
+also removes investigations and notes. Teardown stops refreshes and storage listeners.
