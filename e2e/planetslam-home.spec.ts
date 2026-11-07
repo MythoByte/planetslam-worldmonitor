@@ -4,6 +4,29 @@ import { seedAnonymousDashboard } from './bootstrap-request-budget-fixtures';
 
 test.skip(process.env.VITE_BRAND !== 'planetslam', 'PlanetSlam homepage only');
 
+const headlines = [
+  'Acceptance test: Pacific storm warning near island communities',
+  'Fixture report: Central bank publishes interest-rate decision',
+  'Browser scenario: Satellite mission reaches its planned orbit',
+  'Synthetic briefing: Port cargo volumes expand in Europe',
+  'Test dispatch: Researchers publish coral reef survey',
+  'Layout fixture: Northern rail services resume after repairs',
+  'Trial bulletin: Museum opens a new archaeology exhibition',
+  'Quality check: River monitoring network measures water levels',
+  'Demo dispatch: Coastal ferry operators announce timetable changes',
+  'Sample notice: University observatory prepares a public lecture',
+  'Verification story: Agricultural exporters revise wheat forecasts',
+  'Controlled report: Local wildlife reserve records nesting birds',
+  'Mock update: Desert solar facility connects to the national grid',
+  'Example analysis: Library digitization grants support rural archives',
+  'Test forecast: Mountain vineyards assess early spring frost',
+  'Sample interview: Engineers demonstrate a reusable ocean sensor',
+  'Synthetic notice: Competition officials publish athletics schedules',
+  'Browser fixture: Dairy cooperatives evaluate cold storage equipment',
+  'Controlled digest: National census office releases migration tables',
+  'Acceptance dispatch: Film festival announces documentary awards',
+];
+
 for (const width of [1440, 1024, 390]) {
   test(`homepage discovery and layout at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 1000 });
@@ -21,11 +44,11 @@ for (const width of [1440, 1024, 390]) {
     await page.route('**/api/**', route => route.fulfill({ json: {} }));
     await page.route('**/api/bootstrap*', route => route.fulfill({ json: { missing: [], data: {} } }));
     await page.route('**/api/health?*', route => route.fulfill({ json: {
-      checkedAt: new Date().toISOString(), checks: { newsInsights: { status: 'OK', records: 6, seedAgeMin: 0 } },
+      checkedAt: new Date().toISOString(), checks: { newsInsights: { status: 'OK', records: headlines.length, seedAgeMin: 0 } },
     } }));
     await page.route('**/api/news/v1/list-feed-digest*', route => route.fulfill({ json: {
-      categories: { politics: { items: Array.from({ length: 6 }, (_, index) => ({
-        source: 'BBC World', title: `Synthetic bulletin ${index + 1}: layout and provenance check`,
+      categories: { politics: { items: headlines.map((title, index) => ({
+        source: 'BBC World', title,
         link: `https://example.com/bulletin/${index}`, publishedAt: Date.now(), isAlert: false,
       })) } }, feedStatuses: {}, generatedAt: new Date().toISOString(),
     } }));
@@ -59,7 +82,14 @@ for (const width of [1440, 1024, 390]) {
     const panel = page.locator('[data-panel="politics"].ps-module');
     await panel.scrollIntoViewIfNeeded();
     await expect(panel).toBeVisible();
-    await expect(panel.locator('.item').first()).toContainText('Synthetic bulletin');
+    await expect(panel.locator('.item').first()).toBeVisible();
+    await expect(panel.locator('.windowed-chunk')).toHaveCount(3);
+    await expect(panel.locator('.item:visible')).toHaveCount(3);
+    await panel.getByRole('button', { name: 'Show full module', exact: true }).click();
+    await expect(panel.locator('.item:visible')).toHaveCount(headlines.length);
+    await panel.getByRole('button', { name: 'Show summary', exact: true }).click();
+    await expect(panel.locator('.item:visible')).toHaveCount(3);
+    await panel.locator('.panel-header').scrollIntoViewIfNeeded();
     expect(await page.locator('.ps-header').evaluate(el => Math.abs(el.getBoundingClientRect().top))).toBeLessThan(2);
     const workspaceOrder = await page.evaluate(() => localStorage.getItem('panel-order'));
     await page.screenshot({ path: `docs/planetslam/homepage-evidence/home-${width}.png` });
