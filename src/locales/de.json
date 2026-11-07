@@ -383,7 +383,8 @@
     "panelCatHappyPlanet": "Planet & Spenden",
     "embed": "Einbetten",
     "panelCatSpace": "Space",
-    "panelCatCyber": "Cyber Security"
+    "panelCatCyber": "Cyber Security",
+    "panelCatEarth": "Earth"
   },
   "panels": {
     "liveNews": "Live-Nachrichten",
@@ -4728,6 +4729,9 @@
     },
     "cyber": {
       "map": "Cyber Incidents & Infrastructure"
+    },
+    "earth": {
+      "map": "Earth — Weather & Natural Hazards"
     }
   }
 }

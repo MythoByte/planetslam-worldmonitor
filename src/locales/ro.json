@@ -385,7 +385,8 @@
     "panelCatHappyPlanet": "Planetă și donații",
     "embed": "Încorporează",
     "panelCatSpace": "Space",
-    "panelCatCyber": "Cyber Security"
+    "panelCatCyber": "Cyber Security",
+    "panelCatEarth": "Earth"
   },
   "panels": {
     "liveNews": "Știri Live",
@@ -4749,6 +4750,9 @@
     },
     "cyber": {
       "map": "Cyber Incidents & Infrastructure"
+    },
+    "earth": {
+      "map": "Earth — Weather & Natural Hazards"
     }
   }
 }

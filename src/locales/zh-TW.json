@@ -381,7 +381,8 @@
     "panelCatHappyPlanet": "地球與慈善",
     "embed": "嵌入",
     "panelCatSpace": "Space",
-    "panelCatCyber": "Cyber Security"
+    "panelCatCyber": "Cyber Security",
+    "panelCatEarth": "Earth"
   },
   "panels": {
     "liveNews": "即時新聞",
@@ -4707,6 +4708,9 @@
     },
     "cyber": {
       "map": "Cyber Incidents & Infrastructure"
+    },
+    "earth": {
+      "map": "Earth — Weather & Natural Hazards"
     }
   }
 }

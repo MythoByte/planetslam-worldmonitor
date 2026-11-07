@@ -383,7 +383,8 @@
     "panelCatHappyPlanet": "Gezegen & Hayırseverlik",
     "embed": "Göm",
     "panelCatSpace": "Space",
-    "panelCatCyber": "Cyber Security"
+    "panelCatCyber": "Cyber Security",
+    "panelCatEarth": "Earth"
   },
   "panels": {
     "liveNews": "Canli Haberler",
@@ -4728,6 +4729,9 @@
     },
     "cyber": {
       "map": "Cyber Incidents & Infrastructure"
+    },
+    "earth": {
+      "map": "Earth — Weather & Natural Hazards"
     }
   }
 }

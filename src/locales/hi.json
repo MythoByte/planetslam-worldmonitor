@@ -452,7 +452,8 @@
     "panelCatHappyPlanet": "प्लैनेट और दान",
     "embed": "एम्बेड",
     "panelCatSpace": "Space",
-    "panelCatCyber": "Cyber Security"
+    "panelCatCyber": "Cyber Security",
+    "panelCatEarth": "Earth"
   },
   "panels": {
     "liveNews": "ताजा खबरें",
@@ -4728,6 +4729,9 @@
     },
     "cyber": {
       "map": "Cyber Incidents & Infrastructure"
+    },
+    "earth": {
+      "map": "Earth — Weather & Natural Hazards"
     }
   }
 }

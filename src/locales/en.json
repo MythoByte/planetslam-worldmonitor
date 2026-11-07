@@ -474,7 +474,8 @@
     "panelCatMining": "Mining & Supply Chain",
     "panelCatCommodityEcon": "Economy & Trade",
     "panelCatHappyNews": "Good News",
-    "panelCatHappyPlanet": "Planet & Giving"
+    "panelCatHappyPlanet": "Planet & Giving",
+    "panelCatEarth": "Earth"
   },
   "panels": {
     "liveNews": "Live News",
@@ -615,6 +616,9 @@
     },
     "happy": {
       "map": "Good News Map"
+    },
+    "earth": {
+      "map": "Earth — Weather & Natural Hazards"
     }
   },
   "commands": {

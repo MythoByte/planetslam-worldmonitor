@@ -3,6 +3,13 @@
   "schema_version": 1,
   "exceptions": [
     {
+      "path": "api/earth.js",
+      "category": "internal-helper",
+      "reason": "PlanetSlam Earth dashboard-internal fixed-dataset cache bundle. Reads only centrally ingested, independently aged source snapshots and existing air-quality cache; request parameters cannot trigger provider work.",
+      "owner": "@MythoByte",
+      "removal_issue": null
+    },
+    {
       "path": "api/space.js",
       "category": "internal-helper",
       "reason": "PlanetSlam dashboard-internal fixed-dataset cache bundle. Reads only seeder-owned Redis snapshots with provenance/freshness metadata; no user-facing query API or upstream fetch is exposed.",

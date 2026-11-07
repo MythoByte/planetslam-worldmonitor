@@ -452,7 +452,8 @@
     "panelCatHappyPlanet": "Bolygó & Adományozás",
     "embed": "Beágyazás",
     "panelCatSpace": "Space",
-    "panelCatCyber": "Cyber Security"
+    "panelCatCyber": "Cyber Security",
+    "panelCatEarth": "Earth"
   },
   "panels": {
     "liveNews": "Élő Hírek",
@@ -4728,6 +4729,9 @@
     },
     "cyber": {
       "map": "Cyber Incidents & Infrastructure"
+    },
+    "earth": {
+      "map": "Earth — Weather & Natural Hazards"
     }
   }
 }

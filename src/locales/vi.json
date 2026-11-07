@@ -381,7 +381,8 @@
     "panelCatHappyPlanet": "Hành tinh & Trao tặng",
     "embed": "Nhúng",
     "panelCatSpace": "Space",
-    "panelCatCyber": "Cyber Security"
+    "panelCatCyber": "Cyber Security",
+    "panelCatEarth": "Earth"
   },
   "panels": {
     "liveNews": "Tin tức Trực tiếp",
@@ -4707,6 +4708,9 @@
     },
     "cyber": {
       "map": "Cyber Incidents & Infrastructure"
+    },
+    "earth": {
+      "map": "Earth — Weather & Natural Hazards"
     }
   }
 }

@@ -1,0 +1,36 @@
+.earth-panel { --earth-accent: #77d6b2; }
+.earth-body { padding: 12px; color: var(--text-primary); line-height: 1.5; overflow-wrap: anywhere; }
+.earth-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; align-items: end; }
+.earth-toolbar label { display: grid; gap: 4px; font-size: 11px; color: var(--text-secondary); flex: 1 1 120px; min-width: 0; }
+.earth-toolbar select { width: 100%; min-width: 0; max-width: 100%; }
+.earth-body select, .earth-body button { font: inherit; color: var(--text-primary); background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 5px; padding: 6px 8px; }
+.earth-body button { cursor: pointer; }
+.earth-body button:hover, .earth-body button:focus-visible { border-color: var(--earth-accent); }
+.earth-note, .earth-meta { color: var(--text-secondary); font-size: 11px; }
+.earth-provenance { display: flex; gap: 5px 10px; flex-wrap: wrap; align-items: center; font-size: 10px; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+.earth-status { font-weight: 700; color: var(--earth-accent); }
+[data-earth-status="stale"] .earth-status { color: #f0c66e; }
+[data-earth-status="unavailable"] .earth-status { color: #ed9d90; }
+.earth-card { padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+.earth-card h3, .earth-details h3 { margin: 6px 0; font-size: 14px; }
+.earth-card p, .earth-details p { margin: 7px 0; }
+.earth-body a { color: var(--earth-accent); }
+.earth-body a.earth-headline { color: var(--text-primary); font-size: 13px; font-weight: 600; text-decoration: none; }
+.earth-headline:hover { color: var(--earth-accent); text-decoration: underline; }
+.earth-tags { display: flex; flex-wrap: wrap; gap: 5px; font-size: 10px; }
+.earth-tag { padding: 2px 6px; border-radius: 4px; background: var(--bg-secondary); border: 1px solid var(--border-color); }
+.earth-tag[data-mode="warning"] { color: #f5c16c; }
+.earth-tag[data-mode="forecast"] { color: #9dc5f4; }
+.earth-tag[data-severity="extreme"], .earth-tag[data-severity="severe"] { color: #f4a092; }
+.earth-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 8px; font-size: 11px; }
+.earth-details { border: 1px solid var(--earth-accent); border-radius: 7px; padding: 12px; margin: 12px 0; background: var(--bg-secondary); }
+.earth-details:focus { outline: 2px solid var(--earth-accent); outline-offset: 2px; }
+.earth-empty { margin: 14px 0; padding: 12px; border: 1px dashed var(--border-color); border-radius: 5px; }
+.earth-stats { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin: 12px 0; }
+.earth-stat { padding: 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; }
+.earth-stat strong { display: block; color: var(--earth-accent); font-size: 17px; }
+.earth-stat span { font-size: 10px; color: var(--text-secondary); }
+.earth-table-wrap { overflow-x: auto; }
+.earth-table { width: 100%; font-size: 11px; border-collapse: collapse; }
+.earth-table th, .earth-table td { text-align: left; padding: 7px 5px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
+@media (max-width: 600px) { .earth-body { padding: 10px; } .earth-stats { gap: 5px; } .earth-stat { padding: 7px; } .earth-stat strong { font-size: 14px; } }

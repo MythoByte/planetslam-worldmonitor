@@ -1,3 +1,4 @@
+import type { EarthMapSnapshot } from '@/types/earth-map';
 import type { CyberMapSnapshot } from '@/types/cyber-map';
 import type { SpaceOrbitSnapshot } from '@/types/space-orbits';
 import type { SpaceMapSnapshot } from '@/types/space-map';
@@ -191,6 +192,15 @@ export class MapContainer {
     else this.svgMap?.setSpaceOrbitSnapshot(snapshot);
   }
 
+  private cachedEarthMap: EarthMapSnapshot | null = null;
+  private earthMapController: import('./EarthMapOverlay').EarthMapOverlay | null = null;
+  public setEarthMap(snapshot: EarthMapSnapshot): void {
+    this.cachedEarthMap = snapshot;
+    if (this.useGlobe) this.globeMap?.setEarthMap(snapshot);
+    else if (this.useDeckGL) this.deckGLMap?.setEarthMap(snapshot);
+    else this.svgMap?.setEarthMap(snapshot);
+  }
+
   private cachedCyberMap: CyberMapSnapshot | null = null;
   private cyberMapController: import('./CyberMapOverlay').CyberMapOverlay | null = null;
   public setCyberMap(snapshot: CyberMapSnapshot): void {
@@ -366,6 +376,11 @@ export class MapContainer {
     // init() attaches the resize observer synchronously (before its first await),
     // so the constructor does not need to start it separately.
     void this.init();
+    if (SITE_VARIANT === 'earth') {
+      void import('./EarthMapOverlay').then(({ EarthMapOverlay }) => {
+        if (!this.destroyed) this.earthMapController = new EarthMapOverlay(this.container, snapshot => this.setEarthMap(snapshot), (lat, lon) => this.setCenter(lat, lon, 4));
+      });
+    }
     if (SITE_VARIANT === 'cyber') {
       void import('./CyberMapOverlay').then(({ CyberMapOverlay }) => {
         if (!this.destroyed) this.cyberMapController = new CyberMapOverlay(this.container, snapshot => this.setCyberMap(snapshot), (lat, lon) => this.setCenter(lat, lon, 3));
@@ -870,6 +885,7 @@ export class MapContainer {
   }
 
   private rehydrateActiveMap(): void {
+    if (this.cachedEarthMap) this.setEarthMap(this.cachedEarthMap);
     if (this.cachedCyberMap) this.setCyberMap(this.cachedCyberMap);
     if (this.cachedSpaceOrbits) this.setSpaceOrbitSnapshot(this.cachedSpaceOrbits);
     this.setSpaceOverlay(this.cachedSpaceOverlay);
@@ -1957,6 +1973,8 @@ export class MapContainer {
   }
 
   public destroy(): void {
+    this.earthMapController?.destroy();
+    this.earthMapController = null;
     this.cyberMapController?.destroy();
     this.cyberMapController = null;
     window.removeEventListener('planetslam:space-orbits', this.onSpaceOrbitSnapshot);

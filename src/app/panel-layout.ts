@@ -251,6 +251,7 @@ export const VARIANT_SWITCHER_DASHBOARD_URLS = {
   happy: 'https://happy.worldmonitor.app/dashboard',
   space: 'https://planetslam.com/dashboard?variant=space',
   cyber: 'https://planetslam.com/dashboard?variant=cyber',
+  earth: 'https://planetslam.com/dashboard?variant=earth',
 } as const;
 
 export function variantSwitcherHref(
@@ -274,6 +275,14 @@ export function variantSwitcherHref(
 // lift these defaults into one shared table imported by both the `Panel`
 // constructor and this map, removing the duplication entirely (see #4490).
 export const DEFERRED_PANEL_NATURAL_FOOTPRINTS: Readonly<Record<string, DeferredPanelShellFootprint>> = {
+  'earth-events': { rowSpan: 3 },
+  'earth-alerts': { rowSpan: 3 },
+  'earth-weather': { rowSpan: 3 },
+  'earth-news': { rowSpan: 3 },
+  'earth-cameras': { rowSpan: 3 },
+  'earth-health': { rowSpan: 2 },
+  'earth-rivers': { rowSpan: 2 },
+  'earth-airquality': { rowSpan: 2 },
   'space-cameras': { rowSpan: 3 },
   'space-satellites': { rowSpan: 3 },
   'space-observing': { rowSpan: 3 },
@@ -1170,6 +1179,7 @@ export class PanelLayoutManager implements AppModule {
               <span class="variant-icon">🚀</span>
               <span class="variant-label">Space</span>
             </a><span class="variant-divider"></span>
+            <a href="${vHref('earth')}" class="variant-option ${SITE_VARIANT === 'earth' ? 'active' : ''}" data-variant="earth" title="Earth — Weather & Natural Hazards"><span class="variant-icon">🌋</span><span class="variant-label">Earth</span></a>
             <a href="${vHref('cyber')}" class="variant-option ${SITE_VARIANT === 'cyber' ? 'active' : ''}" data-variant="cyber" title="Cyber Security">
               <span class="variant-icon">🛡️</span><span class="variant-label">Cyber</span>
             </a>` : ''}`;
@@ -1240,7 +1250,7 @@ export class PanelLayoutManager implements AppModule {
           { key: 'commodity', icon: '⛏️', label: t('header.commodity') },
           { key: 'energy', icon: '⚡', label: t('header.energy') },
           { key: 'happy', icon: '☀️', label: 'Good News' },
-          ...(IS_PLANETSLAM ? [{ key: 'space', icon: '🚀', label: 'Space' }, { key: 'cyber', icon: '🛡️', label: 'Cyber' }] : []),
+          ...(IS_PLANETSLAM ? [{ key: 'space', icon: '🚀', label: 'Space' }, { key: 'cyber', icon: '🛡️', label: 'Cyber' }, { key: 'earth', icon: '🌋', label: 'Earth' }] : []),
         ];
         return variants.map(v =>
           `<button class="mobile-menu-item mobile-menu-variant ${v.key === SITE_VARIANT ? 'active' : ''}" data-variant="${v.key}">
@@ -2817,6 +2827,17 @@ export class PanelLayoutManager implements AppModule {
     this.lazyDefaultPanel('cyber-brief', () => import('@/components/CyberBriefPanel'), 'CyberBriefPanel');
     this.lazyDefaultPanel('cyber-attention', () => import('@/components/CyberAttentionPanel'), 'CyberAttentionPanel');
     this.lazyDefaultPanel('cyber-incidents', () => import('@/components/CyberIncidentsPanel'), 'CyberIncidentsPanel');
+    const earthPanels = [
+      ['earth-events', 'Active Earth Events', 'events'], ['earth-alerts', 'Official Alerts', 'alerts'],
+      ['earth-weather', 'Weather & Forecasts', 'weather'], ['earth-news', 'Earth News', 'news'],
+      ['earth-rivers', 'River Levels', 'rivers'], ['earth-airquality', 'Air Quality & Smoke', 'airquality'],
+      ['earth-health', 'Earth Data Status', 'health'],
+    ] as const;
+    for (const [key, title, dataset] of earthPanels) {
+      this.lazyImportedPanel(key, () => import('@/components/EarthPanel'), 'EarthPanel',
+        (EarthPanel) => new EarthPanel(key, title, dataset));
+    }
+    this.lazyDefaultPanel('earth-cameras', () => import('@/components/EarthCamerasPanel'), 'EarthCamerasPanel');
     const cyberPanels = [
       ['cyber-news', 'Cyber News', 'news'], ['cyber-kev', 'Exploited Vulnerabilities', 'kev'],
       ['cyber-watchlist', 'My Technology Watchlist', 'watchlist'], ['cyber-health', 'Cyber Data Status', 'health'],

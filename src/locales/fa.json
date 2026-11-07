@@ -452,7 +452,8 @@
     "panelCatHappyNews": "اخبار خوب",
     "panelCatHappyPlanet": "سیاره و نیکوکاری",
     "panelCatSpace": "Space",
-    "panelCatCyber": "Cyber Security"
+    "panelCatCyber": "Cyber Security",
+    "panelCatEarth": "Earth"
   },
   "panels": {
     "liveNews": "اخبار زنده",
@@ -4728,6 +4729,9 @@
     },
     "cyber": {
       "map": "Cyber Incidents & Infrastructure"
+    },
+    "earth": {
+      "map": "Earth — Weather & Natural Hazards"
     }
   }
 }

@@ -623,6 +623,17 @@ const HOST_ORIGINS = Object.freeze({
 // Provider-level overrides win when the host is a CDN, cloud, or shared
 // platform that would otherwise point at the wrong country.
 const PROVIDER_ORIGINS = Object.freeze({
+  // Earth edition: issuing agency/operator origin, independent of worldwide
+  // data coverage. OpenAQ preserves the existing US-origin API identity.
+  'OpenAQ': 'US',
+  'MET Norway Locationforecast': 'NO',
+  'NOAA National Water Prediction Service': 'US',
+  'NOAA Tsunami Warning Centers': 'US',
+  'NOAA National Hurricane Center': 'US',
+  'NASA Science Earth Observatory news': 'US',
+  'GeoNet / Earth Sciences New Zealand cameras': 'NZ',
+  'National Park Service cameras': 'US',
+  'USGS official webcam source links': 'US',
   // OSV aggregates international vulnerability databases, rather than one issuing authority.
   'Open Source Vulnerabilities (OSV)': null,
   'UMD GoTech Cyber Events Database': 'US',

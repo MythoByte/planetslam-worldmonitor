@@ -1,0 +1,23 @@
+.earth-camera-body { padding: 12px; color: var(--text-primary); }
+.earth-camera-note, .earth-camera-state, .earth-camera-mode, .earth-camera-count { font-size: 11px; line-height: 1.5; color: var(--text-secondary); }
+.earth-camera-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin: 12px 0; }
+.earth-camera-filters label { display: grid; gap: 5px; min-width: 0; font-size: 11px; }
+.earth-camera-filters select { max-width: 100%; min-height: 30px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); padding: 4px; }
+.earth-camera-filters .earth-camera-favorites { display: flex; align-items: center; min-height: 30px; }
+.earth-camera-wall { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 12px; }
+.earth-camera-card { border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; min-width: 0; overflow-wrap: anywhere; }
+.earth-camera-card[data-earth-camera-selected="true"] { border-color: var(--accent); }
+.earth-camera-card:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.earth-camera-card header { display: flex; gap: 8px; justify-content: space-between; align-items: start; }
+.earth-camera-card h3 { font-size: 12px; margin: 0; line-height: 1.5; }
+.earth-camera-body button { border: 1px solid var(--border-color); border-radius: 4px; padding: 5px 8px; color: var(--text-primary); background: var(--bg-secondary); font-size: 11px; cursor: pointer; }
+.earth-camera-card header button { flex-shrink: 0; }
+.earth-camera-player { aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; background: var(--bg-primary); position: relative; overflow: hidden; }
+.earth-camera-player img, .earth-camera-video { display: block; width: 100%; height: 100%; object-fit: contain; border: 0; }
+.earth-camera-credit { font-size: 11px; line-height: 1.5; }
+.earth-camera-credit small { display: block; color: var(--text-secondary); }
+.earth-camera-links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 11px; }
+.earth-camera-links a { color: var(--accent, #77d6b2); }
+.earth-camera-nearby, .earth-camera-empty { font-size: 12px; line-height: 1.5; padding: 8px; border: 1px solid var(--border-color); }
+.earth-camera-state[data-state="offline"] { color: var(--semantic-warning, #eab308); }
+@media (max-width: 500px) { .earth-camera-wall { grid-template-columns: 1fr; } .earth-camera-filters label { flex: 1; } }

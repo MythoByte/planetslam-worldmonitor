@@ -1,0 +1,16 @@
+.earth-map-controls { position:absolute; left:10px; bottom:42px; z-index:12; width:300px; max-width:calc(100% - 20px); max-height:70%; overflow:auto; padding:10px 12px; background:var(--panel-bg, var(--surface)); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:11px; box-shadow:0 2px 12px #0004; }
+.earth-map-controls summary { cursor:pointer; font-weight:700; }
+.earth-map-controls p { color:var(--text-secondary); margin:8px 0; line-height:1.5; }
+.earth-map-controls small { display:block; color:var(--text-dim); line-height:1.4; }
+.earth-map-controls select { display:block; width:100%; min-height:32px; margin:5px 0; background:var(--bg); color:var(--text); border:1px solid var(--border); }
+.earth-map-toggles { display:grid; grid-template-columns:1fr 1fr; gap:7px 10px; margin:8px 0; }
+.earth-map-toggles label { cursor:pointer; display:flex; align-items:center; gap:5px; }
+.earth-map-controls input { accent-color:#4ed5c8; }
+.earth-map-controls button { margin-top:8px; background:var(--surface); border:1px solid var(--border); padding:5px 8px; color:var(--text); cursor:pointer; }
+.earth-map-selection { border-left:3px solid #4ed5c8; padding-left:8px; margin-top:8px; overflow-wrap:anywhere; }
+.earth-map-selection a { color:var(--accent, #77d6b2); }
+@media(max-width:600px) { .earth-map-controls { left:6px; bottom:34px; width:250px; padding:7px 9px; font-size:10px; } }
+
+html[data-brand="planetslam"][data-variant="earth"] .map-legend,
+html[data-brand="planetslam"][data-variant="earth"] .deckgl-legend,
+html[data-brand="planetslam"][data-variant="earth"] .time-slider { display:none; }

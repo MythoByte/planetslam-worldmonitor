@@ -3889,7 +3889,8 @@
     "panelCatHappyPlanet": "Planeet & Geven",
     "embed": "Insluiten",
     "panelCatSpace": "Space",
-    "panelCatCyber": "Cyber Security"
+    "panelCatCyber": "Cyber Security",
+    "panelCatEarth": "Earth"
   },
   "countryBrief": {
     "identifying": "Land identificeren...",
@@ -4728,6 +4729,9 @@
     },
     "cyber": {
       "map": "Cyber Incidents & Infrastructure"
+    },
+    "earth": {
+      "map": "Earth — Weather & Natural Hazards"
     }
   }
 }

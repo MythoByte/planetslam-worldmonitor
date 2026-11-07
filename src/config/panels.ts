@@ -1,3 +1,4 @@
+import { DEFAULT_PANELS as EARTH_PANELS, DEFAULT_MAP_LAYERS as EARTH_MAP_LAYERS, MOBILE_DEFAULT_MAP_LAYERS as EARTH_MOBILE_MAP_LAYERS } from './variants/earth';
 import { DEFAULT_PANELS as CYBER_PANELS, DEFAULT_MAP_LAYERS as CYBER_MAP_LAYERS } from './variants/cyber';
 import type { PanelConfig, MapLayers, DataSourceId } from '@/types';
 import { SITE_VARIANT } from './variant';
@@ -1157,7 +1158,7 @@ const ENERGY_MOBILE_MAP_LAYERS: MapLayers = {
 // UNIFIED PANEL REGISTRY
 // ============================================
 
-type PanelVariant = 'full' | 'tech' | 'finance' | 'commodity' | 'energy' | 'happy' | 'space' | 'cyber';
+type PanelVariant = 'full' | 'tech' | 'finance' | 'commodity' | 'energy' | 'happy' | 'space' | 'cyber' | 'earth';
 
 const VARIANT_PANEL_CONFIGS: Record<PanelVariant, Record<string, PanelConfig>> = {
   full: FULL_PANELS,
@@ -1167,6 +1168,7 @@ const VARIANT_PANEL_CONFIGS: Record<PanelVariant, Record<string, PanelConfig>> =
   energy: ENERGY_PANELS,
   space: SPACE_PANELS,
   cyber: CYBER_PANELS,
+  earth: EARTH_PANELS,
   happy: HAPPY_PANELS,
 };
 
@@ -1184,6 +1186,7 @@ export function isPanelNativeToVariant(panelId: string, variant: string): boolea
 
 /** All panels from all variants — canonical cross-variant registry. */
 export const ALL_PANELS: Record<string, PanelConfig> = {
+  ...EARTH_PANELS,
   ...CYBER_PANELS,
   ...SPACE_PANELS,
   ...HAPPY_PANELS,
@@ -1203,6 +1206,7 @@ export const VARIANT_DEFAULTS: Record<string, string[]> = {
   energy:    Object.keys(VARIANT_PANEL_CONFIGS.energy),
   space:     Object.keys(VARIANT_PANEL_CONFIGS.space),
   cyber:     Object.keys(VARIANT_PANEL_CONFIGS.cyber),
+  earth:     Object.keys(VARIANT_PANEL_CONFIGS.earth),
   happy:     Object.keys(VARIANT_PANEL_CONFIGS.happy),
 };
 
@@ -1231,6 +1235,7 @@ export const VARIANT_PANEL_OVERRIDES: Partial<Record<string, Partial<Record<stri
     'live-news': { name: 'Energy Headlines' },
     insights:    { name: 'AI Energy Insights' },
   },
+  earth: { map: { name: 'Earth — Weather & Natural Hazards' } },
   cyber: {
     map:         { name: 'Cyber Incidents & Infrastructure' },
   },
@@ -1483,7 +1488,7 @@ export const DEFAULT_PANELS: Record<string, PanelConfig> = Object.fromEntries(
   )
 );
 
-export const DEFAULT_MAP_LAYERS = SITE_VARIANT === 'cyber' ? CYBER_MAP_LAYERS : SITE_VARIANT === 'space'
+export const DEFAULT_MAP_LAYERS = SITE_VARIANT === 'earth' ? EARTH_MAP_LAYERS : SITE_VARIANT === 'cyber' ? CYBER_MAP_LAYERS : SITE_VARIANT === 'space'
   ? SPACE_MAP_LAYERS
   : SITE_VARIANT === 'happy'
   ? HAPPY_MAP_LAYERS
@@ -1497,7 +1502,7 @@ export const DEFAULT_MAP_LAYERS = SITE_VARIANT === 'cyber' ? CYBER_MAP_LAYERS : 
           ? ENERGY_MAP_LAYERS
           : FULL_MAP_LAYERS;
 
-export const MOBILE_DEFAULT_MAP_LAYERS = SITE_VARIANT === 'cyber' ? CYBER_MAP_LAYERS : SITE_VARIANT === 'space'
+export const MOBILE_DEFAULT_MAP_LAYERS = SITE_VARIANT === 'earth' ? EARTH_MOBILE_MAP_LAYERS : SITE_VARIANT === 'cyber' ? CYBER_MAP_LAYERS : SITE_VARIANT === 'space'
   ? SPACE_MOBILE_MAP_LAYERS
   : SITE_VARIANT === 'happy'
   ? HAPPY_MOBILE_MAP_LAYERS
@@ -1534,6 +1539,7 @@ export const LAYER_TO_SOURCE: Partial<Record<keyof MapLayers, DataSourceId[]>> =
 // Maps category keys to panel keys. Only categories with at least one
 // matching panel in the user's active panel settings are shown.
 export const PANEL_CATEGORY_MAP: Record<string, { labelKey: string; panelKeys: string[]; variants?: string[] }> = {
+  earth: { labelKey: 'header.panelCatEarth', panelKeys: Object.keys(EARTH_PANELS).filter(key => key !== 'map'), variants: ['earth'] },
   cyber: { labelKey: 'header.panelCatCyber', panelKeys: Object.keys(CYBER_PANELS).filter(key => key !== 'map'), variants: ['cyber'] },
   // All variants — essential panels
   core: {
