@@ -113,6 +113,10 @@ function loadMapLibreCss(): Promise<unknown> {
 }
 
 const DECK_RENDERER_VISIBLE_IDLE_DELAY_MS = 3_500;
+// Earth puts the map and enabled weather on the critical user path. Keep its
+// first-paint boundary, but do not leave a visible map behind seconds of idle.
+const EARTH_DECK_RENDERER_VISIBLE_DELAY_MS = 200;
+const EARTH_DECK_RENDERER_IDLE_TIMEOUT_MS = 500;
 const DECK_RENDERER_IDLE_TIMEOUT_MS = 5_000;
 const DECK_RENDERER_NO_OBSERVER_DELAY_MS = 4_500;
 // Absolute upper bound for the demand gate when an IntersectionObserver is
@@ -282,6 +286,8 @@ export class MapContainer {
   private cachedOutages: InternetOutage[] | null = null;
   private cachedAisDisruptions: AisDisruptionEvent[] | null = null;
   private cachedUkmtoIncidents: UkmtoMapIncident[] | null = null;
+  private globeTexturePreloadCleanup: (() => void) | null = null;
+  private radarPrewarmGeneration: number | null = null;
   private cachedUkmtoSnapshot: ListUkmtoIncidentsResponse | null = null;
   private cachedAisDensity: AisDensityZone[] | null = null;
   private cachedCableAdvisories: CableAdvisory[] | null = null;
@@ -549,6 +555,7 @@ export class MapContainer {
     if (typeof window === 'undefined') return Promise.resolve(true);
     if (this.rendererDemandRequested) {
       this.rendererDemandRequested = false;
+      this.prewarmWeatherRadar(token);
       return Promise.resolve(true);
     }
 
@@ -604,6 +611,7 @@ export class MapContainer {
 
       const finish = (): void => {
         this.rendererDemandRequested = false;
+        this.prewarmWeatherRadar(token);
         markLcpDebug('wm:map:renderer-demand', { kind: 'deck' });
         settle(true);
       };
@@ -630,7 +638,7 @@ export class MapContainer {
           idleCallbackId = window.requestIdleCallback(() => {
             idleCallbackId = null;
             finishIfCurrent();
-          }, { timeout: DECK_RENDERER_IDLE_TIMEOUT_MS });
+          }, { timeout: SITE_VARIANT === 'earth' ? EARTH_DECK_RENDERER_IDLE_TIMEOUT_MS : DECK_RENDERER_IDLE_TIMEOUT_MS });
         } else {
           idleFallbackDelayId = window.setTimeout(() => {
             idleFallbackDelayId = null;
@@ -641,10 +649,11 @@ export class MapContainer {
 
       const scheduleVisibleIdle = (): void => {
         if (visibleDelayId !== null || idleCallbackId !== null || idleFallbackDelayId !== null) return;
+        this.prewarmWeatherRadar(token);
         visibleDelayId = window.setTimeout(() => {
           visibleDelayId = null;
           requestIdle();
-        }, DECK_RENDERER_VISIBLE_IDLE_DELAY_MS);
+        }, SITE_VARIANT === 'earth' ? EARTH_DECK_RENDERER_VISIBLE_DELAY_MS : DECK_RENDERER_VISIBLE_IDLE_DELAY_MS);
       };
 
       cancelDemand = cancel;
@@ -701,10 +710,34 @@ export class MapContainer {
     markLcpDebug('wm:map:svg-ready');
   }
 
+  private prewarmWeatherRadar(token: number): void {
+    if (SITE_VARIANT !== 'earth' || !this.isCurrentRendererInit(token) || !this.useDeckGL || this.useGlobe
+      || !this.initialState.layers.weather || this.radarPrewarmGeneration === token) return;
+    this.radarPrewarmGeneration = token;
+    // This small module can fetch while the heavyweight renderer imports. The
+    // renderer shares its pending request/cache; no image tiles load here.
+    void import('@/services/weather-radar').then(({ fetchWeatherRadarFrame }) => {
+      if (!this.isCurrentRendererInit(token) || !this.useDeckGL || this.useGlobe || !this.initialState.layers.weather) return;
+      return fetchWeatherRadarFrame();
+    }).catch(() => { /* the renderer owns visible source status and retry */ });
+  }
+
+  private prewarmGlobeTexture(token: number): void {
+    if (SITE_VARIANT !== 'earth') return;
+    // Start the selected texture in parallel with globe.gl/Three imports, not
+    // after those imports and construction complete. Never pull both textures.
+    void import('@/services/globe-render-settings').then(({ preloadGlobeTexture }) => {
+      if (!this.isCurrentRendererInit(token) || !this.useGlobe) return;
+      this.globeTexturePreloadCleanup?.();
+      this.globeTexturePreloadCleanup = preloadGlobeTexture();
+    }).catch(() => { /* the normal globe loader remains authoritative */ });
+  }
+
   private async createGlobeMap(rendererToken: number): Promise<void> {
     const globeToken = ++this.globeInitToken;
     try {
       markLcpDebug('wm:map:globe-init-start');
+      this.prewarmGlobeTexture(rendererToken);
       const { GlobeMap } = await import('./GlobeMap');
       if (!this.isCurrentRendererInit(rendererToken)) return;
       this.prepareRendererDom('globe-mode');
@@ -726,6 +759,8 @@ export class MapContainer {
   private handleGlobeInitFailure(token: number, error: unknown): void {
     if (token !== this.globeInitToken || !this.useGlobe) return;
     console.warn('[MapContainer] Globe initialization failed, falling back to SVG map', error);
+    this.globeTexturePreloadCleanup?.();
+    this.globeTexturePreloadCleanup = null;
     this.globeMap?.destroy();
     this.globeMap = null;
     this.useGlobe = false;
@@ -813,6 +848,8 @@ export class MapContainer {
 
   private async init(): Promise<void> {
     const token = ++this.rendererInitToken;
+    this.globeTexturePreloadCleanup?.();
+    this.globeTexturePreloadCleanup = null;
     this.rendererInitError = null;
     this.rendererReady = false;
     this.showRendererShell(this.getPendingRendererKind());
@@ -1973,6 +2010,8 @@ export class MapContainer {
   }
 
   public destroy(): void {
+    this.globeTexturePreloadCleanup?.();
+    this.globeTexturePreloadCleanup = null;
     this.earthMapController?.destroy();
     this.earthMapController = null;
     this.cyberMapController?.destroy();

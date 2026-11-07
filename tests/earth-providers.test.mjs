@@ -106,7 +106,8 @@ test('malformed nonempty provider responses cannot be published as fresh empty f
 
 test('provider generation clocks reject stale successful fetches and preserve genuinely empty current feeds', () => {
   assert.throws(() => normalizeEarthquakes({ type: 'FeatureCollection', metadata: { generated: now - 2 * 3600_000 }, features: [] }, now), /generation/);
-  assert.throws(() => normalizeNws({ type: 'FeatureCollection', updated: new Date(now - 3600_000).toISOString(), features: [] }, now), /generation/);
+  // NWS collection.updated is not a response-generation timestamp.
+  assert.deepEqual(normalizeNws({ type: 'FeatureCollection', updated: new Date(now - 3600_000).toISOString(), features: [] }, now).data.items, []);
   assert.throws(() => normalizeGdacs('<rss><channel><pubDate>2020-01-01T00:00:00Z</pubDate></channel></rss>', now), /generation/);
   assert.deepEqual(normalizeEarthquakes({ type: 'FeatureCollection', metadata: { generated: now }, features: [] }, now).data.items, []);
   assert.deepEqual(normalizeNws({ type: 'FeatureCollection', updated: iso, features: [] }, now).data.items, []);
@@ -237,4 +238,30 @@ test('EONET extended failure and malformed/beyond-bound responses reject the who
   const empty = await fetchEarthSource('eonet', { fetchFn: async () => Response.json({ events: [] }) });
   assert.deepEqual(empty.data.items, []);
   assert.equal(empty.observedAt, null);
+});
+
+test('quiet NWS active collections retain valid warnings with their original issue clocks', async () => {
+  const changedAt = new Date(now - 2 * 3600_000).toISOString();
+  const quiet = { type: 'FeatureCollection', updated: changedAt, features: [{
+    id: 'https://api.weather.gov/alerts/synthetic-quiet', geometry: null, properties: {
+      id: 'synthetic-quiet', status: 'Actual', messageType: 'Alert', event: 'Flood Warning',
+      sent: changedAt, expires: new Date(now + 3600_000).toISOString(),
+      '@id': 'https://api.weather.gov/alerts/synthetic-quiet', severity: 'Moderate',
+    },
+  }] };
+  const result = await fetchEarthSource('nws', { now, fetchFn: async (url, init) => {
+    assert.equal(url, 'https://api.weather.gov/alerts/active?status=actual');
+    assert.ok(init.signal instanceof AbortSignal);
+    return Response.json(quiet, { headers: { Date: new Date(now).toUTCString(), Age: '0' } });
+  } });
+  assert.equal(result.data.items.length, 1);
+  assert.equal(result.observedAt, now - 2 * 3600_000);
+  assert.equal(result.data.items[0].observedAt, now - 2 * 3600_000);
+  assert.equal(validEarthData('nws', result.data), true);
+  for (const updated of [undefined, 'not-a-date', new Date(now + 61_000).toISOString()]) {
+    assert.throws(() => normalizeNws({ ...quiet, updated }, now), /collection change time/);
+  }
+  for (const headers of [{ Date: new Date(now - 31 * 60_000).toUTCString() }, { Date: new Date(now + 120_000).toUTCString() }, { Age: '1801' }]) {
+    await assert.rejects(fetchEarthSource('nws', { now, fetchFn: async () => Response.json(quiet, { headers }) }), /cache expired/);
+  }
 });

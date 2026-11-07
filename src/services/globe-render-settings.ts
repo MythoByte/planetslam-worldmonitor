@@ -92,6 +92,43 @@ export function getGlobeTexture(): GlobeTexture {
   return 'topographic';
 }
 
+interface GlobeTexturePreload { link: HTMLLinkElement; users: number; loaded: boolean }
+const globeTexturePreloads = new Map<string, GlobeTexturePreload>();
+
+/** Selected-only hint; CORS mode matches Three.TextureLoader's anonymous ImageLoader. */
+export function preloadGlobeTexture(texture: GlobeTexture = getGlobeTexture()): () => void {
+  if (typeof document === 'undefined') return () => {};
+  const href = GLOBE_TEXTURE_URLS[texture];
+  let entry = globeTexturePreloads.get(href);
+  if (entry?.loaded) return () => {};
+  if (!entry) {
+    const link = document.createElement('link');
+    link.rel = 'preload'; link.as = 'image'; link.crossOrigin = 'anonymous'; link.href = href;
+    entry = { link, users: 0, loaded: false };
+    const created = entry;
+    link.onload = () => {
+      if (globeTexturePreloads.get(href) !== created) return;
+      created.loaded = true; link.remove();
+    };
+    link.onerror = () => {
+      if (globeTexturePreloads.get(href) === created) globeTexturePreloads.delete(href);
+      link.remove();
+    };
+    globeTexturePreloads.set(href, entry);
+    document.head.appendChild(link);
+  }
+  entry.users += 1;
+  const current = entry;
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true; current.users -= 1;
+    if (!current.loaded && current.users === 0 && globeTexturePreloads.get(href) === current) {
+      current.link.remove(); globeTexturePreloads.delete(href);
+    }
+  };
+}
+
 export function setGlobeTexture(texture: GlobeTexture): void {
   try { localStorage.setItem(TEXTURE_STORAGE_KEY, texture); } catch { /* ignore */ }
   window.dispatchEvent(new CustomEvent(TEXTURE_EVENT_NAME, { detail: { texture } }));

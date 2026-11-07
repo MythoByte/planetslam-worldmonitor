@@ -225,8 +225,10 @@ function geometryPoint(geometry) {
 export function normalizeNws(raw, now = Date.now()) {
   const rows = requiredArray(raw?.features, 'NWS');
   if (raw.type !== 'FeatureCollection') throw new Error('Invalid NWS collection');
-  const generatedAt = time(raw.updated);
-  if (!generatedAt || generatedAt > now + 60_000 || now - generatedAt > 30 * 60_000) throw new Error('NWS feed generation is unavailable or delayed');
+  // NWS updated is the last collection change; long-lived active alerts can
+  // legitimately remain unchanged while the HTTP response is current.
+  const collectionChangedAt = time(raw.updated);
+  if (!collectionChangedAt || collectionChangedAt > now + 60_000) throw new Error('Invalid NWS collection change time');
   if (rows.length && !rows.some(row => row?.properties?.id && ['Actual', 'Test', 'Exercise', 'System', 'Draft'].includes(row.properties.status))) throw new Error('Malformed NWS alert records');
   let eligibleCount = 0;
   const items = rows.flatMap(row => {
@@ -345,7 +347,10 @@ export async function fetchEarthSource(sourceId, { now = Date.now(), fetchFn } =
     return { data: { items: [...events.values()] }, observedAt: newest(feeds.map(feed => feed.observedAt)) };
   }
   if (sourceId === 'gdacs') return normalizeGdacs(await providerText('https://www.gdacs.org/xml/rss.xml', fetchFn), now);
-  if (sourceId === 'nws') return normalizeNws(await json('https://api.weather.gov/alerts/active?status=actual', fetchFn), now);
+  if (sourceId === 'nws') {
+    const content = await providerText('https://api.weather.gov/alerts/active?status=actual', fetchFn, { now, maxAgeMs: 30 * 60_000 });
+    return normalizeNws(JSON.parse(content), now);
+  }
   if (sourceId === 'tsunami') return normalizeTsunami(await providerText('https://www.tsunami.gov/events/xml/PAAQAtom.xml', fetchFn), now);
   if (config.location) return normalizeMetWeather(await json(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${config.location.latitude.toFixed(2)}&lon=${config.location.longitude.toFixed(2)}`, fetchFn), config.location);
   if (config.gauge) return normalizeRiver(await json(`https://api.water.noaa.gov/nwps/v1/gauges/${config.gauge.id}`, fetchFn), config.gauge);

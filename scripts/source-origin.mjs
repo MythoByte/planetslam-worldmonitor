@@ -627,6 +627,7 @@ const PROVIDER_ORIGINS = Object.freeze({
   // data coverage. OpenAQ preserves the existing US-origin API identity.
   'OpenAQ': 'US',
   'MET Norway Locationforecast': 'NO',
+  'api.rainviewer.com': 'US',
   'RUV Iceland live cameras': 'IS',
   'Monterey Bay Aquarium live cameras': 'US',
   'NOAA National Water Prediction Service': 'US',

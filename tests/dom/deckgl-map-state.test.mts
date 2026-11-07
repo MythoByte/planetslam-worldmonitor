@@ -37,12 +37,23 @@ vi.mock('@/services/panel-gating', async (importOriginal) => {
 type Handler = (event?: unknown) => void;
 type FlyToCall = { options: { center?: [number, number]; zoom?: number }; eventData?: Record<string, unknown> };
 
+const radarControl = vi.hoisted(() => ({ fetch: vi.fn(), cached: null as unknown, styleGate: null as Promise<string> | null, styleReady: true }));
+vi.mock('@/services/weather-radar', () => ({
+  fetchWeatherRadarFrame: radarControl.fetch, getCachedWeatherRadarFrame: () => radarControl.cached, WEATHER_RADAR_MAX_AGE_MS: 45 * 60_000,
+}));
+
 const { FakeMap, fakeMaps } = vi.hoisted(() => {
   class FakeMap {
     handlers = new Map<string, Handler[]>();
     center: { lng: number; lat: number };
     zoom: number;
     moving = false;
+    styleReady = radarControl.styleReady;
+    tilesReady = true;
+    radarSource: { setTiles: ReturnType<typeof vi.fn> } | null = null;
+    radarLayer: unknown = null;
+    radarSourceSpecs: Record<string, unknown>[] = [];
+    radarSetTiles: string[][] = [];
     flyToCalls: FlyToCall[] = [];
     canvas = document.createElement('canvas');
     dragRotate = { disable(): void {}, enable(): void {} };
@@ -118,17 +129,18 @@ const { FakeMap, fakeMaps } = vi.hoisted(() => {
     resize(): this { return this; }
     remove(): void {}
     triggerRepaint(): void {}
-    getStyle(): { layers: unknown[]; sources: Record<string, unknown> } { return { layers: [], sources: {} }; }
+    getStyle(): { layers: unknown[]; sources: Record<string, unknown> } | undefined { return this.styleReady ? { layers: [], sources: {} } : undefined; }
     setStyle(): this { return this; }
-    isStyleLoaded(): boolean { return true; }
+    isStyleLoaded(): boolean { return this.styleReady && this.tilesReady; }
     loaded(): boolean { return true; }
     areTilesLoaded(): boolean { return true; }
-    getLayer(): undefined { return undefined; }
-    getSource(): undefined { return undefined; }
-    addSource(): this { return this; }
-    addLayer(): this { return this; }
-    removeLayer(): this { return this; }
-    removeSource(): this { return this; }
+    getLayer(id: string): unknown { return id === 'weather-radar-layer' ? this.radarLayer : undefined; }
+    getSource(id: string): unknown { return id === 'weather-radar' ? this.radarSource : undefined; }
+    isSourceLoaded(): boolean { return this.tilesReady; }
+    addSource(id: string, spec: Record<string, unknown>): this { if (id === 'weather-radar') { this.radarSourceSpecs.push(spec); this.radarSource = { setTiles: vi.fn((tiles: string[]) => this.radarSetTiles.push(tiles)) }; } return this; }
+    addLayer(spec: { id: string }): this { if (spec.id === 'weather-radar-layer') this.radarLayer = spec; return this; }
+    removeLayer(id: string): this { if (id === 'weather-radar-layer') this.radarLayer = null; return this; }
+    removeSource(id: string): this { if (id === 'weather-radar') this.radarSource = null; return this; }
     moveLayer(): this { return this; }
     setPaintProperty(): this { return this; }
     setLayoutProperty(): this { return this; }
@@ -218,7 +230,7 @@ vi.mock('@deck.gl/layers', () => {
 });
 
 vi.mock('@/config/basemap-styles', () => ({
-  getStyleForProvider: async (): Promise<string> => 'https://basemap.test/style.json',
+  getStyleForProvider: async (): Promise<string> => radarControl.styleGate ?? 'https://basemap.test/style.json',
   buildPMTilesStyle: async (): Promise<null> => null,
   registerPMTilesProtocol: async (): Promise<void> => {},
 }));
@@ -271,6 +283,8 @@ let maps: DeckGLMap[] = [];
 beforeEach(() => {
   vi.useFakeTimers();
   vi.stubGlobal('fetch', vi.fn(async () => emptyJson()));
+  radarControl.fetch.mockReset(); radarControl.fetch.mockRejectedValue(new Error('No synthetic radar enabled'));
+  radarControl.cached = null; radarControl.styleGate = null; radarControl.styleReady = true;
   fakeMaps.length = 0;
   maps = [];
 });
@@ -769,5 +783,73 @@ describe('DeckGLMap route explorer lane highlight', () => {
     expect(layer(map, 'highlighted-lane-layer')).toBeUndefined();
     const markers = layer(map, 'highlighted-chokepoint-markers')?.props.data as { id: string }[];
     expect(markers.map((m) => m.id)).toContain('malacca_strait');
+  });
+});
+
+
+describe('precipitation radar startup and lifecycle', () => {
+  const frame = () => ({ time: Date.now() - 600_000, fetchedAt: Date.now(), tileUrl: 'https://tilecache.rainviewer.com/v2/radar/synthetic/512/{z}/{x}/{y}/2/1_1.png', maxZoom: 7 as const });
+  it('applies metadata received before map construction as soon as style parses, without waiting for basemap tiles or five-minute refresh', async () => {
+    let releaseStyle!: (url: string) => void;
+    radarControl.styleGate = new Promise(resolve => { releaseStyle = resolve; }); radarControl.styleReady = false;
+    radarControl.fetch.mockResolvedValue(frame());
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => url.includes('rainviewer.com') ? Response.json({ host: 'https://tilecache.rainviewer.com', radar: { past: [{ path: '/v2/radar/synthetic' }] } }) : emptyJson()));
+    const container = document.createElement('div'); document.body.append(container);
+    const map = new DeckGLMap(container, initialState({ layers: { ...allLayersOff(), weather: true } }), { chrome: false }); maps.push(map);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(fakeMaps).toHaveLength(0); expect(radarControl.fetch).toHaveBeenCalledTimes(1);
+    releaseStyle('https://basemap.test/style.json'); await map.whenReady();
+    const fake = fakeMaps[0]!; fake.tilesReady = false;
+    expect(fake.radarSourceSpecs).toHaveLength(0);
+    fake.styleReady = true; fake.emit('style.load');
+    expect(fake.isStyleLoaded()).toBe(false);
+    expect(fake.radarSourceSpecs).toHaveLength(1);
+    expect(fake.radarSourceSpecs[0]).toMatchObject({ tileSize: 512, maxzoom: 7 });
+    expect(container.querySelector('[data-testid="weather-radar-status"]')?.getAttribute('data-state')).toBe('loading');
+    fake.tilesReady = true; fake.emit('sourcedata', { sourceId: 'weather-radar' });
+    expect(container.querySelector('[data-testid="weather-radar-status"]')?.getAttribute('data-state')).toBe('ready');
+  });
+  it('reuses a cached first frame and does not reload identical tiles; newer frames wait only for their own source', async () => {
+    const cached = frame(); radarControl.cached = cached; radarControl.fetch.mockResolvedValue(cached);
+    const { map, fake } = await createMap(initialState({ layers: { ...allLayersOff(), weather: true } })); maps.push(map);
+    await vi.advanceTimersByTimeAsync(1); expect(fake.radarSourceSpecs).toHaveLength(1);
+    await vi.advanceTimersByTimeAsync(5 * 60_000); expect(fake.radarSetTiles).toHaveLength(0);
+    const next = { ...frame(), tileUrl: cached.tileUrl.replace('synthetic', 'next') }; radarControl.fetch.mockResolvedValue(next);
+    fake.tilesReady = false; await vi.advanceTimersByTimeAsync(5 * 60_000); expect(fake.radarSetTiles).toHaveLength(0);
+    fake.tilesReady = true; fake.emit('sourcedata', { sourceId: 'weather-radar' });
+    expect(fake.radarSetTiles).toEqual([[next.tileUrl]]);
+    fake.radarSource = null; fake.radarLayer = null; fake.emit('style.load');
+    expect(fake.radarSourceSpecs).toHaveLength(2);
+  });
+  it('shows unavailable and retries initial failure promptly; radar tile errors never replace the basemap', async () => {
+    radarControl.fetch.mockRejectedValueOnce(new Error('Synthetic outage')).mockResolvedValue(frame());
+    const { map, fake } = await createMap(initialState({ layers: { ...allLayersOff(), weather: true } })); maps.push(map);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(document.querySelector('[data-testid="weather-radar-status"]')?.textContent).toContain('unavailable');
+    await vi.advanceTimersByTimeAsync(15_000); expect(fake.radarSourceSpecs).toHaveLength(1);
+    fake.emit('error', { type: 'error', sourceId: 'weather-radar', error: { message: '403' } });
+    fake.emit('error', { type: 'error', sourceId: 'weather-radar', error: { message: '403' } });
+    expect(fakeMaps).toHaveLength(1);
+    expect(document.querySelector('[data-testid="weather-radar-status"]')?.getAttribute('data-state')).toBe('unavailable');
+  });
+  it('labels slow tile requests and recovers when their source completes without claiming an empty all-clear', async () => {
+    radarControl.fetch.mockResolvedValue(frame());
+    const { map, fake } = await createMap(initialState({ layers: { ...allLayersOff(), weather: true } })); maps.push(map);
+    fake.tilesReady = false; fake.emit('data', { dataType: 'source', sourceId: 'baseline' });
+    await vi.advanceTimersByTimeAsync(15_001);
+    expect(document.querySelector('[data-testid="weather-radar-status"]')?.getAttribute('data-state')).toBe('delayed');
+    fake.tilesReady = true; fake.emit('sourcedata', { sourceId: 'weather-radar' });
+    expect(document.querySelector('[data-testid="weather-radar-status"]')?.getAttribute('data-state')).toBe('ready');
+  });
+  it('does not fetch disabled weather or apply a late response after toggling off or destruction', async () => {
+    const { map, fake } = await createMap(initialState({ layers: allLayersOff() })); maps.push(map);
+    expect(radarControl.fetch).not.toHaveBeenCalled();
+    let resolve!: (value: ReturnType<typeof frame>) => void; radarControl.fetch.mockReturnValue(new Promise(done => { resolve = done; }));
+    map.setLayers({ ...allLayersOff(), weather: true });
+    map.setLayers(allLayersOff()); resolve(frame()); await vi.advanceTimersByTimeAsync(1);
+    expect(fake.radarSourceSpecs).toHaveLength(0);
+    expect(document.querySelector('[data-testid="weather-radar-status"]')).toBeNull();
+    map.destroy(); maps = []; await vi.advanceTimersByTimeAsync(5 * 60_000);
+    expect(radarControl.fetch).toHaveBeenCalledTimes(1);
   });
 });

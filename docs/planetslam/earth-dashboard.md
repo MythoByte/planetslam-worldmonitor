@@ -1,4 +1,4 @@
-# PlanetSlam Earth — phases 1–5
+# PlanetSlam Earth — phases 1–6
 
 Earth is the PlanetSlam edition for weather, natural hazards, official alerts,
 Earth news and webcams. Open `/dashboard?variant=earth` or choose **Earth** in
@@ -138,6 +138,43 @@ is shown after two hours, while retained historical frames remain viewable until
 the seven-day retention limit. Archive availability is separate from live-feed
 availability, and no frame or empty category establishes an all-clear.
 
+## Loading, recovery and release checks (phase 6)
+
+Earth starts a visible 2D WebGL renderer after a 200 ms scheduling delay, with a
+500 ms idle-callback timeout, while preserving the first paint. Other editions
+retain their existing schedule. Offscreen maps keep their lazy-loading backstop.
+Radar metadata starts alongside the renderer import when weather is enabled.
+A parsed map style can attach radar before unrelated basemap tiles finish.
+
+The radar status shows the UTC observation frame time, loading, delayed or
+unavailable state, and a retry button. Manifest requests have an eight-second
+deadline, share in-flight work and reuse fresh metadata for one minute. A validated
+last-good frame can be reused for up to 45 minutes, including across reloads;
+failed requests do not advance its clocks. Initial failures retry after 15, 30 and
+60 seconds, then retain the regular five-minute refresh. Slow tiles are identified
+after 15 seconds. Unchanged frame URLs avoid unnecessary tile reloads. Radar
+failures are isolated from basemap fallback.
+
+RainViewer's public precipitation tiles use Universal Blue and a maximum source
+zoom of seven, with operator attribution. Overzooming the map does not request
+unsupported tile zooms. Coverage is provider-dependent. The public API no longer
+supplies satellite infrared cloud imagery or nowcast frames; see the
+[provider transition FAQ](https://www.rainviewer.com/api/transition-faq.html).
+Current radar is separate from recorded event playback.
+
+The globe shows event and warning locations. Its selected Earth texture starts
+loading concurrently with the globe renderer code. Blue Marble is a static image,
+not live cloud observations. SVG/mobile maps show event locations without radar.
+The controls state these renderer and history limits explicitly.
+
+Phase 6 also verifies that a quiet NWS active-alert collection remains usable
+when its HTTP retrieval clocks are fresh: its content `updated` value records the
+last collection change, rather than a new observation on every request. Missing,
+invalid or future content clocks and stale transport clocks remain rejected.
+
+See the [Phase 6 release checklist](./earth-phase6-verification.md) for exercised
+paths, evidence limits and the deployment checks still required per release.
+
 ## Running the worker
 
 The app discovers the cache-only `/api/earth` handler through the existing API
@@ -159,8 +196,8 @@ production deployment are separate checks.
 ## Verification
 
 ```sh
-node --import tsx --test tests/earth*.test.m*
-VITE_BRAND=planetslam npx playwright test e2e/earth-dashboard.spec.ts --project=chromium
+node --import tsx --test tests/earth*.test.m* tests/weather-radar.test.mts
+VITE_BRAND=planetslam npx playwright test e2e/earth-dashboard.spec.ts e2e/earth-watch.spec.ts e2e/weather-radar.spec.ts --project=chromium
 npm run typecheck
 npm run typecheck:api
 npm run lint:boundaries
