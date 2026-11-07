@@ -1162,12 +1162,12 @@
       "provider": "api.rainviewer.com",
       "kind": "structured",
       "observed": true,
-      "license": "Provider terms for this upstream API/dataset; verify before redistribution",
-      "attribution": "Credit api.rainviewer.com and link to the original upstream API/dataset.",
+      "license": "RainViewer public Weather Maps API terms and attribution requirements apply. Current public coverage is historical precipitation radar only; no broader satellite or forecast data rights are inferred.",
+      "attribution": "Weather data by RainViewer. Retain the operator link and frame timestamp; respect current public zoom and request limits. Missing radar coverage or a transparent tile is not an all-clear.",
       "status": "terms-review",
       "references": [
         {
-          "path": "src/components/DeckGLMap.ts"
+          "path": "src/services/weather-radar.ts"
         }
       ]
     },
@@ -10441,6 +10441,21 @@
       ]
     },
     {
+      "host": "tilecache.rainviewer.com",
+      "provider": "api.rainviewer.com",
+      "kind": "structured",
+      "observed": true,
+      "license": "RainViewer public weather-tile terms and attribution requirements apply; this is the official tile delivery host advertised by its manifest.",
+      "attribution": "Weather data by RainViewer; preserve the frame timestamp and operator link. Public radar tiles use the supported palette and zoom cap.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "src/services/weather-radar.ts"
+        }
+      ],
+      "role": "transport"
+    },
+    {
       "host": "tiles.openfreemap.org",
       "provider": "tiles.openfreemap.org",
       "kind": "structured",
@@ -14398,6 +14413,21 @@
           "path": "shared/news-catalog.json"
         }
       ]
+    },
+    {
+      "host": "www.rainviewer.com",
+      "provider": "api.rainviewer.com",
+      "kind": "structured",
+      "observed": true,
+      "license": "Operator attribution link, not an additional ingested dataset or a video/image redistribution licence.",
+      "attribution": "RainViewer operator credit and API documentation link; data-provider identity remains the existing RainViewer API.",
+      "status": "excluded",
+      "references": [
+        {
+          "path": "src/components/DeckGLMap.ts"
+        }
+      ],
+      "role": "transport"
     },
     {
       "host": "www.rand.org",

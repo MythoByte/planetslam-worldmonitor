@@ -75,7 +75,7 @@ entities is rejected.
 ## API contract
 
 Datasets are `earthquakes`, `events`, `alerts`, `weather`, `rivers`, `airquality`,
-`news`, `history`, and `health`. Unknown dataset names are rejected. Only GET and OPTIONS
+`news`, `changes`, `history`, and `health`. Unknown dataset names are rejected. Only GET and OPTIONS
 are accepted, with the existing origin policy.
 
 Each envelope includes `dataset`, `status`, `provider`, `sourceUrl`, `coverage`,
@@ -145,9 +145,14 @@ not raw payloads, URLs with credentials or secret values.
 
 Earth keys use `earth:<dataset>:<source>:v1`; metadata uses the existing
 `seed-meta:<key>` contract. Air quality reads its established cache key directly
-without writing it. USGS, NWS and GDACS feed-generation timestamps are checked before publication;
-a successful HTTP fetch cannot make an old provider response fresh. Malformed
-nonempty record collections cannot be published as empty success.
+without writing it. USGS and GDACS feed-generation timestamps are checked before
+publication. For both NWS active and cancellation indexes, `updated` records the
+last collection change rather than response generation. Quiet collections can
+therefore retain older issue/change times; malformed or future collection times
+are rejected, and HTTP Date/Age are checked when supplied. Source fetch clocks
+and individual warning expiry remain separate. A successful fetch never changes
+a warning's issue time. Malformed nonempty record collections cannot be published
+as empty success.
 
 Source refresh intervals survive worker restarts because
 admission is stored in Redis.

@@ -1,0 +1,8 @@
+.weather-radar-status { position:absolute; top:10px; left:10px; z-index:101; max-width:calc(100% - 70px); padding:6px 9px; border:1px solid var(--border); border-radius:5px; background:var(--panel-bg,var(--surface)); color:var(--text); font-size:10px; line-height:1.4; pointer-events:auto; }
+.weather-radar-status button { margin-left:8px; padding:3px 6px; color:var(--text); background:var(--surface); border:1px solid var(--border); cursor:pointer; }
+.weather-radar-status button[hidden] { display:none; }
+.weather-radar-status[data-state="unavailable"], .weather-radar-status[data-state="delayed"] { border-color:var(--warning,#e3b45f); }
+
+.deckgl-map-wrapper:has(~ .deckgl-time-slider) .weather-radar-status { top:85px; }
+
+.weather-radar-status a { margin-left:6px; color:var(--text); text-decoration:underline; }

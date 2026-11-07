@@ -1,3 +1,5 @@
+import { fetchWeatherRadarFrame, getCachedWeatherRadarFrame, WEATHER_RADAR_MAX_AGE_MS, type WeatherRadarFrame } from '@/services/weather-radar';
+import './weather-radar.css';
 import { type EarthMapSnapshot, type EarthMapMarker, earthMarkerLabel } from '@/types/earth-map';
 import { type CyberMapSnapshot, type CyberMapMarker, cyberMarkerLabel } from '@/types/cyber-map';
 import { createEarthMapLayers } from './earth-map-layers';
@@ -927,13 +929,19 @@ export class DeckGLMap {
   private cachedNightPolygon: [number, number][] | null = null;
   private radarRefreshIntervalId: ReturnType<typeof setInterval> | null = null;
   private radarActive = false;
-  private radarTileUrl = '';
-  // Drop duplicate `once('idle', applyRadarLayer)` registrations when
-  // the source isn't loaded yet. Without this, both the style.load
-  // callback and the 5-minute refresh can register listeners in the
-  // same load window — they'd all fire on the next idle and call
-  // setTiles back-to-back. Idempotent today but wasteful.
-  private radarIdlePending = false;
+  private radarFrame: WeatherRadarFrame | null = null;
+  private radarAppliedUrl = '';
+  private radarGeneration = 0;
+  private radarRequest: Promise<void> | null = null;
+  private radarRetryTimeout: ReturnType<typeof setTimeout> | null = null;
+  private radarRetryCount = 0;
+  private radarRefreshFailed = false;
+  private radarTilesFailed = false;
+  private radarTilesReady = false;
+  private radarTileSlow = false;
+  private radarTileTimeout: ReturnType<typeof setTimeout> | null = null;
+  private radarStatus: HTMLElement | null = null;
+  private radarMapCleanup: (() => void) | null = null;
   private readonly startupTime = Date.now();
   private basemapSwitchSeq = 0;
   private lastCableHighlightSignature = '';
@@ -1064,86 +1072,148 @@ export class DeckGLMap {
   }
 
   private startWeatherRadar(): void {
-    this.radarActive = true;
-    this.fetchAndApplyRadar();
-    if (!this.radarRefreshIntervalId) {
-      this.radarRefreshIntervalId = setInterval(() => this.fetchAndApplyRadar(), 5 * 60 * 1000);
-    }
+    if (this.radarActive || this.destroyed) return;
+    this.radarActive = true; this.radarGeneration++; this.radarRetryCount = 0;
+    this.radarFrame = getCachedWeatherRadarFrame();
+    this.applyRadarLayer(); this.updateRadarStatus();
+    void this.fetchAndApplyRadar();
+    this.radarRefreshIntervalId = setInterval(() => { void this.fetchAndApplyRadar(true); }, 5 * 60 * 1000);
   }
 
   private stopWeatherRadar(): void {
-    this.radarActive = false;
-    if (this.radarRefreshIntervalId) {
-      clearInterval(this.radarRefreshIntervalId);
-      this.radarRefreshIntervalId = null;
-    }
-    this.removeRadarLayer();
+    this.radarActive = false; this.radarGeneration++; this.radarRequest = null;
+    if (this.radarRefreshIntervalId) clearInterval(this.radarRefreshIntervalId);
+    if (this.radarRetryTimeout) clearTimeout(this.radarRetryTimeout);
+    this.radarRefreshIntervalId = null; this.radarRetryTimeout = null;
+    this.removeRadarLayer(); this.radarStatus?.remove(); this.radarStatus = null;
   }
 
-  private fetchAndApplyRadar(): void {
-    fetch('https://api.rainviewer.com/public/weather-maps.json')
-      .then(r => r.json())
-      .then((data: { host: string; radar: { past: Array<{ path: string }> } }) => {
-        const past = data.radar?.past;
-        const latest = past?.[past.length - 1];
-        if (!latest) return;
-        this.radarTileUrl = `${data.host}${latest.path}/256/{z}/{x}/{y}/6/1_1.png`;
-        this.applyRadarLayer();
-      })
-      .catch((err) => console.warn('[DeckGLMap] weather radar fetch failed:', err?.message || err));
+  private fetchAndApplyRadar(force = false): Promise<void> {
+    if (!this.radarActive || this.destroyed) return Promise.resolve();
+    if (this.radarRequest) return this.radarRequest;
+    const generation = this.radarGeneration;
+    const request = fetchWeatherRadarFrame(force).then(frame => {
+      if (this.destroyed || !this.radarActive || generation !== this.radarGeneration) return;
+      this.radarFrame = frame; this.radarRefreshFailed = false; this.radarRetryCount = 0;
+      if (this.radarRetryTimeout) { clearTimeout(this.radarRetryTimeout); this.radarRetryTimeout = null; }
+      this.applyRadarLayer(); this.updateRadarStatus();
+    }).catch(() => {
+      if (this.destroyed || !this.radarActive || generation !== this.radarGeneration) return;
+      this.radarRefreshFailed = true;
+      // Last-good imagery is usable only within the loader's bounded frame age.
+      this.radarFrame = getCachedWeatherRadarFrame();
+      if (!this.radarFrame) this.removeRadarLayer();
+      this.updateRadarStatus();
+      if (!this.radarRetryTimeout && this.radarRetryCount < 3) {
+        const delay = 15_000 * 2 ** this.radarRetryCount++;
+        this.radarRetryTimeout = setTimeout(() => { this.radarRetryTimeout = null; void this.fetchAndApplyRadar(true); }, delay);
+      }
+    }).finally(() => { if (this.radarRequest === request) this.radarRequest = null; });
+    this.radarRequest = request;
+    return request;
+  }
+
+  /** Style parsing, unlike isStyleLoaded(), does not wait for unrelated basemap tiles. */
+  private wireRadarMap(map: maplibregl.Map): void {
+    this.radarMapCleanup?.(); this.radarAppliedUrl = ''; this.radarTilesReady = false;
+    const current = (): boolean => !this.destroyed && this.maplibreMap === map;
+    const style = (): void => {
+      if (!current()) return;
+      this.radarAppliedUrl = ''; this.radarTilesReady = false; this.radarTilesFailed = false;
+      this.applyRadarLayer();
+    };
+    const data = (event: { sourceId?: string }): void => {
+      if (!current() || !this.radarActive || event.sourceId !== 'weather-radar') return;
+      // Preserve the source-loaded guard against setTiles while textures are mid-load.
+      if (map.getSource('weather-radar') && map.isSourceLoaded('weather-radar')) {
+        this.radarTilesReady = !this.radarTilesFailed;
+        if (this.radarTilesReady) { this.radarTileSlow = false; if (this.radarTileTimeout) clearTimeout(this.radarTileTimeout); this.radarTileTimeout = null; }
+        this.applyRadarLayer(); this.updateRadarStatus();
+      }
+    };
+    const error = (event: { type: string; sourceId?: string }): void => {
+      if (!current() || !this.radarActive || event.sourceId !== 'weather-radar') return;
+      this.radarTilesFailed = true; this.radarTilesReady = false;
+      if (this.radarTileTimeout) clearTimeout(this.radarTileTimeout); this.radarTileTimeout = null;
+      this.updateRadarStatus();
+    };
+    map.on('style.load', style); map.on('sourcedata', data); map.on('error', error);
+    this.radarMapCleanup = () => { map.off('style.load', style); map.off('sourcedata', data); map.off('error', error); };
+    this.applyRadarLayer();
+  }
+
+  private watchRadarTiles(): void {
+    if (this.radarTileTimeout) clearTimeout(this.radarTileTimeout);
+    this.radarTileSlow = false;
+    this.radarTileTimeout = setTimeout(() => {
+      this.radarTileTimeout = null;
+      if (this.radarActive && !this.destroyed && !this.radarTilesReady) { this.radarTileSlow = true; this.updateRadarStatus(); }
+    }, 15_000);
+  }
+
+  private updateRadarStatus(): void {
+    if (!this.radarActive || this.destroyed) return;
+    if (!this.radarStatus) {
+      const status = document.createElement('div'); status.className = 'weather-radar-status';
+      status.dataset.testid = 'weather-radar-status'; status.setAttribute('role', 'status');
+      const label = document.createElement('span'); label.dataset.radarLabel = '';
+      const retry = document.createElement('button'); retry.type = 'button'; retry.textContent = 'Retry radar';
+      retry.addEventListener('click', () => {
+        if (this.radarTilesFailed || this.radarTileSlow) { this.removeRadarLayer(); this.radarTilesFailed = false; this.applyRadarLayer(); }
+        this.radarRetryCount = 0;
+        if (this.radarRetryTimeout) { clearTimeout(this.radarRetryTimeout); this.radarRetryTimeout = null; }
+        void this.fetchAndApplyRadar(true);
+      });
+      for (const name of ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'touchstart', 'touchend', 'click', 'dblclick', 'keydown', 'keyup', 'wheel']) status.addEventListener(name, event => event.stopPropagation());
+      const credit = document.createElement('a'); credit.href = 'https://www.rainviewer.com/';
+      credit.textContent = 'RainViewer'; credit.target = '_blank'; credit.rel = 'noopener noreferrer';
+      status.append(label, credit, retry); this.radarStatus = status;
+      (this.container.querySelector('.deckgl-map-wrapper') ?? this.container).append(status);
+    }
+    const state = this.radarTilesFailed ? 'unavailable' : !this.radarFrame ? this.radarRefreshFailed ? 'unavailable' : 'loading'
+      : this.radarRefreshFailed || this.radarTileSlow ? 'delayed' : this.radarTilesReady ? 'ready' : 'loading';
+    this.radarStatus.dataset.state = state;
+    const time = this.radarFrame ? new Date(this.radarFrame.time).toISOString().slice(11, 16) + ' UTC' : '';
+    const message = state === 'unavailable' ? 'Precipitation radar unavailable'
+      : state === 'delayed' ? `${this.radarTileSlow ? 'Radar tiles loading slowly' : 'Radar refresh delayed'} · frame ${time}`
+        : state === 'ready' ? `Precipitation radar · frame ${time}` : `Loading precipitation radar${time ? ` · frame ${time}` : '…'}`;
+    this.radarStatus.querySelector<HTMLElement>('[data-radar-label]')!.textContent = message;
+    this.radarStatus.querySelector<HTMLButtonElement>('button')!.hidden = state !== 'unavailable' && state !== 'delayed';
   }
 
   private applyRadarLayer(): void {
-    if (!this.maplibreMap || !this.radarActive || !this.radarTileUrl) return;
-    if (!this.maplibreMap.isStyleLoaded()) {
-      this.maplibreMap.once('style.load', () => this.applyRadarLayer());
-      return;
+    const map = this.maplibreMap, frame = this.radarFrame;
+    if (!map || !this.radarActive || !frame || this.destroyed) return;
+    if (Date.now() - frame.time > WEATHER_RADAR_MAX_AGE_MS || Date.now() - frame.fetchedAt > WEATHER_RADAR_MAX_AGE_MS) {
+      this.radarFrame = null; this.radarRefreshFailed = true; this.removeRadarLayer(); this.updateRadarStatus(); return;
     }
+    // getStyle() is undefined before Style._loaded, but available at style.load,
+    // even while basemap tiles are outstanding. A persistent listener handles it.
+    if (!map.getStyle()) return;
     try {
-      const existing = this.maplibreMap.getSource('weather-radar') as (maplibregl.RasterTileSource & { setTiles: (tiles: string[]) => void }) | undefined;
+      const existing = map.getSource('weather-radar') as (maplibregl.RasterTileSource & { setTiles: (tiles: string[]) => void }) | undefined;
       if (existing) {
-        // Guard against the source existing in the style registry while
-        // its underlying texture is mid-load or being torn down. Calling
-        // setTiles in that window triggers a render-frame crash inside
-        // MapLibre at fa() / texture.bind() (Sentry WORLDMONITOR-P6:
-        // Firefox 149, hit on the 5-minute radar refresh interval).
-        // isSourceLoaded(id) is MapLibre's official "tiles fetched +
-        // applied to GL state" check; defer to the next idle if false.
-        if (!this.maplibreMap.isSourceLoaded('weather-radar')) {
-          if (!this.radarIdlePending) {
-            this.radarIdlePending = true;
-            this.maplibreMap.once('idle', () => {
-              this.radarIdlePending = false;
-              this.applyRadarLayer();
-            });
-          }
-          return;
-        }
-        existing.setTiles([this.radarTileUrl]);
-        return;
+        if (this.radarAppliedUrl === frame.tileUrl || !map.isSourceLoaded('weather-radar')) return;
+        this.radarAppliedUrl = frame.tileUrl; this.radarTilesReady = false; this.radarTilesFailed = false; this.watchRadarTiles();
+        existing.setTiles([frame.tileUrl]); this.updateRadarStatus(); return;
       }
-      this.maplibreMap.addSource('weather-radar', {
-        type: 'raster',
-        tiles: [this.radarTileUrl],
-        tileSize: 256,
-        attribution: '© RainViewer',
-      });
-      const beforeId = this.maplibreMap.getLayer('country-interactive') ? 'country-interactive' : undefined;
-      this.maplibreMap.addLayer({
-        id: 'weather-radar-layer',
-        type: 'raster',
-        source: 'weather-radar',
-        paint: { 'raster-opacity': 0.65 },
-      }, beforeId);
-    } catch (err) { console.warn('[DeckGLMap] radar layer apply failed:', (err as Error)?.message); }
+      this.radarAppliedUrl = frame.tileUrl; this.radarTilesReady = false; this.radarTilesFailed = false;
+      map.addSource('weather-radar', { type: 'raster', tiles: [frame.tileUrl], tileSize: 512, maxzoom: frame.maxZoom,
+        attribution: 'Weather data by <a href="https://www.rainviewer.com/" target="_blank" rel="noopener">RainViewer</a>' });
+      const beforeId = map.getLayer('country-interactive') ? 'country-interactive' : undefined;
+      map.addLayer({ id: 'weather-radar-layer', type: 'raster', source: 'weather-radar', paint: { 'raster-opacity': 0.65 } }, beforeId);
+      this.watchRadarTiles(); this.updateRadarStatus();
+    } catch { this.radarTilesFailed = true; this.updateRadarStatus(); }
   }
 
   private removeRadarLayer(): void {
+    this.radarAppliedUrl = ''; this.radarTilesReady = false; this.radarTileSlow = false;
+    if (this.radarTileTimeout) clearTimeout(this.radarTileTimeout); this.radarTileTimeout = null;
     if (!this.maplibreMap) return;
     try {
       if (this.maplibreMap.getLayer('weather-radar-layer')) this.maplibreMap.removeLayer('weather-radar-layer');
       if (this.maplibreMap.getSource('weather-radar')) this.maplibreMap.removeSource('weather-radar');
-    } catch { /* ignore */ }
+    } catch { /* map may be switching styles */ }
   }
 
   private setupDOM(): void {
@@ -1228,6 +1298,8 @@ export class DeckGLMap {
         : {}),
     });
 
+    this.wireRadarMap(this.maplibreMap);
+
     const reportFatalBasemapFailure = (error: unknown, center = this.getCenter()): void => {
       const message = error instanceof Error ? error.message : String(error);
       console.warn('[DeckGLMap] Basemap fallback unavailable — handing off to SVG:', message);
@@ -1268,6 +1340,7 @@ export class DeckGLMap {
       const attr = this.container.querySelector('.map-attribution');
       if (attr) setTrustedHtml(attr, trustedHtml('© <a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>', "legacy direct innerHTML migration"));
       this.detachMapLibreInteractionHandlers();
+      this.radarMapCleanup?.(); this.radarMapCleanup = null;
       try {
         this.maplibreMap?.remove();
       } catch (error) {
@@ -1305,6 +1378,7 @@ export class DeckGLMap {
         reportFatalBasemapFailure(error, center);
         return;
       }
+      this.wireRadarMap(this.maplibreMap);
       this.maplibreMap.on('load', () => {
         this.attachMapLibreInteractionHandlers();
         localizeMapLabels(this.maplibreMap);
@@ -1326,7 +1400,8 @@ export class DeckGLMap {
     let tileLoadOk = false;
     let tileErrorCount = 0;
 
-    this.maplibreMap.on('error', (e: { error?: { message?: string }; message?: string }) => {
+    this.maplibreMap.on('error', (e: { error?: { message?: string }; message?: string; sourceId?: string }) => {
+      if (e.sourceId === 'weather-radar') return;
       const msg = e.error?.message ?? e.message ?? '';
       console.warn('[DeckGLMap] map error:', msg);
       if (msg.includes('Failed to fetch') || msg.includes('AJAXError') || msg.includes('CORS') || msg.includes('NetworkError') || msg.includes('403') || msg.includes('Forbidden')) {
@@ -1337,7 +1412,8 @@ export class DeckGLMap {
       }
     });
 
-    this.maplibreMap.on('data', (e: { dataType?: string }) => {
+    this.maplibreMap.on('data', (e: { dataType?: string; sourceId?: string }) => {
+      if (e.sourceId === 'weather-radar') return;
       if (e.dataType === 'source') {
         tileLoadOk = true;
         if (this.styleLoadTimeoutId) {
@@ -8861,7 +8937,8 @@ export class DeckGLMap {
       if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
     };
 
-    const onError = (e: { error?: { message?: string }; message?: string }) => {
+    const onError = (e: { error?: { message?: string }; message?: string; sourceId?: string }) => {
+      if (e.sourceId === 'weather-radar') return;
       if (gen !== this.tileMonitorGeneration) { cleanup(); return; }
       const msg = e.error?.message ?? e.message ?? '';
       if (msg.includes('Failed to fetch') || msg.includes('AJAXError') || msg.includes('CORS') || msg.includes('NetworkError') || msg.includes('403') || msg.includes('Forbidden')) {
@@ -8873,7 +8950,8 @@ export class DeckGLMap {
       }
     };
 
-    const onData = (e: { dataType?: string }) => {
+    const onData = (e: { dataType?: string; sourceId?: string }) => {
+      if (e.sourceId === 'weather-radar') return;
       if (gen !== this.tileMonitorGeneration) { cleanup(); return; }
       if (e.dataType === 'source') { ok = true; cleanup(); }
     };
@@ -8974,6 +9052,7 @@ export class DeckGLMap {
     this.stopPulseAnimation();
     this.stopDayNightTimer();
     this.stopWeatherRadar();
+    this.radarMapCleanup?.(); this.radarMapCleanup = null;
     if (this.aircraftFetchTimer) {
       clearInterval(this.aircraftFetchTimer);
       this.aircraftFetchTimer = null;
