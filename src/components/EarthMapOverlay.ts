@@ -74,6 +74,13 @@ export class EarthMapOverlay {
       if (detail.origin === 'panel' && !detail.nearby) this.container.scrollIntoView({ block: 'nearest' });
       this.render();
     };
+    window.addEventListener('planetslam:earth-location', event => {
+      const detail = (event as CustomEvent).detail;
+      if (!detail || !Number.isFinite(detail.latitude) || !Number.isFinite(detail.longitude) || Math.abs(detail.latitude) > 90 || Math.abs(detail.longitude) > 180) return;
+      this.historical = false; this.selected = null; this.stopPlayback();
+      this.center(detail.latitude, detail.longitude); this.render();
+      this.container.scrollIntoView({ block: 'nearest' });
+    }, { signal: this.abort.signal });
     window.addEventListener(EARTH_MARKER_EVENT, select, { signal: this.abort.signal });
     window.addEventListener('planetslam:earth-history-select', select, { signal: this.abort.signal });
     this.observer = new MutationObserver(() => this.attach());

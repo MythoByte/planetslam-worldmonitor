@@ -51,7 +51,7 @@ export function ageEarthEnvelope<T>(envelope: EarthEnvelope<T>, now = Date.now()
       ? envelope.data as { items: { sourceId: string; expiresAt?: number | null; observedAt?: number }[] } : null;
     const items = raw?.items.filter(item => {
       const maxAge = byId.get(item.sourceId)?.observationMaxAgeMs;
-      return ids.has(item.sourceId) && (item.expiresAt == null || item.expiresAt > now)
+      return (envelope.dataset !== 'changes' || typeof item.observedAt === 'number' && item.observedAt <= now + 60_000 && now - item.observedAt <= 7 * 86400_000) && ids.has(item.sourceId) && (item.expiresAt == null || item.expiresAt > now)
         && (maxAge == null || envelope.dataset === 'weather' || typeof item.observedAt === 'number' && now - item.observedAt < maxAge)
         && (envelope.dataset !== 'earthquakes' || typeof item.observedAt === 'number' && now - item.observedAt <= 86400_000);
     });
@@ -100,7 +100,7 @@ export async function fetchEarthDataset<T>(dataset: EarthDataset, force = false)
 }
 
 export function filterEarthEvents(items: EarthEvent[], filter: EarthEventFilter = {}, now = Date.now()): EarthEvent[] {
-  return items.filter(item => (item.expiresAt === null || item.expiresAt > now)
+  return items.filter(item => !item.lifecycle && (item.expiresAt === null || item.expiresAt > now)
     && (!filter.hazard || filter.hazard === 'all' || (item.kind === filter.hazard || item.hazards?.includes(filter.hazard as EarthEvent['kind'])))
     && (!filter.region || filter.region === 'all' || item.region === filter.region)
     && (!filter.severity || filter.severity === 'all' || item.severity === filter.severity)

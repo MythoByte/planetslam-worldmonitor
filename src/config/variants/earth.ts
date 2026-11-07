@@ -3,6 +3,7 @@ import { DEFAULT_MAP_LAYERS as SPACE_LAYERS } from './space';
 
 export const DEFAULT_PANELS: Record<string, PanelConfig> = {
   map: { name: 'Earth — Weather & Natural Hazards', enabled: true, priority: 1 },
+  'earth-watch': { name: 'My Earth', enabled: true, priority: 1 },
   'earth-events': { name: 'Active Earth Events', enabled: true, priority: 1 },
   'earth-alerts': { name: 'Official Alerts', enabled: true, priority: 1 },
   'earth-weather': { name: 'Weather & Forecasts', enabled: true, priority: 1 },

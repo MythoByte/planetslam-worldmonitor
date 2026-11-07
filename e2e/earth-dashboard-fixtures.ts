@@ -26,6 +26,7 @@ export function earthFixture(dataset: EarthDataset): EarthEnvelope<unknown> {
       { key: 'historical-flood', event: { ...event, id: 'past-flood', title: 'Synthetic expired flood warning', kind: 'flood', mode: 'warning', observedAt: now - 7260_000, expiresAt: now - 5400_000 } },
       { key: 'historical-coastal', event: { ...event, id: 'past-coastal', title: 'Synthetic coastal snapshot', kind: 'coastal', hazards: ['coastal', 'flood'], mode: 'warning', observedAt: now - 60_000, expiresAt: now + 3600_000 } },
     ] },
+    changes: { items: [] },
     health: { items: [] },
   };
   if (dataset === 'health') all.health = { items: (Object.keys(all) as EarthDataset[]).filter(d => d !== 'health' && d !== 'history').map(d => ({ ...earthFixture(d), data: null })) };

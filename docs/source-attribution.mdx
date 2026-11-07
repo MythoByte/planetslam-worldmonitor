@@ -12,7 +12,7 @@ The inventory is **generated, not hand-written**: `scripts/source-attribution.mj
 ## Observed Source Inventory
 
 {/* BEGIN GENERATED SOURCE ATTRIBUTION */}
-This generated inventory covers **878 active source hosts** representing **853 active providers** (**396 structured/API**, **468 feed**, and **30 operational-status** hosts). It is derived from source declarations in `scripts/`, `server/`, `api/`, and `src/`. Each row shows the configured provider identity and where the source is referenced. Syndication transports such as FeedBurner and Google News remain listed as hosts and are not counted as publishers.
+This generated inventory covers **880 active source hosts** representing **855 active providers** (**398 structured/API**, **468 feed**, and **30 operational-status** hosts). It is derived from source declarations in `scripts/`, `server/`, `api/`, and `src/`. Each row shows the configured provider identity and where the source is referenced. Syndication transports such as FeedBurner and Google News remain listed as hosts and are not counted as publishers.
 
 | Provider | Observed surface |
 | --- | --- |
@@ -89,7 +89,7 @@ This generated inventory covers **878 active source hosts** representing **853 a
 | api.tzevaadom.co.il (api.tzevaadom.co.il) | structured — scripts/ais-relay.cjs |
 | api.unhcr.org (api.unhcr.org) | structured — scripts/seed-displacement-summary.mjs |
 | api.usaspending.gov (api.usaspending.gov) | structured — scripts/ais-relay.cjs, scripts/seed-usa-spending.mjs |
-| api.weather.gov (api.weather.gov) | structured — scripts/_earth-providers.mjs, scripts/_weather-alert-select.mjs |
+| api.weather.gov (api.weather.gov) | structured — api/_earth-data.js, scripts/_earth-providers.mjs, scripts/_weather-alert-select.mjs |
 | api.windy.com (api.windy.com) | structured — api/mcp/registry/webcam-tools.ts, api/mcp/skill-extension/generated.ts, scripts/seed-webcams.mjs, server/worldmonitor/webcam/v1/get-webcam-image.ts |
 | api.wto.org (api.wto.org) | structured — scripts/seed-supply-chain-trade.mjs, server/worldmonitor/trade/v1/_shared.ts |
 | apnews.com (apnews.com) | feed — shared/news-catalog.json |
@@ -269,7 +269,7 @@ This generated inventory covers **878 active source hosts** representing **853 a
 | english.nv.ua (english.nv.ua) | feed — shared/news-catalog.json |
 | ENTSO-E Transparency Platform (web-api.tp.entsoe.eu) | structured — scripts/seed-electricity-prices.mjs |
 | Environment and Climate Change Canada (ECCC) (api.weather.gc.ca) | structured — scripts/_weather-alert-select.mjs |
-| eonet.gsfc.nasa.gov (eonet.gsfc.nasa.gov) | structured — api/_earth-data.js, scripts/_earth-providers.mjs, scripts/seed-natural-events.mjs |
+| eonet.gsfc.nasa.gov (eonet.gsfc.nasa.gov) | structured — scripts/_earth-providers.mjs, scripts/seed-natural-events.mjs |
 | EPA RadNet (radnet.epa.gov) | structured — scripts/seed-radiation-watch.mjs |
 | epads.gov.pk (epads.gov.pk) | structured — scripts/_global-tender-feeds.mjs |
 | epms.ppra.gov.pk (epms.ppra.gov.pk) | structured — scripts/_global-tender-feeds.mjs |
@@ -476,6 +476,7 @@ This generated inventory covers **878 active source hosts** representing **853 a
 | miningweekly.com (miningweekly.com) | feed — shared/news-catalog.json |
 | mm.usembassy.gov (mm.usembassy.gov) | structured — scripts/seed-security-advisories.mjs |
 | mofcom.gov.cn (mofcom.gov.cn) | feed — shared/news-catalog.json |
+| Monterey Bay Aquarium live cameras (www.montereybayaquarium.org) | structured — src/config/earth-cameras.ts |
 | montrealgazette.com (montrealgazette.com) | feed — shared/news-catalog.json |
 | moxie.foxnews.com (moxie.foxnews.com) | feed — shared/news-catalog.json |
 | mshibanami.github.io (mshibanami.github.io) | feed — shared/news-catalog.json |
@@ -620,6 +621,7 @@ This generated inventory covers **878 active source hosts** representing **853 a
 | ru.euronews.com (ru.euronews.com) | feed — shared/news-catalog.json |
 | rudaw.net (rudaw.net) | feed — shared/news-catalog.json |
 | rusi.org (rusi.org) | feed — shared/news-catalog.json |
+| RUV Iceland live cameras (www.ruv.is) | structured — src/config/earth-cameras.ts |
 | sabconetanw.cdn.mangomolo.com (sabconetanw.cdn.mangomolo.com) | feed — src/config/live-video-sources.ts |
 | Safecast (api.safecast.org) | structured — scripts/seed-radiation-watch.mjs |
 | Sana'a Center (sanaacenter.org) | feed — shared/news-catalog.json |

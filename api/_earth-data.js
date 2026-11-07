@@ -22,6 +22,7 @@ export const EARTH_GAUGES = [
 ];
 export const EARTH_DATASETS = Object.freeze({
   earthquakes: { provider: 'USGS', sourceUrl: 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php', coverage: 'USGS M2.5+ earthquakes reported in the past day; detection coverage varies by region.' },
+  changes: { provider: 'NOAA NWS / NASA EONET', sourceUrl: 'https://api.weather.gov/', coverage: 'Up to 500 recent NWS cancellation messages and 300 EONET closed-event records from bounded seven-day queries. Provider withdrawal or curation closure is not proof of recovery or an all-clear.' },
   events: { provider: 'NASA EONET', sourceUrl: 'https://eonet.gsfc.nasa.gov/', coverage: 'Up to 600 distinct open events from two NASA EONET requests capped at 300 each, including a dedicated drought, landslide, snow and temperature-extremes request. Not a complete inventory or an official warning service.' },
   alerts: { provider: 'GDACS / NOAA NWS / NOAA Tsunami Warning Centers', sourceUrl: 'https://www.gdacs.org/', coverage: 'GDACS selected global hazards; NWS warnings cover the United States and territories; tsunami bulletins cover NOAA warning-center areas.' },
   weather: { provider: 'MET Norway', sourceUrl: 'https://api.met.no/', coverage: 'Modelled weather for 12 selected cities worldwide. Forecast values, not station observations. MET Norway, CC BY 4.0.' },
@@ -36,6 +37,8 @@ export const EARTH_SOURCES = Object.freeze({
   eonet: source('events', 'NASA EONET', 'https://eonet.gsfc.nasa.gov/docs/v3', 30 * MINUTE, 24 * 60 * MINUTE, EARTH_DATASETS.events.coverage),
   gdacs: source('alerts', 'GDACS', 'https://www.gdacs.org/', 15 * MINUTE, 3 * 60 * MINUTE, 'GDACS selected global earthquake, cyclone, flood, volcano, drought and wildfire events.'),
   nws: source('alerts', 'NOAA NWS', 'https://www.weather.gov/documentation/services-web-alerts', 5 * MINUTE, 30 * MINUTE, 'United States and territories; alerts without supplied geometry remain in the list but are not placed on the map.'),
+  'nws-cancel': source('changes', 'NOAA NWS cancellations', 'https://www.weather.gov/documentation/services-web-alerts', 5 * MINUTE, 30 * MINUTE, 'US and territories; up to 500 actual cancellation messages returned by the NWS recent-alert index, restricted to the past seven days. CAP references identify replaced warnings. Not an all-clear.'),
+  'eonet-closed': source('changes', 'NASA EONET closed events', 'https://eonet.gsfc.nasa.gov/docs/v3', 30 * MINUTE, 6 * 60 * MINUTE, 'Up to 300 curated closed events from the EONET seven-day query. Event closure is a curation status, not verified recovery.'),
   tsunami: source('alerts', 'NOAA National Tsunami Warning Center', 'https://www.tsunami.gov/', 5 * MINUTE, 30 * MINUTE, 'NOAA NTWC bulletins. Informational/no-threat bulletins are labelled informational, not warnings.'),
   'news-nasa': source('news', 'NASA Earth Observatory', 'https://earthobservatory.nasa.gov/', 30 * MINUTE, 12 * 60 * MINUTE, 'NASA Earth Observatory articles.', { official: true }),
   'news-nhc': source('news', 'NOAA National Hurricane Center', 'https://www.nhc.noaa.gov/', 15 * MINUTE, 3 * 60 * MINUTE, 'Atlantic tropical cyclone bulletins; not worldwide cyclone coverage.', { official: true }),
@@ -61,6 +64,8 @@ export function validEarthData(sourceId, data) {
   return data.items.every(item => {
     if (!item || !text(item.id, 1000) || item.sourceId !== sourceId) return false;
     if (item.hazards !== undefined && (!Array.isArray(item.hazards) || item.hazards.length > EARTH_KINDS.length || !item.hazards.every(kind => EARTH_KINDS.includes(kind)))) return false;
+    if (item.supersedes !== undefined && (!Array.isArray(item.supersedes) || item.supersedes.length > 100 || !item.supersedes.every(id => text(id, 1000)))) return false;
+    if (config.dataset === 'changes' ? !['cancelled', 'closed'].includes(item.lifecycle) : item.lifecycle !== undefined) return false;
     if (config.dataset === 'news') return text(item.title) && safeUrl(item.url) && text(item.publisher, 200)
       && finiteTime(item.publishedAt) && EARTH_KINDS.includes(item.kind) && text(item.region, 200) && typeof item.official === 'boolean';
     if (config.dataset === 'weather') return text(item.name, 200) && coordinate(item.latitude, 90) && coordinate(item.longitude, 180)
@@ -95,6 +100,7 @@ export function projectEarthSource(sourceId, snapshot, now = Date.now()) {
   const status = !valid || now >= expiresAt || contentExpired ? 'unavailable'
     : now >= staleAt ? 'stale' : 'fresh';
   const items = status === 'unavailable' ? [] : snapshot.data.items.filter(item => {
+    if (config.dataset === 'changes') return item.observedAt <= now + MINUTE && now - item.observedAt <= 7 * 86400_000;
     if (config.dataset === 'alerts') return item.expiresAt === null || item.expiresAt > now;
     if (config.dataset === 'earthquakes') return now - item.observedAt <= 24 * 60 * MINUTE;
     if (['rivers', 'airquality'].includes(config.dataset)) return now - item.observedAt <= config.maxAgeMs && item.observedAt <= now + MINUTE;
@@ -124,7 +130,7 @@ export function earthEnvelope(dataset, snapshots = {}, now = Date.now()) {
       groups.set(key, { ...item, url: url.href, relatedUrls: [] });
     }
     items = [...groups.values()].slice(0, 100);
-  } else if (['earthquakes', 'events', 'alerts'].includes(dataset)) items.sort((a, b) => b.observedAt - a.observedAt);
+  } else if (['earthquakes', 'events', 'alerts', 'changes'].includes(dataset)) items.sort((a, b) => b.observedAt - a.observedAt);
   return { dataset, status, provider: config.provider, sourceUrl: config.sourceUrl, coverage: config.coverage,
     fetchedAt: newest('fetchedAt'), observedAt: newest('observedAt'), expiresAt: available.length ? Math.min(...available.map(row => row.expiresAt)) : null,
     ...(status === 'unavailable' ? { message: 'Current data unavailable. Check provider status and configuration.' }

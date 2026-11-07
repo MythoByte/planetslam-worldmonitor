@@ -13,6 +13,8 @@ export interface EarthCamera {
   readonly entries?: readonly string[];
   readonly refreshMs?: number;
   readonly creditUrl?: string;
+  readonly note?: string;
+  readonly sourceCheckedAt?: string;
 }
 
 export const EARTH_CAMERA_KINDS: readonly EarthCameraKind[] = ['volcano', 'coast', 'mountain', 'river', 'weather'];
@@ -20,7 +22,31 @@ export const EARTH_CAMERAS: readonly EarthCamera[] = [
   {
     id: 'kilauea-v1', title: 'Kīlauea · Halemaʻumaʻu west', operator: 'USGS Hawaiian Volcano Observatory',
     sourceUrl: 'https://www.usgs.gov/volcanoes/kilauea/summit-webcams', latitude: 19.421, longitude: -155.287,
-    kind: 'volcano', region: 'Hawaiʻi', entries: ['https://www.youtube.com/watch?v=HggWKlZv9yk'],
+    kind: 'volcano', region: 'Hawaiʻi', entries: ['https://www.youtube.com/watch?v=HggWKlZv9yk'], sourceCheckedAt: '2026-11-07',
+  },
+  {
+    id: 'kilauea-v2', title: 'Kīlauea · Halemaʻumaʻu east', operator: 'USGS Hawaiian Volcano Observatory',
+    sourceUrl: 'https://www.usgs.gov/volcanoes/kilauea/summit-webcams', latitude: 19.422, longitude: -155.274,
+    kind: 'volcano', region: 'Hawaiʻi', entries: ['https://www.youtube.com/watch?v=f9-oSpYpubg'], sourceCheckedAt: '2026-11-07',
+    note: 'Pan-tilt-zoom view from the northeast rim; framing changes with activity.',
+  },
+  {
+    id: 'kilauea-v3', title: 'Kīlauea · Halemaʻumaʻu south', operator: 'USGS Hawaiian Volcano Observatory',
+    sourceUrl: 'https://www.usgs.gov/volcanoes/kilauea/summit-webcams', latitude: 19.397, longitude: -155.284,
+    kind: 'volcano', region: 'Hawaiʻi', entries: ['https://www.youtube.com/watch?v=gXKuUyKt8mc'], sourceCheckedAt: '2026-11-07',
+    note: 'Pan-tilt-zoom view from the south rim; framing changes with activity.',
+  },
+  {
+    id: 'reykjanes-mosaic', title: 'Reykjanes · Grindavík volcano-area mosaic', operator: 'RÚV · Icelandic National Broadcasting Service',
+    sourceUrl: 'https://www.ruv.is/frettir/innlent/2023-12-18-bein-streymi-fra-gosstodvum-399932', latitude: 63.873, longitude: -22.430,
+    kind: 'volcano', region: 'Iceland', entries: ['https://www.youtube.com/watch?v=kXD4A9uFHcg'], sourceCheckedAt: '2026-11-07',
+    note: 'Several camera views in one broadcast; the map point represents the viewing area, not a single camera or a confirmed eruption.',
+  },
+  {
+    id: 'monterey-bay', title: 'Monterey Bay · outdoor coastal view', operator: 'Monterey Bay Aquarium',
+    sourceUrl: 'https://www.montereybayaquarium.org/cams-videos/live-cams/monterey-bay-cam', latitude: 36.618, longitude: -121.901,
+    kind: 'coast', region: 'Western United States', entries: ['https://www.youtube.com/watch?v=fVa6-zCBR7A'], sourceCheckedAt: '2026-11-07',
+    note: 'Outdoor ocean-view deck camera. The operator may show recorded footage outside live hours; only verified live playback is accepted here.',
   },
   {
     id: 'ruapehu-north', title: 'Ruapehu from the north', operator: 'GeoNet / Earth Sciences New Zealand · CC BY 3.0 NZ',
@@ -78,4 +104,12 @@ export function nearbyEarthCameras(latitude: number, longitude: number, maxKm = 
   if (!Number.isFinite(latitude) || Math.abs(latitude) > 90 || !Number.isFinite(longitude) || Math.abs(longitude) > 180 || !Number.isFinite(maxKm) || maxKm < 0) return [];
   return EARTH_CAMERAS.filter(camera => earthCameraDistanceKm(latitude, longitude, camera) <= maxKm)
     .sort((a, b) => earthCameraDistanceKm(latitude, longitude, a) - earthCameraDistanceKm(latitude, longitude, b));
+}
+
+/** Filter by the actual hosted media, without connecting to the provider. */
+export function isEarthYouTubeCamera(camera: Pick<EarthCamera, 'entries'>): boolean {
+  return (camera.entries || []).some(entry => {
+    try { return ['www.youtube.com', 'youtube.com', 'youtu.be', 'www.youtube-nocookie.com', 'youtube-nocookie.com'].includes(new URL(entry).hostname); }
+    catch { return false; }
+  });
 }

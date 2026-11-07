@@ -197,3 +197,28 @@ AQI is an estimate derived from the latest concentration using the
 [current EPA PM2.5 breakpoints](https://aqs.epa.gov/aqsweb/documents/codetables/aqi_breakpoints.html),
 which took effect in May 2024. It is not an official daily AQI or EPA NowCast.
 The product index is capped at 500 and preserves the existing four risk buckets.
+
+## Event status changes
+
+Phase 5 adds two independently cached sources to the `changes` dataset. Neither
+is included in the active-event map or treated as a new current warning.
+
+- NWS recent cancellation index: `https://api.weather.gov/alerts?status=actual&message_type=cancel&limit=500`.
+  Refresh every five minutes, maximum usable cache age 30 minutes. Up to 500
+  messages from the recent index are restricted to the past seven days. Actual
+  cancellation messages retain their CAP predecessor identifiers. The original
+  cancellation message's expiry does not remove the status record. A cancellation
+  can accompany a replacement warning and does not establish recovery. NWS
+  collection `updated` means last collection change, so a quiet index can have an
+  old value; HTTP Date/Age are checked when supplied rather than treating that
+  content timestamp as response generation.
+- NASA EONET closed-event query: `https://eonet.gsfc.nasa.gov/api/v3/events?status=closed&days=7&limit=300`.
+  Refresh every 30 minutes, maximum usable cache age six hours. Up to 300 closed
+  records from EONET's seven-day event query, restricted to closure dates within
+  seven days. EONET closure is a curation decision, not an observed all-clear;
+  query and record limits can omit closures.
+
+The same cache-only Earth endpoint reads these snapshots. Saved user coordinates
+are never part of provider requests. Browser consumers also age terminal records
+and preserve independent source availability. Existing NWS active updates retain
+CAP references so the local tracker can connect replacements across identifiers.

@@ -1521,6 +1521,9 @@
       "status": "reviewed",
       "references": [
         {
+          "path": "api/_earth-data.js"
+        },
+        {
           "path": "scripts/_earth-providers.mjs"
         },
         {
@@ -4134,9 +4137,6 @@
       "attribution": "Credit NASA Earth Observatory Natural Event Tracker and originating event sources. Retain geometry observation dates and source links; event extents are approximate and are not official warnings or a complete inventory.",
       "status": "terms-review",
       "references": [
-        {
-          "path": "api/_earth-data.js"
-        },
         {
           "path": "scripts/_earth-providers.mjs"
         },
@@ -13824,6 +13824,20 @@
       ]
     },
     {
+      "host": "www.montereybayaquarium.org",
+      "provider": "Monterey Bay Aquarium live cameras",
+      "kind": "structured",
+      "observed": true,
+      "license": "Monterey Bay Aquarium and YouTube video terms apply; operator footage remains copyrighted. Use the operator-linked embedded player, retain its source link and do not infer a broader footage reuse license.",
+      "attribution": "Credit Monterey Bay Aquarium. Identify the outdoor Bay Cam location and preserve the operator source link. Live player metadata does not establish picture contemporaneity when operators substitute recorded footage.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "src/config/earth-cameras.ts"
+        }
+      ]
+    },
+    {
       "host": "www.myjoyonline.com",
       "provider": "www.myjoyonline.com",
       "kind": "feed",
@@ -14528,6 +14542,20 @@
       "license": "Provider terms for this feed publisher; verify before redistribution",
       "attribution": "Credit www.rt.com and link to the original feed publisher.",
       "status": "excluded"
+    },
+    {
+      "host": "www.ruv.is",
+      "provider": "RUV Iceland live cameras",
+      "kind": "structured",
+      "observed": true,
+      "license": "RUV and YouTube video terms apply; operator footage remains copyrighted. The catalog links the operator and uses its embeddable YouTube player without downloading or redistributing footage.",
+      "attribution": "Credit RUV / Icelandic National Broadcasting Service and retain the operator source page. The multi-camera mosaic map location represents a viewing area rather than one fixed camera or a confirmed eruption.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "src/config/earth-cameras.ts"
+        }
+      ]
     },
     {
       "host": "www.saastr.com",

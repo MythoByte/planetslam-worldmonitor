@@ -113,6 +113,8 @@ const SOURCE_DOMAIN_OVERRIDES = new Map([
   // Earth edition: explicit domains keep agency origin separate from coverage
   // and avoid guessing a domain from the generic earth provider module path.
   ['MET Norway Locationforecast', 'environment'],
+  ['RUV Iceland live cameras', 'environment'],
+  ['Monterey Bay Aquarium live cameras', 'environment'],
   ['NOAA National Water Prediction Service', 'environment'],
   ['NOAA Tsunami Warning Centers', 'environment'],
   ['NOAA National Hurricane Center', 'environment'],
