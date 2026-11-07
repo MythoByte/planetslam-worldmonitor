@@ -176,7 +176,7 @@ html[data-ps-home] .ps-module {
 html[data-ps-home] .ps-module .panel-header { padding: 10px 12px; gap: 8px; height: auto; flex-wrap: wrap; }
 html[data-ps-home] .ps-module .panel-title { font: 600 14px var(--ps-font-ui); text-transform: none; }
 html[data-ps-home] .ps-module .panel-content { height: auto !important; max-height: none !important; overflow: visible !important; padding: 12px; font-size: 14px; }
-html[data-ps-home] .ps-module .panel-content { flex: none; min-height: 0; }
+html[data-ps-home] .ps-module .panel-content { flex: none; min-height: 0; content-visibility: visible; contain-intrinsic-size: none; }
 html[data-ps-home] .ps-module.panel-deferred-shell { content-visibility: visible; contain-intrinsic-size: none; }
 html[data-ps-home] .ps-module.panel-deferred-shell .panel-content { min-height: 72px; }
 html[data-ps-home] .ps-module :is(.posture-no-data, .posture-loading) { min-height: 0; padding: 16px 0; }
