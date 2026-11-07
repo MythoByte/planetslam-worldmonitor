@@ -146,3 +146,33 @@ test('recovery requires an explicit positive provider status rather than a negat
  const positive=evaluateEarthWatch(first.state,prefs(),snapshot([event({status:'Contained by provider',observedAt:now+1000})]),now+1000);
  assert.deepEqual(positive.changes.map(change=>change.type),['recovered']);
 });
+
+test('delayed escalation is notified once after source recovery, including across persisted reloads', () => {
+ const first=evaluateEarthWatch(null,prefs(),snapshot([event()]),now);
+ const escalation=event({id:'nws:replacement',supersedes:['nws:one'],severity:'severe',observedAt:now+1000});
+ const delayed=evaluateEarthWatch(first.state,prefs(),snapshot([escalation],[source({status:'stale'})]),now+1000);
+ assert.equal(delayed.changes.length,0);
+ assert.equal(delayed.state.records[0]!.event.severity,'severe');
+ const restored=parseEarthWatchState(JSON.parse(JSON.stringify(delayed.state)),now+2000);
+ const recovered=evaluateEarthWatch(restored,prefs(),snapshot([escalation]),now+2000);
+ assert.deepEqual(recovered.changes.map(change=>change.type),['escalated']);
+ const cleared={...recovered.state,inbox:[]};
+ assert.equal(evaluateEarthWatch(cleared,prefs(),snapshot([escalation]),now+3000).changes.length,0);
+});
+test('new matching records first seen in a delayed feed wait for freshness, while initial stale baselines stay quiet', () => {
+ const first=evaluateEarthWatch(null,prefs(),snapshot([]),now);
+ const added=event({id:'new-during-delay',observedAt:now+1000});
+ const delayed=evaluateEarthWatch(first.state,prefs(),snapshot([added],[source({status:'stale'})]),now+1000);
+ assert.equal(delayed.changes.length,0);
+ const recovered=evaluateEarthWatch(parseEarthWatchState(delayed.state,now+2000),prefs(),snapshot([added]),now+2000);
+ assert.deepEqual(recovered.changes.map(change=>change.type),['new']);
+ assert.equal(evaluateEarthWatch(recovered.state,prefs(),snapshot([added]),now+3000).changes.length,0);
+ const baseline=evaluateEarthWatch(null,prefs(),snapshot([added],[source({status:'stale'})]),now+1000);
+ assert.equal(evaluateEarthWatch(baseline.state,prefs(),snapshot([added]),now+2000).changes.length,0);
+});
+test('older persisted trackers migrate notification eligibility without replaying known records', () => {
+ const first=evaluateEarthWatch(null,prefs(),snapshot([event()]),now);
+ const legacy=JSON.parse(JSON.stringify(first.state));
+ for(const record of legacy.records){delete record.notificationVersion;delete record.notificationSeverity;}
+ assert.equal(evaluateEarthWatch(parseEarthWatchState(legacy,now+1000),prefs(),snapshot([event()]),now+1000).changes.length,0);
+});

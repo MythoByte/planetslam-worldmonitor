@@ -110,7 +110,9 @@ export function parseEarthWatchState(raw: unknown, now = Date.now()): EarthWatch
   const records: EarthWatchRecord[] = Array.isArray(raw.records) ? raw.records.slice(0, 1000).flatMap(record => {
     if (!object(record) || !string(record.key, 1500) || !validEvent(record.event) || typeof record.version !== 'string' || record.version.length > 10_000
       || !finite(record.firstSeenAt, 1, now + 60_000) || !finite(record.lastSeenAt, Math.max(1, now - 7 * DAY), now + 60_000) || !Array.isArray(record.aliases)) return [];
-    return [{ key: record.key, event: compact(record.event), version: record.version, firstSeenAt: record.firstSeenAt, lastSeenAt: record.lastSeenAt, aliases: record.aliases.filter((id): id is string => string(id, 1000)).slice(0, 30), missing: record.missing === true, expired: record.expired === true }];
+    return [{ key: record.key, event: compact(record.event), version: record.version,
+      notificationVersion: record.notificationVersion === null ? null : typeof record.notificationVersion === 'string' && record.notificationVersion.length <= 10_000 ? record.notificationVersion : record.version,
+      notificationSeverity: ['unknown', 'minor', 'moderate', 'severe', 'extreme'].includes(String(record.notificationSeverity)) ? record.notificationSeverity as EarthEvent['severity'] : record.event.severity, firstSeenAt: record.firstSeenAt, lastSeenAt: record.lastSeenAt, aliases: record.aliases.filter((id): id is string => string(id, 1000)).slice(0, 30), missing: record.missing === true, expired: record.expired === true }];
   }).slice(0, 500) : [];
   const inbox: EarthWatchChange[] = Array.isArray(raw.inbox) ? raw.inbox.slice(0, 1000).flatMap(change => {
     if (!object(change) || !string(change.id, 2500) || !CHANGE_TYPES.includes(change.type as EarthWatchChangeType) || !validEvent(change.event)
@@ -149,10 +151,11 @@ export function evaluateEarthWatch(previous: EarthWatchState | null, preferences
     if (!record || event.observedAt < record.event.observedAt) continue;
     seen.add(record.key);
     const v = version(event);
-    if (record.version !== v && sourceFresh(sources.get(event.sourceId), now)) {
+    if (record.notificationVersion !== v && sourceFresh(sources.get(event.sourceId), now)) {
       const type = event.lifecycle === 'cancelled' || /\bcancelled|\bcanceled/i.test(event.status) ? 'cancelled'
         : event.lifecycle === 'closed' || /\bclosed\b/i.test(event.status) ? 'closed' : 'recovered';
       emit(type, event, record, v);
+      record.notificationVersion = v; record.notificationSeverity = event.severity;
       record.event = compact(event); record.version = v; record.lastSeenAt = now; record.missing = false; record.expired = false;
     }
   }
@@ -161,11 +164,15 @@ export function evaluateEarthWatch(previous: EarthWatchState | null, preferences
     let record = records.find(item => item.event.id === event.id || item.key === key || (event.supersedes || []).some(id => item.aliases.includes(id)));
     if (record) {
       seen.add(record.key);
-      if (record.version !== v && sourceFresh(sources.get(event.sourceId), now)) emit(event.severity !== 'unknown' && record.event.severity !== 'unknown' && RANK[event.severity] > RANK[record.event.severity] ? 'escalated' : 'updated', event, record, v);
+      if (sourceFresh(sources.get(event.sourceId), now)) {
+        if (record.notificationVersion !== v) emit(record.notificationVersion === null ? 'new'
+          : event.severity !== 'unknown' && record.notificationSeverity !== 'unknown' && RANK[event.severity] > RANK[record.notificationSeverity] ? 'escalated' : 'updated', event, record, v);
+        record.notificationVersion = v; record.notificationSeverity = event.severity;
+      }
       record.event = compact(event); record.version = v; record.lastSeenAt = now; record.missing = false; record.expired = false;
       record.aliases = [...new Set([...record.aliases, event.id, ...(event.supersedes || [])])].slice(-30);
     } else {
-      record = { key, event: compact(event), version: v, aliases: [event.id, ...(event.supersedes || [])].slice(-30), firstSeenAt: now, lastSeenAt: now, missing: false, expired: false };
+      record = { key, event: compact(event), version: v, notificationVersion: baseline || sourceFresh(sources.get(event.sourceId), now) ? v : null, notificationSeverity: event.severity, aliases: [event.id, ...(event.supersedes || [])].slice(-30), firstSeenAt: now, lastSeenAt: now, missing: false, expired: false };
       records.push(record); seen.add(key);
       if (sourceFresh(sources.get(event.sourceId), now)) emit('new', event, record, v);
     }
@@ -175,6 +182,7 @@ export function evaluateEarthWatch(previous: EarthWatchState | null, preferences
     const record = records.find(item => item.event.id === event.id || (event.supersedes || []).some(id => item.aliases.includes(id)));
     if (!record || seen.has(record.key)) continue;
     seen.add(record.key);
+    if (sourceFresh(sources.get(event.sourceId), now)) { record.notificationVersion = version(event); record.notificationSeverity = event.severity; }
     record.event = compact(event); record.version = version(event); record.lastSeenAt = now; record.missing = false; record.expired = false;
     record.aliases = [...new Set([...record.aliases, event.id, ...(event.supersedes || [])])].slice(-30);
   }

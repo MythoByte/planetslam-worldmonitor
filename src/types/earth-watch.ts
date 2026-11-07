@@ -14,6 +14,7 @@ export interface EarthWatchChange {
 }
 export interface EarthWatchRecord {
   key: string; event: EarthEvent; version: string; aliases: string[];
+  notificationVersion: string | null; notificationSeverity: EarthSeverity;
   firstSeenAt: number; lastSeenAt: number; missing: boolean; expired: boolean;
 }
 export interface EarthWatchState {

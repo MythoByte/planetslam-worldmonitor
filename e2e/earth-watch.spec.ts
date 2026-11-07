@@ -40,7 +40,7 @@ for (const width of [1440, 390]) {
       const base = earthFixture(dataset);
       if (['alerts', 'earthquakes', 'events', 'changes'].includes(dataset)) {
         const sourceId = dataset === 'alerts' ? 'nws' : dataset === 'earthquakes' ? 'usgs' : dataset === 'events' ? 'eonet' : 'nws-cancel';
-        const sources = [{ id: sourceId, provider: 'Synthetic Earth watch source', coverage: 'Synthetic acceptance coverage only', status: 'fresh', fetchedAt: now,
+        const sources = [{ id: sourceId, provider: 'Synthetic Earth watch source', coverage: 'Synthetic acceptance coverage only', status: dataset === 'alerts' && stage === 'delayed-upgrade' ? 'stale' : 'fresh', fetchedAt: now,
           observedAt: now - 1000, expiresAt: now + 3600_000, staleAt: now + 3600_000 }];
         const items = dataset === 'alerts' ? [stage === 'baseline' ? flood : upgraded]
           : dataset === 'earthquakes' ? [{ ...flood, id: 'usgs:synthetic', sourceId, title: 'Synthetic local earthquake', kind: 'earthquake', severity: 'unknown', magnitude: 4.6, expiresAt: null }]
@@ -65,6 +65,10 @@ for (const width of [1440, 390]) {
     await panel.getByRole('button', { name: 'Save alert settings', exact: true }).click();
     await expect(nearby).not.toContainText('Synthetic local earthquake');
     await expect(nearby).toContainText('Synthetic local flood warning');
+    stage = 'delayed-upgrade';
+    await panel.getByRole('button', { name: 'Refresh Earth watch', exact: true }).click();
+    await expect(nearby).toContainText('severe severity');
+    await expect(inbox.locator('[data-earth-watch-change]')).toHaveCount(0);
     stage = 'upgraded';
     await panel.getByRole('button', { name: 'Refresh Earth watch', exact: true }).click();
     await expect(inbox.locator('[data-earth-watch-change="escalated"]')).toHaveCount(1);
