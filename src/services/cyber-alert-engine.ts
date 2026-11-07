@@ -103,7 +103,7 @@ export function evaluateCyberAlerts(previous: CyberAlertStore, inputs: CyberAler
   const today = new Date(now).toISOString().slice(0,10);
   if (now >= s.nextDigestAt && s.lastDigestDay === today) s.nextDigestAt = nextDigest(now,r.digestHour);
   if (now >= s.nextDigestAt && s.lastDigestDay !== today) {
-    const events = s.events.filter(e => e.kind !== 'digest' && e.at >= s.digestSince! && e.at <= now);
+    const events = s.events.filter(e => e.kind !== 'digest' && e.at > s.digestSince! && e.at <= now);
     add(`digest:${today}`, 'digest', 'Cyber alert daily digest', `${events.length} alerts retained since ${new Date(s.digestSince).toISOString().slice(0,16)} UTC: ${events.filter(e=>e.kind==='vulnerability').length} vulnerabilities, ${events.filter(e=>e.kind==='incident').length} research updates, ${events.filter(e=>e.kind==='source').length} source changes. Only activity observed while monitoring ran is covered; no recorded alerts is not proof of safety.`, '/dashboard?variant=cyber');
     s.digestSince = now; s.lastDigestDay = today; s.nextDigestAt = nextDigest(now,r.digestHour);
   }

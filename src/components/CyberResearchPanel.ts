@@ -58,12 +58,23 @@ export class CyberResearchPanel extends Panel {
   private download(name:string,text:string,type:string):void{
     const url=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
+  private restoreDraftControls():void{
+    const title=this.content.querySelector<HTMLInputElement>('[data-research-field="title"]');
+    const notes=this.content.querySelector<HTMLTextAreaElement>('[data-research-field="notes"]');
+    if(title)title.value=this.draft?.title??'';
+    if(notes)notes.value=this.draft?.notes??'';
+  }
   private async action(action:string,id:string):Promise<void>{
     this.message='';
     if(action==='history'||action==='investigations'){this.view=action;this.render();return;}
     if(action==='apply'){this.visible=20;this.render();return;}
     if(action==='more'){this.visible+=20;this.render();return;}
-    if(action==='discard'){this.draft=null;this.render();return;}
+    if(action==='discard'){
+      this.draft=null;this.render();
+      // Form property edits do not change Panel's cached HTML. Restore the actual controls too.
+      this.restoreDraftControls();
+      return;
+    }
     if(action==='filters-reset'){this.filters={...DEFAULT_RESEARCH_FILTERS};this.render();return;}
     if(action==='refresh'){await this.fetchData(true);return;}
     if(action==='retry'){await mutateCyberResearch(s=>s);this.render();return;}

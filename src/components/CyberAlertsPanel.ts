@@ -28,8 +28,14 @@ export class CyberAlertsPanel extends Panel {
       if (action === 'check') void checkCyberAlerts(true);
       if (action === 'read' || action === 'clear' || action === 'reset') void mutateCyberAlertInbox(action);
     }, { signal: this.signal });
-    this.runWhenConnected(() => { this.stop = startCyberAlerts(); this.render(); });
+    this.runWhenConnected(() => this.activateMonitoring());
   }
+  private activateMonitoring(): void {
+    if (!this.stop && !this.element.classList.contains('hidden')) this.stop = startCyberAlerts();
+    this.render();
+  }
+  override show(): void { super.show(); this.runWhenConnected(() => this.activateMonitoring()); }
+  override hide(): void { this.stop?.(); this.stop = null; super.hide(); }
   private render(): void {
     this.rulesOpen = this.content.querySelector<HTMLDetailsElement>('[data-alert-rules]')?.open ?? this.rulesOpen;
     this.statusOpen = this.content.querySelector<HTMLDetailsElement>('[data-alert-status]')?.open ?? this.statusOpen;

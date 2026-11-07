@@ -6,7 +6,7 @@ const KEY='planetslam-cyber-alerts-v1';
 let api:typeof import('@/services/cyber-alerts');let stop:(()=>void)|undefined;let ids:string[];
 let Permission: {permission:NotificationPermission;requestPermission:()=>Promise<NotificationPermission>};
 beforeEach(async()=>{
- vi.resetModules();localStorage.clear();ids=['CVE-2026-99999'];f.request.mockReset();f.show.mockReset().mockResolvedValue(undefined);f.construct.mockReset();f.fetch.mockReset();
+ vi.resetModules();const memory=new Map<string,string>();vi.stubGlobal('localStorage',{getItem:(key:string)=>memory.get(key)??null,setItem:(key:string,value:string)=>{memory.set(key,value);},removeItem:(key:string)=>{memory.delete(key);},clear:()=>memory.clear()});ids=['CVE-2026-99999'];f.request.mockReset();f.show.mockReset().mockResolvedValue(undefined);f.construct.mockReset();f.fetch.mockReset();
  class NativeNotice {static permission:NotificationPermission='granted';static requestPermission=f.request;onclick:any;constructor(title:string,options:any){f.construct(title,options);}close(){}}
  Permission=NativeNotice;vi.stubGlobal('Notification',NativeNotice);vi.stubGlobal('isSecureContext',true);
  vi.stubGlobal('navigator',{locks:{request:async(_name:string,action:()=>unknown)=>action()},serviceWorker:{getRegistration:async()=>({active:{},showNotification:f.show})}});
@@ -40,4 +40,11 @@ it('failed reads are not treated as an empty profile and cannot overwrite saved 
  vi.spyOn(localStorage,'getItem').mockImplementation(key=>{if(key===KEY)throw Error('Synthetic unreadable storage');return get(key);});
  expect(api.getCyberAlertState().storageFault).toBe(true);await api.updateCyberAlertRules({enabled:false});await api.checkCyberAlerts(true);
  expect(f.show).not.toHaveBeenCalled();expect(get(KEY)).toBe(previous);
+});
+it('releasing the last panel owner cancels an in-flight check before saving or native delivery',async()=>{
+ await enable();await api.enableCyberBrowserNotifications();await vi.waitFor(()=>expect(api.getCyberAlertState().checking).toBe(false));
+ const original=f.fetch.getMockImplementation()!;let finish!:(value:unknown)=>void;
+ f.fetch.mockImplementation((dataset:string)=>dataset==='kev'?new Promise(resolve=>{finish=resolve;}):original(dataset));
+ const pending=api.checkCyberAlerts(true);stop?.();stop=undefined;ids.push('CVE-2026-88888');finish(await original('kev'));await pending;
+ expect(api.getCyberAlertState().store.events).toHaveLength(0);expect(f.show).not.toHaveBeenCalled();
 });
