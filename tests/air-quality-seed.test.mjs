@@ -23,11 +23,18 @@ import {
 import { GRACEFUL_FETCH_FAILURE_EXIT_CODE } from '../scripts/_seed-utils.mjs';
 
 describe('air quality AQI helpers', () => {
-  it('maps PM2.5 concentrations onto EPA AQI breakpoints', () => {
-    assert.equal(computeUsAqiFromPm25(12.0), 50);
+  it('maps PM2.5 concentrations onto current EPA breakpoints and clamps the product index at 500', () => {
+    assert.equal(computeUsAqiFromPm25(9.0), 50);
+    assert.equal(computeUsAqiFromPm25(9.1), 51);
+    assert.equal(computeUsAqiFromPm25(12.0), 56);
     assert.equal(computeUsAqiFromPm25(35.4), 100);
     assert.equal(computeUsAqiFromPm25(55.4), 150);
-    assert.equal(computeUsAqiFromPm25(250.5), 301);
+    assert.equal(computeUsAqiFromPm25(125.4), 200);
+    assert.equal(computeUsAqiFromPm25(125.5), 201);
+    assert.equal(computeUsAqiFromPm25(225.4), 300);
+    assert.equal(computeUsAqiFromPm25(225.5), 301);
+    assert.equal(computeUsAqiFromPm25(325.4), 500);
+    assert.equal(computeUsAqiFromPm25(500), 500);
   });
 
   it('collapses AQI values into the requested risk buckets', () => {
@@ -48,6 +55,24 @@ describe('air quality AQI helpers', () => {
 });
 
 describe('air quality payload assembly', () => {
+  it('rejects missing values and invalid locations while retaining a measured zero at zero coordinates', () => {
+    const nowMs = Date.UTC(2026, 10, 7, 12);
+    const datetime = { utc: new Date(nowMs).toISOString() };
+    const locations = [{ id: 1, locality: 'Zero coordinate station', country: { code: 'GH' }, coordinates: { latitude: 0, longitude: 0 } }];
+    const rows = [
+      ...[null, undefined, '', false].map(value => ({ locationsId: 1, value, datetime, coordinates: { latitude: 0, longitude: 0 } })),
+      { locationsId: 2, value: 18, datetime, coordinates: { latitude: null, longitude: null } },
+      { locationsId: 3, value: 18, datetime, coordinates: { latitude: 91, longitude: 0 } },
+      { locationsId: 1, value: 0, datetime, coordinates: { latitude: 0, longitude: 0 } },
+    ];
+    const stations = buildOpenAqStations(locations, rows, nowMs);
+    assert.equal(stations.length, 1);
+    assert.equal(stations[0].pm25, 0);
+    assert.equal(stations[0].city, 'Zero coordinate station');
+    assert.equal(stations[0].lat, 0);
+    assert.equal(stations[0].lng, 0);
+  });
+
   it('filters stale measurements and keeps the freshest reading per location', () => {
     const nowMs = Date.UTC(2026, 3, 3, 12, 0, 0);
     const stations = buildOpenAqStations(

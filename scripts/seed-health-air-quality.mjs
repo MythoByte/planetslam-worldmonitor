@@ -24,7 +24,7 @@ export const CACHE_TTL = 10800; // 3h — 3× the 1h cron cadence (gold standard
 export const AIR_QUALITY_WINDOW_MS = 2 * 60 * 60 * 1000;
 export const OPENAQ_META_KEY = 'seed-meta:health:air-quality';
 export const CLIMATE_META_KEY = 'seed-meta:climate:air-quality';
-export const OPENAQ_SOURCE_VERSION = 'openaq-v3-pm25-waqi-optional-v2';
+export const OPENAQ_SOURCE_VERSION = 'openaq-v3-pm25-waqi-optional-v3';
 
 const OPENAQ_LOCATIONS_URL = 'https://api.openaq.org/v3/locations';
 const OPENAQ_PM25_LATEST_URL = 'https://api.openaq.org/v3/parameters/2/latest';
@@ -36,13 +36,14 @@ const AIR_QUALITY_LOCK_TTL_MS = 3_600_000;
 // The product only exposes four buckets, so EPA's sensitive/unhealthy/very-unhealthy
 // bands are collapsed into a single "unhealthy" level.
 const EPA_PM25_BREAKPOINTS = [
-  { cLow: 0.0, cHigh: 12.0, iLow: 0, iHigh: 50 },
-  { cLow: 12.1, cHigh: 35.4, iLow: 51, iHigh: 100 },
+  // EPA PM2.5 breakpoints effective May 2024. The latest sample produces
+  // a concentration-based index estimate, not an official daily AQI or NowCast.
+  { cLow: 0.0, cHigh: 9.0, iLow: 0, iHigh: 50 },
+  { cLow: 9.1, cHigh: 35.4, iLow: 51, iHigh: 100 },
   { cLow: 35.5, cHigh: 55.4, iLow: 101, iHigh: 150 },
-  { cLow: 55.5, cHigh: 150.4, iLow: 151, iHigh: 200 },
-  { cLow: 150.5, cHigh: 250.4, iLow: 201, iHigh: 300 },
-  { cLow: 250.5, cHigh: 350.4, iLow: 301, iHigh: 400 },
-  { cLow: 350.5, cHigh: 500.4, iLow: 401, iHigh: 500 },
+  { cLow: 55.5, cHigh: 125.4, iLow: 151, iHigh: 200 },
+  { cLow: 125.5, cHigh: 225.4, iLow: 201, iHigh: 300 },
+  { cLow: 225.5, cHigh: 325.4, iLow: 301, iHigh: 500 },
 ];
 
 const WAQI_WORLD_TILES = [
@@ -64,6 +65,7 @@ class SeedConfigurationError extends Error {
 }
 
 function toFiniteNumber(value) {
+  if (value == null || typeof value === 'boolean' || typeof value === 'string' && !value.trim()) return null;
   const numeric = typeof value === 'number' ? value : Number(value);
   return Number.isFinite(numeric) ? numeric : null;
 }
@@ -97,7 +99,7 @@ function truncatePm25(value) {
 export function computeUsAqiFromPm25(pm25) {
   const numeric = toFiniteNumber(pm25);
   if (numeric == null || numeric < 0) return 0;
-  const concentration = Math.min(truncatePm25(numeric), 500.4);
+  const concentration = Math.min(truncatePm25(numeric), 325.4);
   const breakpoint = EPA_PM25_BREAKPOINTS.find(({ cHigh }) => concentration <= cHigh) ?? EPA_PM25_BREAKPOINTS.at(-1);
   const ratio = (breakpoint.iHigh - breakpoint.iLow) / (breakpoint.cHigh - breakpoint.cLow);
   return Math.max(0, Math.min(500, Math.round((ratio * (concentration - breakpoint.cLow)) + breakpoint.iLow)));
@@ -126,7 +128,7 @@ function pickLocationName(location) {
 function pickCoordinates(primary, fallback) {
   const lat = toFiniteNumber(primary?.latitude ?? primary?.lat) ?? toFiniteNumber(fallback?.latitude ?? fallback?.lat);
   const lng = toFiniteNumber(primary?.longitude ?? primary?.lng) ?? toFiniteNumber(fallback?.longitude ?? fallback?.lng);
-  if (lat == null || lng == null) return null;
+  if (lat == null || lng == null || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
   return { lat: roundTo(lat, 4), lng: roundTo(lng, 4) };
 }
 

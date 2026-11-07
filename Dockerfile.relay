@@ -195,6 +195,7 @@ COPY api/_cyber-brief.js ./api/_cyber-brief.js
 COPY scripts/_cyber-priority.mjs ./scripts/_cyber-priority.mjs
 COPY api/_cyber-priority.js ./api/_cyber-priority.js
 COPY api/_cyber-data.js ./api/_cyber-data.js
+COPY scripts/seed-health-air-quality.mjs ./scripts/seed-health-air-quality.mjs
 COPY scripts/seed-earth.mjs ./scripts/seed-earth.mjs
 COPY scripts/_earth-providers.mjs ./scripts/_earth-providers.mjs
 COPY api/_earth-data.js ./api/_earth-data.js
