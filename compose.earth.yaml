@@ -1,0 +1,23 @@
+# Central Earth worker; no weather or disaster provider API keys required.
+# docker compose -f docker-compose.yml -f compose.earth.yaml --profile earth up -d --build earth-seeder
+services:
+  earth-seeder:
+    profiles: [earth]
+    build:
+      context: .
+      dockerfile: Dockerfile.relay
+    image: planetslam-earth-worker:latest
+    command: [node, scripts/seed-earth.mjs, --loop]
+    environment:
+      UPSTASH_REDIS_REST_URL: http://redis-rest:80
+      UPSTASH_REDIS_REST_TOKEN: "${REDIS_TOKEN:?REDIS_TOKEN required}"
+      UPSTASH_ALLOW_INSECURE_HTTP: "true"
+    depends_on:
+      redis-rest:
+        condition: service_started
+    healthcheck:
+      disable: true
+    restart: unless-stopped
+    mem_limit: 384m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]

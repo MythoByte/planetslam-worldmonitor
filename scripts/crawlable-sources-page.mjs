@@ -110,6 +110,16 @@ const SOURCE_DOMAIN_MATCHERS = [
 // Keep ambiguous structured providers explicit so a new unmatched provider
 // fails the build instead of silently becoming "geopolitics".
 const SOURCE_DOMAIN_OVERRIDES = new Map([
+  // Earth edition: explicit domains keep agency origin separate from coverage
+  // and avoid guessing a domain from the generic earth provider module path.
+  ['MET Norway Locationforecast', 'environment'],
+  ['NOAA National Water Prediction Service', 'environment'],
+  ['NOAA Tsunami Warning Centers', 'environment'],
+  ['NOAA National Hurricane Center', 'environment'],
+  ['GeoNet / Earth Sciences New Zealand cameras', 'environment'],
+  ['National Park Service cameras', 'environment'],
+  ['USGS official webcam source links', 'environment'],
+  ['NASA Science Earth Observatory news', 'news'],
   // Space sources use the existing public catalog taxonomy: environment for
   // solar/near-Earth observations, aviation for launches, and news for feeds.
   ['NASA Open APIs (APOD, NeoWs, DONKI)', 'environment'],

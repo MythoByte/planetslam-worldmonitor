@@ -49,7 +49,12 @@ const MANIFEST_KIND_RE = /^(?:structured|feed|operational-status)(?:\+(?:structu
 const LOGICAL_KIND_RE = /^(?:candidate|structured|feed|operational-status)(?:\+(?:structured|feed|operational-status))*$/;
 
 const SOURCE_ROOTS = ['scripts', 'server', 'api', 'src'];
-const STRUCTURED_CATALOG_FILES = new Set(['scripts/shared/regional-energy-feeds.json']);
+const STRUCTURED_CATALOG_FILES = new Set([
+  'scripts/shared/regional-energy-feeds.json',
+  // The Earth camera catalog contains image URLs and official camera source
+  // links whose imageUrl/sourceUrl keys are deliberately narrower than fetch hints.
+  'src/config/earth-cameras.ts',
+]);
 const SOURCE_EXTENSIONS = new Set(['.cjs', '.js', '.mjs', '.ts', '.tsx']);
 const FEED_FILES = new Set([
   ...FEED_DECLARATION_FILES,
@@ -93,6 +98,18 @@ const publisherMetadataFeed = (provider) => ({
  * become a provider rename or regroup.
  */
 export const PROVIDER_IDENTITY_GROUPS = Object.freeze({
+  'openaq': Object.freeze({
+    provider: 'OpenAQ',
+    memberHosts: Object.freeze(['api.openaq.org', 'openaq.org']),
+    reason: 'The existing OpenAQ API integration and its official landing-page credit identify the same measurement aggregation programme; Earth reuses its existing cache.',
+    reviewReference: 'PlanetSlam Earth source credit and existing OpenAQ cache lineage review 2026-11-07',
+  }),
+  'geonet-cameras': Object.freeze({
+    provider: 'GeoNet / Earth Sciences New Zealand cameras',
+    memberHosts: Object.freeze(['www.geonet.org.nz', 'images.geonet.org.nz']),
+    reason: 'GeoNet camera documentation publishes the latest-image host and credits the same GeoNet programme and sponsors.',
+    reviewReference: 'PlanetSlam Earth phases 1-3 official GeoNet camera documentation and data-policy review 2026-11-07',
+  }),
   'osv': Object.freeze({ provider: 'Open Source Vulnerabilities (OSV)', memberHosts: Object.freeze(['osv.dev', 'api.osv.dev']), reason: 'OSV links its public version-query API to the advisory record viewer. PlanetSlam queries are browser-direct and require explicit review of the selected package identities and versions.', reviewReference: 'Official OSV POST v1/query documentation and OSV schema review 2026-11-07' }),
   'first-epss': Object.freeze({ provider: 'FIRST / Empirical Security EPSS', memberHosts: Object.freeze(['www.first.org', 'epss.empiricalsecurity.com']), reason: 'FIRST publishes the EPSS methodology and directs dashboard batch users to the Empirical Security daily score file.', reviewReference: 'PlanetSlam Cyber Phase 3 official EPSS data documentation review 2026-11-06' }),
   'cve-program': Object.freeze({ provider: 'CVE Program', memberHosts: Object.freeze(['www.cve.org', 'cveawg.mitre.org']), reason: 'The CVE public record interface publishes contributor metrics displayed by the CVE Program record pages.', reviewReference: 'PlanetSlam Cyber Phase 3 CVE record schema and public record review 2026-11-06' }),
@@ -222,6 +239,111 @@ export const PROVIDER_IDENTITY_GROUPS = Object.freeze({
 });
 
 const PROVIDER_OVERRIDES = {
+  // PlanetSlam Earth sources. Existing host-based identities remain stable;
+  // source-specific rights and observation/forecast distinctions are explicit.
+  'api.met.no': {
+    provider: 'MET Norway Locationforecast',
+    license: 'MET Norway forecast data is CC BY 4.0; service Terms of Service, identification, caching and rate limits also apply. This record does not accept service terms on behalf of an operator.',
+    attribution: 'Credit MET Norway / Norwegian Meteorological Institute, CC BY 4.0. Preserve model-run and valid times and identify derived displays as forecasts, not station observations.',
+    status: 'terms-review',
+  },
+  'api.water.noaa.gov': {
+    provider: 'NOAA National Water Prediction Service',
+    license: 'NOAA/NWS information is generally U.S. public-domain material unless specifically noted; third-party content and marks retain their restrictions. NWS appropriate-use requirements apply.',
+    attribution: 'Credit NOAA National Water Prediction Service and the named gauge operator; preserve gauge identity, observation time, units and published thresholds. These three selected US gauges do not establish global flood coverage.',
+    status: 'reviewed',
+  },
+  'api.weather.gov': {
+    provider: 'api.weather.gov',
+    license: 'NOAA/NWS information is generally U.S. public-domain material unless specifically noted; third-party content and marks retain their restrictions. NWS appropriate-use requirements apply.',
+    attribution: 'Credit NOAA National Weather Service; retain official alert identifiers, issue and expiry times, affected areas and original bulletin links. Derived displays must not imply NOAA/NWS endorsement or replace official dissemination.',
+    status: 'reviewed',
+  },
+  'www.tsunami.gov': {
+    provider: 'NOAA Tsunami Warning Centers',
+    license: 'NOAA/NWS information is generally U.S. public-domain material unless specifically noted; third-party content and marks retain their restrictions.',
+    attribution: 'Credit the issuing NOAA Tsunami Warning Center and link the original bulletin. Preserve bulletin class, issuance time and coverage; informational/no-threat bulletins are not warnings.',
+    status: 'reviewed',
+  },
+  'www.nhc.noaa.gov': {
+    provider: 'NOAA National Hurricane Center',
+    license: 'NOAA/NWS information is generally U.S. public-domain material unless specifically noted; third-party content and marks retain their restrictions.',
+    attribution: 'Credit NOAA National Hurricane Center, preserve issue times and official bulletin links, and label Atlantic-feed coverage. Derived displays do not imply endorsement.',
+    status: 'reviewed',
+  },
+  'earthquake.usgs.gov': {
+    provider: 'earthquake.usgs.gov',
+    license: 'USGS-authored data is generally U.S. public-domain material; item-specific third-party rights and service access limits remain applicable.',
+    attribution: 'Credit U.S. Geological Survey; retain event IDs, source links, magnitude/depth units, observation times and subsequent revisions. Reporting coverage varies by region.',
+    status: 'reviewed',
+  },
+  'eonet.gsfc.nasa.gov': {
+    provider: 'eonet.gsfc.nasa.gov',
+    license: 'NASA EONET public event metadata is for visualization and general information. Originating source material and any third-party media retain their own rights; no blanket underlying-content reuse grant is inferred.',
+    attribution: 'Credit NASA Earth Observatory Natural Event Tracker and originating event sources. Retain geometry observation dates and source links; event extents are approximate and are not official warnings or a complete inventory.',
+    status: 'terms-review',
+  },
+  'www.gdacs.org': {
+    provider: 'www.gdacs.org',
+    license: 'GDACS publishes disaster information under CC BY 4.0; preserve source-specific credits and third-party notices. Impact estimates are advisory and do not establish a universal safety assessment.',
+    attribution: 'Credit GDACS / European Commission Joint Research Centre and UN OCHA, CC BY 4.0; retain original event links, issue times and estimated-impact alert levels.',
+    status: 'reviewed',
+  },
+  'science.nasa.gov': {
+    provider: 'NASA Science Earth Observatory news',
+    license: 'NASA-produced material generally carries no U.S. copyright, subject to item-specific third-party, identity and trademark restrictions. RSS availability does not license all underlying media.',
+    attribution: 'Credit NASA Earth Observatory and each named contributor or rights holder; retain publication dates and original article links. Aggregate headline metadata without copying full articles or third-party images.',
+    status: 'terms-review',
+  },
+  'earthobservatory.nasa.gov': {
+    provider: 'earthobservatory.nasa.gov',
+    license: 'NASA-produced material generally carries no U.S. copyright, subject to item-specific third-party, identity and trademark restrictions. Underlying media notices control.',
+    attribution: 'Credit NASA Earth Observatory and the named contributors or rights holders, retaining original article and image credits. No NASA endorsement is implied.',
+    status: 'terms-review',
+  },
+  'www.theguardian.com': {
+    provider: 'www.theguardian.com',
+    license: 'Guardian publisher content remains copyrighted. Public RSS access is not a licence to republish full article text or publisher images; source terms review is retained.',
+    attribution: 'Credit The Guardian, retain publication dates and link to the original publisher article. PlanetSlam Earth displays feed headline metadata and source links only.',
+    status: 'terms-review',
+  },
+  'www.geonet.org.nz': {
+    provider: 'GeoNet / Earth Sciences New Zealand cameras', identityGroup: 'geonet-cameras',
+    license: 'GeoNet data and images are supplied under CC BY 3.0 New Zealand, subject to dataset-specific notices. Preserve the unaltered camera image, its embedded timestamp and attribution.',
+    attribution: 'Acknowledge the New Zealand GeoNet programme and its sponsors NHC, Earth Sciences NZ, LINZ, NEMA and MBIE. Link the operator camera page and GeoNet data policy; successful image loading does not verify capture freshness.',
+    status: 'reviewed',
+  },
+  'images.geonet.org.nz': {
+    provider: 'GeoNet / Earth Sciences New Zealand cameras', identityGroup: 'geonet-cameras', role: 'transport',
+    license: 'GeoNet camera image transport for CC BY 3.0 New Zealand material; dataset-specific notices and embedded credits remain applicable.',
+    attribution: 'Credit the GeoNet programme, Earth Sciences New Zealand and programme sponsors; retain image timestamp labels and link the original camera page and data policy.',
+    status: 'reviewed',
+  },
+  'www.nps.gov': {
+    provider: 'National Park Service cameras',
+    license: 'NPS-created material is generally U.S. public-domain material unless otherwise indicated. Partner, contractor, privacy, publicity and other item-specific restrictions may apply; public hosting alone is not a reuse grant.',
+    attribution: 'Credit the National Park Service and each identified camera operator or partner. Preserve camera timestamps and source links; still images are periodic snapshots with unverified capture freshness.',
+    status: 'terms-review',
+  },
+  'gml.noaa.gov': {
+    provider: 'gml.noaa.gov',
+    license: 'NOAA-produced observations and camera imagery are generally U.S. public-domain material unless specifically noted; preserve dataset-specific notices, third-party credits and marks.',
+    attribution: 'Credit NOAA Global Monitoring Laboratory and the relevant observatory or measurement programme. Preserve observation times and original source links; camera image loading is not proof of capture freshness.',
+    status: 'reviewed',
+  },
+  'www.usgs.gov': {
+    provider: 'USGS official webcam source links',
+    license: 'USGS-authored imagery is generally U.S. public-domain material; item-specific third-party rights remain applicable. Camera playback uses the provider-supported YouTube player, whose platform terms still apply.',
+    attribution: 'Credit U.S. Geological Survey / Hawaiian Volcano Observatory and any named contributor. Retain official camera links and identify playback as live only when the player verifies it; do not imply endorsement.',
+    status: 'reviewed',
+  },
+  'openaq.org': {
+    provider: 'OpenAQ', identityGroup: 'openaq',
+    license: 'Outbound OpenAQ source link for an existing centrally seeded air-quality integration. No additional dataset access or rights grant is established by this landing-page link.',
+    attribution: 'Credit OpenAQ and the originating measurement provider; preserve station identity, observation time and source-specific restrictions. PM2.5 alone does not identify a wildfire cause.',
+    status: 'terms-review',
+  },
+
   'osv.dev': { provider: 'Open Source Vulnerabilities (OSV)', identityGroup: 'osv', license: 'Aggregated vulnerability metadata; preserve originating database identifiers and source-specific terms review. No blanket redistribution licence inferred.', attribution: 'OSV and originating advisory database; retain record ID, aliases, source modification date and local observation time. Version-query results are not proof of local exploitability.', status: 'terms-review' },
   'api.osv.dev': { provider: 'Open Source Vulnerabilities (OSV)', identityGroup: 'osv', role: 'transport', license: 'Public OSV query API; originating advisory database terms still apply. Browser sends package identity/version only after explicit lookup-plan confirmation.', attribution: 'OSV API and originating database; preserve incomplete/failed lookup coverage and evidence dates. No raw SBOM, asset labels or private remediation notes are sent.', status: 'terms-review' },
   'www.first.org': { provider: 'FIRST / Empirical Security EPSS', identityGroup: 'first-epss', license: 'Scores are published freely with no registration required; retain attribution and source terms review.', attribution: 'FIRST EPSS SIG and Empirical Security; preserve model, score date and the distinction between likelihood and severity.', status: 'terms-review' },
@@ -702,7 +824,7 @@ const PROVIDER_OVERRIDES = {
     status: 'reviewed',
   },
   'api.openaq.org': {
-    provider: 'OpenAQ',
+    provider: 'OpenAQ', identityGroup: 'openaq',
     license: 'CC BY 4.0 (dataset/API terms may vary by measurement source)',
     attribution: 'OpenAQ, https://openaq.org/.',
     status: 'reviewed',
@@ -1141,7 +1263,7 @@ const PROVIDER_OVERRIDES = {
 // a provider-bearing override a separate, explicit lifecycle event instead of
 // something `--write` can silently normalize into the manifest.
 export const PROVIDER_IDENTITY_REVIEW = Object.freeze({
-  sha256: '35324840c674016a03ef34b7f69ae4fe345316108e854aa95381a04baf51c4a8',
+  sha256: '09aa278a9ba03fdc15ae2057c56d4e1b4508ff1af9309b120b65fca1dcf74b88',
   // 2026-11-02 (#10051): group the Philippine DOE with the CloudFront media
   // host that serves its weekly PDFs, and SONABHY with the Strapi CMS its
   // tariff page reads from.
@@ -1155,12 +1277,12 @@ export const PROVIDER_IDENTITY_REVIEW = Object.freeze({
   // This is application UI, not an ingested external provider or dataset.
   // 2026-11-06: record distinct Space API, imagery, news, and link-out identities.
   // Preserve reserved-rights review for third-party content and public API services.
-  reason: 'Onboard OSV as one identity for its advisory viewer and explicit opt-in version-query transport, following the owner-approved local-storage and explicit-lookup privacy choice on 2026-11-07. Preserve originating database terms-review status; do not infer a universal redistribution licence or local exploitability. Onboard the UMD GoTech public recent-incident sample and its Base44 transport as one publisher for PlanetSlam Cyber Phase 2; no authenticated dataset export is used. Preserve all prior provider identities. Add the PlanetSlam Space provider identities for NASA Open APIs, NASA news, SDO, NOAA SWPC, ESA news, The Space Devs launch/news APIs, and official mission link destinations, with source-specific rights and attribution rather than blanket unrestricted-use claims. Classify planetslam.com as the first-party PlanetSlam web application, excluded from external data-provider counts. Preserve all reviewed provider identities, including Shanghai Financial Portal with PBOC source attribution (2026-10-24 review). Add the Uzbekistan Statistics Agency as one identity across stat.uz and api.siat.stat.uz, with its CC BY 4.0 terms, and record the citation and reserved-rights terms that SIMA Niger and Greater Amman Municipality state on their sites (#9892). Add the Algerian Ministry of Agriculture (madr.gov.dz) and the National Statistics Office of Mongolia data host (data.1212.mn) as food-price publishers in terms review (#10050). Add the Philippine Department of Energy as one identity across doe.gov.ph and its CloudFront media host, and SONABHY as one identity across www.sonabhy.bf and the Strapi CMS its tariff page reads (#10051). Move Ember electricity data to files.ember-energy.org, where Ember now publishes its monthly release; storage.googleapis.com now serves only GDELT bulk files and joins api.gdeltproject.org as one GDELT identity (2026-11-03).',
+  reason: 'Onboard the owner-requested PlanetSlam Earth phases 1-3 providers and official camera catalog with source-specific attribution. Group GeoNet camera image transport with its documented operator identity and the OpenAQ landing-page credit with the existing OpenAQ API identity, preserve existing host-based identities, and distinguish data licences from service terms and third-party content rights. Onboard OSV as one identity for its advisory viewer and explicit opt-in version-query transport, following the owner-approved local-storage and explicit-lookup privacy choice on 2026-11-07. Preserve originating database terms-review status; do not infer a universal redistribution licence or local exploitability. Onboard the UMD GoTech public recent-incident sample and its Base44 transport as one publisher for PlanetSlam Cyber Phase 2; no authenticated dataset export is used. Preserve all prior provider identities. Add the PlanetSlam Space provider identities for NASA Open APIs, NASA news, SDO, NOAA SWPC, ESA news, The Space Devs launch/news APIs, and official mission link destinations, with source-specific rights and attribution rather than blanket unrestricted-use claims. Classify planetslam.com as the first-party PlanetSlam web application, excluded from external data-provider counts. Preserve all reviewed provider identities, including Shanghai Financial Portal with PBOC source attribution (2026-10-24 review). Add the Uzbekistan Statistics Agency as one identity across stat.uz and api.siat.stat.uz, with its CC BY 4.0 terms, and record the citation and reserved-rights terms that SIMA Niger and Greater Amman Municipality state on their sites (#9892). Add the Algerian Ministry of Agriculture (madr.gov.dz) and the National Statistics Office of Mongolia data host (data.1212.mn) as food-price publishers in terms review (#10050). Add the Philippine Department of Energy as one identity across doe.gov.ph and its CloudFront media host, and SONABHY as one identity across www.sonabhy.bf and the Strapi CMS its tariff page reads (#10051). Move Ember electricity data to files.ember-energy.org, where Ember now publishes its monthly release; storage.googleapis.com now serves only GDELT bulk files and joins api.gdeltproject.org as one GDELT identity (2026-11-03).',
   // A URL cited here is scanned like any other: this file sits inside
   // SOURCE_ROOTS, so citing a host that is not already a registered source
   // invents a provider row for it. The B.C. catalogue URLs above are safe
   // because that host is itself an observed source; parallel.ai is not.
-  reviewReference: 'PlanetSlam Cyber Phase 7 official OSV query API and schema review, 2026-11-07; PlanetSlam Cyber Phase 3 EPSS and CVE schema review, 2026-11-06; Issue #6449 BGS provenance review; plus Issue #7371 country corpus identity review; plus Issue #7005 IMD cyclone/marine source-rights probe; plus Issues #7012, #7036, and #6682 Toronto safety sources; plus PR #7576 source migration review; plus Issue #7000 publisher-centric source catalog; plus Issue #7001, Issue #6437, Issue #6622, Issue #6659, PR #6447, the 2026-09-01 FAOSTAT transport identity review, the 2026-09-04 FIRMS partial-coverage incident, and the 2026-09-05 Barchart WAF outage that moved S&P 500 breadth to the TradingView screener scan; plus Issue #7838, which added the read-only Sentry resolve-pin audit; plus PR #8394 JODI publication catalog lineage; plus the 2026-10-17 /verify audit that added the Al Jazeera claim-pool depth search; plus Issue #9352 part C, the US Consolidated Screening List export-control lists; plus Issue #10051 fuel-price batch 3, the DOE media host and SONABHY CMS groups; plus the 2026-11-06 PlanetSlam owner-requested first-party navigation review; plus the 2026-11-06 PlanetSlam Space phase 1-3 source onboarding review of official NASA media guidance, SDO data rules, NWS disclaimer, ESA terms, and The Space Devs service documentation; plus the 2026-11-06 UMD GoTech public homepage, public recent-record API and methodology review for Cyber Phase 2.',
+  reviewReference: 'PlanetSlam Earth phases 1-3 official MET Norway licensing, NOAA/NWS disclaimer, USGS credits, GeoNet camera/data-policy, NPS disclaimer and NASA EONET disclaimer review, 2026-11-07; PlanetSlam Cyber Phase 7 official OSV query API and schema review, 2026-11-07; PlanetSlam Cyber Phase 3 EPSS and CVE schema review, 2026-11-06; Issue #6449 BGS provenance review; plus Issue #7371 country corpus identity review; plus Issue #7005 IMD cyclone/marine source-rights probe; plus Issues #7012, #7036, and #6682 Toronto safety sources; plus PR #7576 source migration review; plus Issue #7000 publisher-centric source catalog; plus Issue #7001, Issue #6437, Issue #6622, Issue #6659, PR #6447, the 2026-09-01 FAOSTAT transport identity review, the 2026-09-04 FIRMS partial-coverage incident, and the 2026-09-05 Barchart WAF outage that moved S&P 500 breadth to the TradingView screener scan; plus Issue #7838, which added the read-only Sentry resolve-pin audit; plus PR #8394 JODI publication catalog lineage; plus the 2026-10-17 /verify audit that added the Al Jazeera claim-pool depth search; plus Issue #9352 part C, the US Consolidated Screening List export-control lists; plus Issue #10051 fuel-price batch 3, the DOE media host and SONABHY CMS groups; plus the 2026-11-06 PlanetSlam owner-requested first-party navigation review; plus the 2026-11-06 PlanetSlam Space phase 1-3 source onboarding review of official NASA media guidance, SDO data rules, NWS disclaimer, ESA terms, and The Space Devs service documentation; plus the 2026-11-06 UMD GoTech public homepage, public recent-record API and methodology review for Cyber Phase 2.',
 });
 
 export function providerIdentityDigest(providerOverrides = PROVIDER_OVERRIDES) {

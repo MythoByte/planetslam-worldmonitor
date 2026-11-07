@@ -1,4 +1,6 @@
+import { type EarthMapSnapshot, type EarthMapMarker, earthMarkerLabel } from '@/types/earth-map';
 import { type CyberMapSnapshot, type CyberMapMarker, cyberMarkerLabel } from '@/types/cyber-map';
+import { createEarthMapLayers } from './earth-map-layers';
 import { createCyberMapLayers } from './cyber-map-layers';
 import type { SpaceOrbitSnapshot, SpaceOrbitPosition, SpaceGroundTrack } from '@/types/space-orbits';
 import { BRAND } from '@/config/brand';
@@ -619,6 +621,9 @@ export class DeckGLMap {
     this.spaceOrbits = snapshot;
     this.render();
   }
+
+  private earthMap: EarthMapSnapshot | null = null;
+  public setEarthMap(snapshot: EarthMapSnapshot): void { this.earthMap = snapshot; this.render(); }
 
   private cyberMap: CyberMapSnapshot | null = null;
   public setCyberMap(snapshot: CyberMapSnapshot): void { this.cyberMap = snapshot; this.render(); }
@@ -2068,6 +2073,7 @@ export class DeckGLMap {
       this.layerCache.delete('day-night-layer');
     }
 
+    layers.push(...createEarthMapLayers(this.earthMap));
     layers.push(...createCyberMapLayers(this.cyberMap));
     // Native geographic layers follow MapLibre pan/zoom; never screen-positioned dots.
     if (this.spaceOverlay.aurora.length) layers.push(new ScatterplotLayer<SpaceAuroraPoint>({
@@ -5225,6 +5231,8 @@ export class DeckGLMap {
     };
 
     switch (layerId) {
+      case 'earth-events-and-cameras':
+        return { html: `<div class="deckgl-tooltip">${text(earthMarkerLabel(info.object as EarthMapMarker))}</div>` };
       case 'cyber-native-incident':
       case 'cyber-native-infrastructure':
         return { html: `<div class="deckgl-tooltip">${text(cyberMarkerLabel(info.object as CyberMapMarker))}</div>` };
@@ -6102,7 +6110,7 @@ export class DeckGLMap {
     const premiumUnlocked = hasPremiumAccess(getAuthState());
     const layerConfig = layerDefs.map(def => ({
       key: def.key,
-      label: resolveLayerLabel(def, t),
+      label: SITE_VARIANT === 'earth' && def.key === 'weather' ? 'Weather radar' : resolveLayerLabel(def, t),
       icon: def.icon,
       premium: def.premium,
       explainLabel: escapeHtml(`Explain ${resolveLayerLabel(def, t)} layer`),

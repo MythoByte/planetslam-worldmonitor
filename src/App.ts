@@ -2457,8 +2457,9 @@ export class App {
     // is ready we swap them to the user's locale.
     const spaceEdition = IS_PLANETSLAM && SITE_VARIANT === 'space';
     const cyberEdition = IS_PLANETSLAM && SITE_VARIANT === 'cyber';
-    const documentTitle = cyberEdition ? 'PlanetSlam Cyber — Cyber Security Dashboard' : spaceEdition ? 'PlanetSlam Space — Live Space Dashboard' : t('shell.documentTitle');
-    const description = cyberEdition ? 'Cyber security news, known exploited vulnerabilities, and your technology watchlist.' : spaceEdition
+    const earthEdition = IS_PLANETSLAM && SITE_VARIANT === 'earth';
+    const documentTitle = earthEdition ? 'PlanetSlam Earth — Weather & Natural Hazards' : cyberEdition ? 'PlanetSlam Cyber — Cyber Security Dashboard' : spaceEdition ? 'PlanetSlam Space — Live Space Dashboard' : t('shell.documentTitle');
+    const description = earthEdition ? 'Weather, earthquakes, floods, wildfires, storms, volcanoes, official alerts, Earth news, and webcams.' : cyberEdition ? 'Cyber security news, known exploited vulnerabilities, and your technology watchlist.' : spaceEdition
       ? 'Space cameras, launches, NASA imagery, space weather, satellites, and near-Earth objects.'
       : t('shell.metaDescription');
     document.title = documentTitle;
@@ -2488,7 +2489,7 @@ export class App {
     const baseLang = docLang.split('-')[0] || 'en';
     setMeta('meta[property="og:locale"]', ogLocaleMap[docLang] || ogLocaleMap[baseLang] || `${baseLang}_${baseLang.toUpperCase()}`);
     const srH1 = document.querySelector('body > h1');
-    if (srH1) srH1.textContent = t('shell.documentTitle');
+    if (srH1) srH1.textContent = documentTitle;
     const aiFlow = getAiFlowSettings();
     // Optional local AI initializes independently of the dashboard critical
     // path (#7779): boot proceeds to layout, event handlers and basic panels

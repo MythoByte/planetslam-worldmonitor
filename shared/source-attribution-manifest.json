@@ -1036,6 +1036,20 @@
       ]
     },
     {
+      "host": "api.met.no",
+      "provider": "MET Norway Locationforecast",
+      "kind": "structured",
+      "observed": true,
+      "license": "MET Norway forecast data is CC BY 4.0; service Terms of Service, identification, caching and rate limits also apply. This record does not accept service terms on behalf of an operator.",
+      "attribution": "Credit MET Norway / Norwegian Meteorological Institute, CC BY 4.0. Preserve model-run and valid times and identify derived displays as forecasts, not station observations.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "scripts/_earth-providers.mjs"
+        }
+      ]
+    },
+    {
       "host": "api.nasa.gov",
       "provider": "NASA Open APIs (APOD, NeoWs, DONKI)",
       "kind": "structured",
@@ -1470,6 +1484,20 @@
       ]
     },
     {
+      "host": "api.water.noaa.gov",
+      "provider": "NOAA National Water Prediction Service",
+      "kind": "structured",
+      "observed": true,
+      "license": "NOAA/NWS information is generally U.S. public-domain material unless specifically noted; third-party content and marks retain their restrictions. NWS appropriate-use requirements apply.",
+      "attribution": "Credit NOAA National Water Prediction Service and the named gauge operator; preserve gauge identity, observation time, units and published thresholds. These three selected US gauges do not establish global flood coverage.",
+      "status": "reviewed",
+      "references": [
+        {
+          "path": "scripts/_earth-providers.mjs"
+        }
+      ]
+    },
+    {
       "host": "api.weather.gc.ca",
       "provider": "Environment and Climate Change Canada (ECCC)",
       "kind": "structured",
@@ -1488,10 +1516,13 @@
       "provider": "api.weather.gov",
       "kind": "structured",
       "observed": true,
-      "license": "Provider terms for this upstream API/dataset; verify before redistribution",
-      "attribution": "Credit api.weather.gov and link to the original upstream API/dataset.",
-      "status": "terms-review",
+      "license": "NOAA/NWS information is generally U.S. public-domain material unless specifically noted; third-party content and marks retain their restrictions. NWS appropriate-use requirements apply.",
+      "attribution": "Credit NOAA National Weather Service; retain official alert identifiers, issue and expiry times, affected areas and original bulletin links. Derived displays must not imply NOAA/NWS endorsement or replace official dissemination.",
+      "status": "reviewed",
       "references": [
+        {
+          "path": "scripts/_earth-providers.mjs"
+        },
         {
           "path": "scripts/_weather-alert-select.mjs"
         }
@@ -3696,10 +3727,13 @@
       "provider": "earthobservatory.nasa.gov",
       "kind": "structured",
       "observed": true,
-      "license": "Provider terms for this upstream API/dataset; verify before redistribution",
-      "attribution": "Credit earthobservatory.nasa.gov and link to the original upstream API/dataset.",
+      "license": "NASA-produced material generally carries no U.S. copyright, subject to item-specific third-party, identity and trademark restrictions. Underlying media notices control.",
+      "attribution": "Credit NASA Earth Observatory and the named contributors or rights holders, retaining original article and image credits. No NASA endorsement is implied.",
       "status": "terms-review",
       "references": [
+        {
+          "path": "api/_earth-data.js"
+        },
         {
           "path": "scripts/seed-climate-news.mjs"
         }
@@ -3710,12 +3744,18 @@
       "provider": "earthquake.usgs.gov",
       "kind": "structured",
       "observed": true,
-      "license": "Provider terms for this upstream API/dataset; verify before redistribution",
-      "attribution": "Credit earthquake.usgs.gov and link to the original upstream API/dataset.",
-      "status": "terms-review",
+      "license": "USGS-authored data is generally U.S. public-domain material; item-specific third-party rights and service access limits remain applicable.",
+      "attribution": "Credit U.S. Geological Survey; retain event IDs, source links, magnitude/depth units, observation times and subsequent revisions. Reporting coverage varies by region.",
+      "status": "reviewed",
       "references": [
         {
+          "path": "api/_earth-data.js"
+        },
+        {
           "path": "api/mcp/skill-extension/generated.ts"
+        },
+        {
+          "path": "scripts/_earth-providers.mjs"
         },
         {
           "path": "scripts/seed-earthquakes.mjs"
@@ -4090,10 +4130,16 @@
       "provider": "eonet.gsfc.nasa.gov",
       "kind": "structured",
       "observed": true,
-      "license": "Provider terms for this upstream API/dataset; verify before redistribution",
-      "attribution": "Credit eonet.gsfc.nasa.gov and link to the original upstream API/dataset.",
+      "license": "NASA EONET public event metadata is for visualization and general information. Originating source material and any third-party media retain their own rights; no blanket underlying-content reuse grant is inferred.",
+      "attribution": "Credit NASA Earth Observatory Natural Event Tracker and originating event sources. Retain geometry observation dates and source links; event extents are approximate and are not official warnings or a complete inventory.",
       "status": "terms-review",
       "references": [
+        {
+          "path": "api/_earth-data.js"
+        },
+        {
+          "path": "scripts/_earth-providers.mjs"
+        },
         {
           "path": "scripts/seed-natural-events.mjs"
         }
@@ -5164,12 +5210,15 @@
       "provider": "gml.noaa.gov",
       "kind": "structured",
       "observed": true,
-      "license": "Provider terms for this upstream API/dataset; verify before redistribution",
-      "attribution": "Credit gml.noaa.gov and link to the original upstream API/dataset.",
-      "status": "terms-review",
+      "license": "NOAA-produced observations and camera imagery are generally U.S. public-domain material unless specifically noted; preserve dataset-specific notices, third-party credits and marks.",
+      "attribution": "Credit NOAA Global Monitoring Laboratory and the relevant observatory or measurement programme. Preserve observation times and original source links; camera image loading is not proof of capture freshness.",
+      "status": "reviewed",
       "references": [
         {
           "path": "scripts/seed-co2-monitoring.mjs"
+        },
+        {
+          "path": "src/config/earth-cameras.ts"
         }
       ]
     },
@@ -5588,6 +5637,21 @@
           "path": "shared/news-catalog.json"
         }
       ]
+    },
+    {
+      "host": "images.geonet.org.nz",
+      "provider": "GeoNet / Earth Sciences New Zealand cameras",
+      "kind": "structured",
+      "observed": true,
+      "license": "GeoNet camera image transport for CC BY 3.0 New Zealand material; dataset-specific notices and embedded credits remain applicable.",
+      "attribution": "Credit the GeoNet programme, Earth Sciences New Zealand and programme sponsors; retain image timestamp labels and link the original camera page and data policy.",
+      "status": "reviewed",
+      "references": [
+        {
+          "path": "src/config/earth-cameras.ts"
+        }
+      ],
+      "role": "transport"
     },
     {
       "host": "in.usembassy.gov",
@@ -7548,6 +7612,20 @@
       ]
     },
     {
+      "host": "openaq.org",
+      "provider": "OpenAQ",
+      "kind": "structured",
+      "observed": true,
+      "license": "Outbound OpenAQ source link for an existing centrally seeded air-quality integration. No additional dataset access or rights grant is established by this landing-page link.",
+      "attribution": "Credit OpenAQ and the originating measurement provider; preserve station identity, observation time and source-specific restrictions. PM2.5 alone does not identify a wildfire cause.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "api/_earth-data.js"
+        }
+      ]
+    },
+    {
       "host": "opendata.adsb.fi",
       "provider": "adsb.fi Open Data",
       "kind": "structured",
@@ -8884,6 +8962,20 @@
       "references": [
         {
           "path": "scripts/build-agent-skills-index.mjs"
+        }
+      ]
+    },
+    {
+      "host": "science.nasa.gov",
+      "provider": "NASA Science Earth Observatory news",
+      "kind": "structured",
+      "observed": true,
+      "license": "NASA-produced material generally carries no U.S. copyright, subject to item-specific third-party, identity and trademark restrictions. RSS availability does not license all underlying media.",
+      "attribution": "Credit NASA Earth Observatory and each named contributor or rights holder; retain publication dates and original article links. Aggregate headline metadata without copying full articles or third-party images.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "scripts/_earth-providers.mjs"
         }
       ]
     },
@@ -12927,12 +13019,29 @@
       "provider": "www.gdacs.org",
       "kind": "structured",
       "observed": true,
-      "license": "Provider terms for this upstream API/dataset; verify before redistribution",
-      "attribution": "Credit www.gdacs.org and link to the original upstream API/dataset.",
-      "status": "terms-review",
+      "license": "GDACS publishes disaster information under CC BY 4.0; preserve source-specific credits and third-party notices. Impact estimates are advisory and do not establish a universal safety assessment.",
+      "attribution": "Credit GDACS / European Commission Joint Research Centre and UN OCHA, CC BY 4.0; retain original event links, issue times and estimated-impact alert levels.",
+      "status": "reviewed",
       "references": [
         {
+          "path": "scripts/_earth-providers.mjs"
+        },
+        {
           "path": "scripts/seed-natural-events.mjs"
+        }
+      ]
+    },
+    {
+      "host": "www.geonet.org.nz",
+      "provider": "GeoNet / Earth Sciences New Zealand cameras",
+      "kind": "structured",
+      "observed": true,
+      "license": "GeoNet data and images are supplied under CC BY 3.0 New Zealand, subject to dataset-specific notices. Preserve the unaltered camera image, its embedded timestamp and attribution.",
+      "attribution": "Acknowledge the New Zealand GeoNet programme and its sponsors NHC, Earth Sciences NZ, LINZ, NEMA and MBIE. Link the operator camera page and GeoNet data policy; successful image loading does not verify capture freshness.",
+      "status": "reviewed",
+      "references": [
+        {
+          "path": "src/config/earth-cameras.ts"
         }
       ]
     },
@@ -13876,6 +13985,20 @@
       "status": "excluded"
     },
     {
+      "host": "www.nhc.noaa.gov",
+      "provider": "NOAA National Hurricane Center",
+      "kind": "structured",
+      "observed": true,
+      "license": "NOAA/NWS information is generally U.S. public-domain material unless specifically noted; third-party content and marks retain their restrictions.",
+      "attribution": "Credit NOAA National Hurricane Center, preserve issue times and official bulletin links, and label Atlantic-feed coverage. Derived displays do not imply endorsement.",
+      "status": "reviewed",
+      "references": [
+        {
+          "path": "scripts/_earth-providers.mjs"
+        }
+      ]
+    },
+    {
       "host": "www.niggrid.org",
       "provider": "www.niggrid.org",
       "kind": "structured",
@@ -13914,6 +14037,20 @@
       "references": [
         {
           "path": "server/worldmonitor/infrastructure/v1/list-service-statuses.ts"
+        }
+      ]
+    },
+    {
+      "host": "www.nps.gov",
+      "provider": "National Park Service cameras",
+      "kind": "structured",
+      "observed": true,
+      "license": "NPS-created material is generally U.S. public-domain material unless otherwise indicated. Partner, contractor, privacy, publicity and other item-specific restrictions may apply; public hosting alone is not a reuse grant.",
+      "attribution": "Credit the National Park Service and each identified camera operator or partner. Preserve camera timestamps and source links; still images are periodic snapshots with unverified capture freshness.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "src/config/earth-cameras.ts"
         }
       ]
     },
@@ -14949,10 +15086,13 @@
       "provider": "www.theguardian.com",
       "kind": "feed+structured",
       "observed": true,
-      "license": "Provider terms for this feed publisher; verify before redistribution",
-      "attribution": "Credit www.theguardian.com and link to the original feed publisher.",
+      "license": "Guardian publisher content remains copyrighted. Public RSS access is not a licence to republish full article text or publisher images; source terms review is retained.",
+      "attribution": "Credit The Guardian, retain publication dates and link to the original publisher article. PlanetSlam Earth displays feed headline metadata and source links only.",
       "status": "terms-review",
       "references": [
+        {
+          "path": "scripts/_earth-providers.mjs"
+        },
         {
           "path": "scripts/seed-climate-news.mjs"
         },
@@ -15111,6 +15251,20 @@
       ]
     },
     {
+      "host": "www.tsunami.gov",
+      "provider": "NOAA Tsunami Warning Centers",
+      "kind": "structured",
+      "observed": true,
+      "license": "NOAA/NWS information is generally U.S. public-domain material unless specifically noted; third-party content and marks retain their restrictions.",
+      "attribution": "Credit the issuing NOAA Tsunami Warning Center and link the original bulletin. Preserve bulletin class, issuance time and coverage; informational/no-threat bulletins are not warnings.",
+      "status": "reviewed",
+      "references": [
+        {
+          "path": "scripts/_earth-providers.mjs"
+        }
+      ]
+    },
+    {
       "host": "www.tvanouvelles.ca",
       "provider": "www.tvanouvelles.ca",
       "kind": "feed",
@@ -15177,6 +15331,20 @@
       "references": [
         {
           "path": "shared/news-catalog.json"
+        }
+      ]
+    },
+    {
+      "host": "www.usgs.gov",
+      "provider": "USGS official webcam source links",
+      "kind": "structured",
+      "observed": true,
+      "license": "USGS-authored imagery is generally U.S. public-domain material; item-specific third-party rights remain applicable. Camera playback uses the provider-supported YouTube player, whose platform terms still apply.",
+      "attribution": "Credit U.S. Geological Survey / Hawaiian Volcano Observatory and any named contributor. Retain official camera links and identify playback as live only when the player verifies it; do not imply endorsement.",
+      "status": "reviewed",
+      "references": [
+        {
+          "path": "src/config/earth-cameras.ts"
         }
       ]
     },
@@ -15651,6 +15819,9 @@
         },
         {
           "path": "server/worldmonitor/aviation/v1/get-youtube-live-stream-info.ts"
+        },
+        {
+          "path": "src/config/earth-cameras.ts"
         },
         {
           "path": "src/config/live-video-sources.ts"

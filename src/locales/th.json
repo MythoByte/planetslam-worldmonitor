@@ -381,7 +381,8 @@
     "panelCatHappyPlanet": "โลกและการให้กำลังใจ",
     "embed": "ฝังตัว",
     "panelCatSpace": "Space",
-    "panelCatCyber": "Cyber Security"
+    "panelCatCyber": "Cyber Security",
+    "panelCatEarth": "Earth"
   },
   "panels": {
     "liveNews": "ข่าวสด",
@@ -4707,6 +4708,9 @@
     },
     "cyber": {
       "map": "Cyber Incidents & Infrastructure"
+    },
+    "earth": {
+      "map": "Earth — Weather & Natural Hazards"
     }
   }
 }

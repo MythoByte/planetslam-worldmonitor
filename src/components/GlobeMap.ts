@@ -1,3 +1,5 @@
+import { type EarthMapSnapshot, earthMarkerLabel } from '@/types/earth-map';
+import { selectEarthMarker } from './earth-map-interaction';
 import { type CyberMapSnapshot, cyberMarkerLabel } from '@/types/cyber-map';
 import { selectCyberMarker } from './cyber-map-interaction';
 import type { SpaceOrbitSnapshot } from '@/types/space-orbits';
@@ -517,6 +519,9 @@ interface GlobeControlsLike {
 const SET_CENTER_ROTATION_MS = 1200;
 
 export class GlobeMap {
+  private earthMap: EarthMapSnapshot | null = null;
+  public setEarthMap(snapshot: EarthMapSnapshot): void { this.earthMap = snapshot; this.paintSpaceOverlay(); }
+
   private cyberMap: CyberMapSnapshot | null = null;
   public setCyberMap(snapshot: CyberMapSnapshot): void { this.cyberMap = snapshot; this.paintSpaceOverlay(); }
 
@@ -538,6 +543,7 @@ export class GlobeMap {
   private paintSpaceOverlay(): void {
     if (!this.globe || !this.initialized || this.destroyed || this.webglLost) return;
     const points = [
+      ...(this.earthMap?.markers ?? []).map(marker => ({ ...marker, earthKind: marker.kind, kind: 'earth', name: earthMarkerLabel(marker), color: marker.kind === 'camera' ? '#4ed5c8' : marker.mode === 'warning' ? '#ff6c6c' : marker.mode === 'forecast' ? '#bc97ff' : '#ffbd5b', radius: marker.kind === 'camera' ? 0.3 : 0.55 })),
       ...(this.cyberMap?.markers ?? []).map(marker => ({ ...marker, cyberKind: marker.kind, kind: 'cyber',
         name: cyberMarkerLabel(marker), color: marker.kind === 'incident' ? '#ffbc50' : '#bd91ff', radius: marker.kind === 'incident' ? 0.55 : 0.3 })),
       ...this.spaceOverlay.aurora.filter(point => Math.round(point.longitude) % 2 === 0 && Math.round(point.latitude) % 2 === 0).map(point => ({ ...point, kind: 'aurora', name: `Aurora forecast: model intensity ${point.probability} / 100. Not a local visibility guarantee.`, color: `rgba(65,235,140,${0.15 + point.probability / 150})`, radius: 0.32 })),
@@ -548,6 +554,11 @@ export class GlobeMap {
       .pointColor('color').pointRadius('radius').pointAltitude((point: object) => (point as { kind: string }).kind === 'satellite' ? (point as { altitudeKm: number }).altitudeKm / 6371 : 0.003)
       .pointLabel((point: object) => escapeHtml(String((point as { name: string }).name)))
       .pointsTransitionDuration(0);
+    if (SITE_VARIANT === 'earth') this.globe.onPointClick((point: object) => {
+      const marker = point as { id?: string; earthKind?: string };
+      const original = this.earthMap?.markers.find(m => m.id === marker.id && m.kind === marker.earthKind);
+      if (original) selectEarthMarker(original);
+    });
     if (SITE_VARIANT === 'cyber') this.globe.onPointClick((point: object) => {
       const marker = point as { id?: string; cyberKind?: string };
       const original = this.cyberMap?.markers.find(m => m.id === marker.id && m.kind === marker.cyberKind);

@@ -391,7 +391,8 @@
     "panelCatHappyPlanet": "الكوكب والعطاء",
     "embed": "تضمين",
     "panelCatSpace": "Space",
-    "panelCatCyber": "Cyber Security"
+    "panelCatCyber": "Cyber Security",
+    "panelCatEarth": "Earth"
   },
   "panels": {
     "liveNews": "أخبار مباشرة",
@@ -4812,6 +4813,9 @@
     },
     "cyber": {
       "map": "Cyber Incidents & Infrastructure"
+    },
+    "earth": {
+      "map": "Earth — Weather & Natural Hazards"
     }
   }
 }

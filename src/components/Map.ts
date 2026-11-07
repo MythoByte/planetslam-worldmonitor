@@ -1,3 +1,5 @@
+import { type EarthMapSnapshot, earthMarkerLabel } from '@/types/earth-map';
+import { selectEarthMarker } from './earth-map-interaction';
 import { type CyberMapSnapshot, cyberMarkerLabel } from '@/types/cyber-map';
 import { selectCyberMarker } from './cyber-map-interaction';
 import type { SpaceOrbitSnapshot } from '@/types/space-orbits';
@@ -182,6 +184,26 @@ export class MapComponent {
     };
 
   private static readonly SVG_MARKER_DOM_ZOOM_LAYERS = new Set<keyof MapLayers>(['bases', 'nuclear']);
+
+  private earthMap: EarthMapSnapshot | null = null;
+  public setEarthMap(snapshot: EarthMapSnapshot): void { this.earthMap = snapshot; this.render(); }
+  private renderEarthMap(projection: d3.GeoProjection): void {
+    const group = this.dynamicLayerGroup?.append('g').attr('class', 'earth-native-markers');
+    if (!group) return;
+    for (const marker of this.earthMap?.markers ?? []) {
+      const point = projection([marker.longitude, marker.latitude]);
+      if (!point) continue;
+      const select = () => selectEarthMarker(marker);
+      const circle = group.append('circle').attr('data-earth-marker', marker.id)
+        .attr('cx', point[0]).attr('cy', point[1]).attr('r', marker.kind === 'camera' ? 4 : 6)
+        .attr('fill', marker.kind === 'camera' ? '#4ed5c8' : marker.mode === 'warning' ? '#ff6c6c' : marker.mode === 'forecast' ? '#bc97ff' : '#ffbd5b')
+        .attr('stroke', '#f5f5fa').attr('stroke-width', 1).attr('role', 'button')
+        .attr('tabindex', 0).attr('aria-label', earthMarkerLabel(marker)).style('cursor', 'pointer')
+        .on('click', (event: Event) => { event.stopPropagation(); select(); })
+        .on('keydown', (event: KeyboardEvent) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); select(); } });
+      circle.append('title').text(earthMarkerLabel(marker));
+    }
+  }
 
   private cyberMap: CyberMapSnapshot | null = null;
   public setCyberMap(snapshot: CyberMapSnapshot): void { this.cyberMap = snapshot; this.render(); }
@@ -772,7 +794,7 @@ export class MapComponent {
     ];
     // Filter sunset and renderer-incompatible layers so the SVG/mobile picker
     // cannot expose a toggle whose layer has no SVG paint path.
-    const layers = (SITE_VARIANT === 'cyber' ? [] : SITE_VARIANT === 'space' ? ['satellites', 'spaceports', 'webcams'] as (keyof MapLayers)[]
+    const layers = (SITE_VARIANT === 'earth' ? ['dayNight'] as (keyof MapLayers)[] : SITE_VARIANT === 'cyber' ? [] : SITE_VARIANT === 'space' ? ['satellites', 'spaceports', 'webcams'] as (keyof MapLayers)[]
                  : SITE_VARIANT === 'tech' ? techLayers
                  : SITE_VARIANT === 'finance' ? financeLayers
                  : SITE_VARIANT === 'happy' ? happyLayers
@@ -1607,6 +1629,7 @@ export class MapComponent {
     this.updateCountryFills();
 
     const steps: Array<() => void> = [];
+    if (this.earthMap?.markers.length) steps.push(() => this.renderEarthMap(projection));
     if (this.cyberMap?.markers.length) steps.push(() => this.renderCyberMap(projection));
     steps.push(() => this.renderSpaceOverlay(projection));
     steps.push(() => this.renderSpaceOrbits(projection));
