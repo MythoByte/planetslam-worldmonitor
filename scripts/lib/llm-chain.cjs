@@ -145,6 +145,7 @@ async function callLLM(systemPrompt, userPrompt, opts = {}) {
     skipProviders,
     modelOverrides,
     stage = 'llm-chain',
+    disableReasoning = false,
   } = opts;
   const allowedSet = allowedProviders ? new Set(allowedProviders) : null;
   const skipSet = skipProviders ? new Set(skipProviders) : null;
@@ -216,6 +217,7 @@ async function callLLM(systemPrompt, userPrompt, opts = {}) {
           max_tokens: maxTokens,
           temperature,
           ...provider.extraBody,
+          ...(disableReasoning === true && provider.name === 'openrouter' ? { reasoning: { enabled: false } } : {}),
         }),
         signal: AbortSignal.timeout(timeout),
       });

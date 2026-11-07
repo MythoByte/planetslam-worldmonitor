@@ -226,7 +226,8 @@ selected records never establish a quiet day or a global attack count.
 Optional AI curation reuses `OPENROUTER_API_KEY` and the existing worker LLM
 helper, pinned to OpenRouter with `CYBER_BRIEF_MODEL` (default
 `deepseek/deepseek-v4-flash`). A shared Redis admission token permits one bounded
-20-second/1,000-token attempt per UTC date, across worker replicas and retries.
+20-second/1,000-token attempt per UTC date with reasoning disabled for this
+extractive selection task, across worker replicas and retries.
 The model receives public evidence text and IDs, never browser watchlist terms.
 It may select evidence IDs and their existing sentence/fact IDs only; new prose,
 new URLs, unknown citations, duplicate items and metadata are rejected. Displayed

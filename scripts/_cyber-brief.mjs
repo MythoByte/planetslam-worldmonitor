@@ -79,7 +79,7 @@ export async function generateCyberBrief({ command, now = Date.now(), llm = call
     if (admission.result === 'OK') {
       try {
         const prompt = JSON.stringify({ date: base.date, periodStart: period(base.periodStart), periodEnd: period(base.periodEnd), evidence: base.candidates.map(c => ({ id: c.id, kind: c.kind, title: c.title, publishedAt: c.publishedAt, facts: c.facts })) });
-        const output = await llm(SYSTEM, prompt, { allowedProviders: ['openrouter'], modelOverrides: { openrouter: model }, timeoutMs: 20000, maxTokens: 1000, temperature: 0.1, stage: 'cyber-daily-brief' });
+        const output = await llm(SYSTEM, prompt, { allowedProviders: ['openrouter'], modelOverrides: { openrouter: model }, timeoutMs: 20000, maxTokens: 1000, temperature: 0.1, disableReasoning: true, stage: 'cyber-daily-brief' });
         data = applyCyberBriefAi(base, output, model) || { ...base, aiStatus: 'rejected' };
       } catch { data = { ...base, aiStatus: 'failed' }; }
     }
