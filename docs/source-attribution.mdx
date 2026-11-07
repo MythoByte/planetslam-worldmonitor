@@ -12,7 +12,7 @@ The inventory is **generated, not hand-written**: `scripts/source-attribution.mj
 ## Observed Source Inventory
 
 {/* BEGIN GENERATED SOURCE ATTRIBUTION */}
-This generated inventory covers **863 active source hosts** representing **843 active providers** (**381 structured/API**, **468 feed**, and **30 operational-status** hosts). It is derived from source declarations in `scripts/`, `server/`, `api/`, and `src/`. Each row shows the configured provider identity and where the source is referenced. Syndication transports such as FeedBurner and Google News remain listed as hosts and are not counted as publishers.
+This generated inventory covers **866 active source hosts** representing **844 active providers** (**384 structured/API**, **468 feed**, and **30 operational-status** hosts). It is derived from source declarations in `scripts/`, `server/`, `api/`, and `src/`. Each row shows the configured provider identity and where the source is referenced. Syndication transports such as FeedBurner and Google News remain listed as hosts and are not counted as publishers.
 
 | Provider | Observed surface |
 | --- | --- |
@@ -196,6 +196,8 @@ This generated inventory covers **863 active source hosts** representing **843 a
 | csis.org (csis.org) | feed — shared/news-catalog.json |
 | ctvnews.ca (ctvnews.ca) | feed — shared/news-catalog.json |
 | customer.dodopayments.com (customer.dodopayments.com) | structured — src/services/billing.ts |
+| CVE Program (cveawg.mitre.org) | structured (syndication transport) — api/_cyber-priority.js |
+| CVE Program (www.cve.org) | structured — api/_cyber-priority.js, scripts/_cyber-providers.mjs |
 | CWFIS / CWFIF (NRCan) (geoserver.cwfif.nrcan.gc.ca) | structured — scripts/wildfire/cwfis-wfs.mjs |
 | dados.ons.org.br (dados.ons.org.br) | structured — scripts/shared/regional-energy-feeds.json |
 | dai2.xumo.com (dai2.xumo.com) | Excluded / candidate — No current fetch observed |
@@ -316,6 +318,8 @@ This generated inventory covers **863 active source hosts** representing **843 a
 | FINRA (feeds.finra.org) | structured — scripts/seed-regulatory-actions.mjs |
 | Fintraffic Digitraffic (not-currently-wired) | Excluded / candidate — No current fetch observed |
 | Firecrawl (api.firecrawl.dev) | structured — scripts/ais-relay.cjs, scripts/seed-grocery-basket.mjs |
+| FIRST / Empirical Security EPSS (epss.empiricalsecurity.com) | structured (syndication transport) — scripts/_cyber-priority.mjs |
+| FIRST / Empirical Security EPSS (www.first.org) | structured — api/_cyber-priority.js |
 | focustaiwan.tw (focustaiwan.tw) | feed — shared/news-catalog.json |
 | fonts.googleapis.com (fonts.googleapis.com) | structured — server/_shared/brief-render.js |
 | foreignpolicy.com (foreignpolicy.com) | feed — shared/news-catalog.json |
@@ -861,7 +865,6 @@ This generated inventory covers **863 active source hosts** representing **843 a
 | www.corriere.it (www.corriere.it) | Excluded / candidate — No current fetch observed |
 | www.crisisgroup.org (www.crisisgroup.org) | feed — shared/news-catalog.json |
 | www.csis.org (www.csis.org) | feed — shared/news-catalog.json |
-| www.cve.org (www.cve.org) | structured — scripts/_cyber-providers.mjs |
 | www.da.gov.ph (www.da.gov.ph) | structured — scripts/lib/food-prices.mjs |
 | www.dabangasudan.org (www.dabangasudan.org) | feed — shared/news-catalog.json |
 | www.dailygood.org (www.dailygood.org) | feed — shared/news-catalog.json |

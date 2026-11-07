@@ -2947,6 +2947,21 @@
       ]
     },
     {
+      "host": "cveawg.mitre.org",
+      "provider": "CVE Program",
+      "kind": "structured",
+      "observed": true,
+      "license": "Public published CVE record transport; source terms review retained.",
+      "attribution": "CVE Program and the originating CNA or ADP contributor; no CVSS metric is inferred from an absent score.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "api/_cyber-priority.js"
+        }
+      ],
+      "role": "transport"
+    },
+    {
       "host": "cybereventsdatabase.org",
       "provider": "UMD GoTech Cyber Events Database",
       "kind": "structured",
@@ -4093,6 +4108,21 @@
           "path": "scripts/_global-tender-feeds.mjs"
         }
       ]
+    },
+    {
+      "host": "epss.empiricalsecurity.com",
+      "provider": "FIRST / Empirical Security EPSS",
+      "kind": "structured",
+      "observed": true,
+      "license": "Daily EPSS score transport recommended by FIRST for dashboards; source terms review retained.",
+      "attribution": "FIRST EPSS SIG and Empirical Security; preserve model and score date.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "scripts/_cyber-priority.mjs"
+        }
+      ],
+      "role": "transport"
     },
     {
       "host": "erp.powergrid.gov.bd",
@@ -12203,13 +12233,16 @@
     },
     {
       "host": "www.cve.org",
-      "provider": "www.cve.org",
+      "provider": "CVE Program",
       "kind": "structured",
       "observed": true,
-      "license": "Outbound CVE record reference only; this integration does not fetch or republish CVE.org page content.",
-      "attribution": "Link the CVE identifier to its original CVE Program record. Attribute the exploited-vulnerability catalog facts separately to CISA KEV.",
+      "license": "Public CVE records; source terms review retained.",
+      "attribution": "CVE Program and the originating CNA or ADP contributor; preserve CVSS version, vector and record revision.",
       "status": "terms-review",
       "references": [
+        {
+          "path": "api/_cyber-priority.js"
+        },
         {
           "path": "scripts/_cyber-providers.mjs"
         }
@@ -12732,6 +12765,20 @@
         },
         {
           "path": "shared/news-catalog.json"
+        }
+      ]
+    },
+    {
+      "host": "www.first.org",
+      "provider": "FIRST / Empirical Security EPSS",
+      "kind": "structured",
+      "observed": true,
+      "license": "Scores are published freely with no registration required; retain attribution and source terms review.",
+      "attribution": "FIRST EPSS SIG and Empirical Security; preserve model, score date and the distinction between likelihood and severity.",
+      "status": "terms-review",
+      "references": [
+        {
+          "path": "api/_cyber-priority.js"
         }
       ]
     },

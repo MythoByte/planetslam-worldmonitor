@@ -5,7 +5,7 @@ import { loadEnvFile, getRedisCredentials, redisCommand, acquireLock, releaseLoc
 import { CYBER_DATASETS, cyberKey, validCyberData } from '../api/_cyber-data.js';
 import { fetchCyberDataset } from './_cyber-providers.mjs';
 
-export async function seedCyber({ now = Date.now(), names = Object.keys(CYBER_DATASETS), fetchDataset = fetchCyberDataset,
+export async function seedCyber({ now = Date.now(), names = ['kev', ...Object.keys(CYBER_DATASETS).filter(n => n !== 'kev')], fetchDataset = fetchCyberDataset,
   command, lock = acquireLock, unlock = releaseLock, publish = writeExtraKeyWithMetaAtomically } = {}) {
   const runId = randomUUID();
   const results = [];

@@ -1,10 +1,10 @@
-# PlanetSlam Cyber dashboard — Phases 1–2
+# PlanetSlam Cyber dashboard — Phases 1–3
 
 Open `/dashboard?variant=cyber` or choose **Cyber** in the PlanetSlam edition
 switcher. The edition uses the shared layout/settings/theme and movable,
 resizable panels. New profiles enable the Cyber map. Existing saved map choices
 are preserved; **Show Cyber map** or an incident's **Locate on map** explicitly
-enables and reveals it. EPSS ranking, attack statistics, AI briefings, installed
+enables and reveals it. Attack statistics, AI briefings, installed
 version discovery, and notifications remain later phases.
 
 - **Cyber News:** source-linked headlines and short excerpts from BleepingComputer,
@@ -65,10 +65,62 @@ both consumers, including recovery from a partially unavailable source.
   totals. The inherited global time slider and unrelated severity legend are
   hidden for Cyber; its own reported/observed period applies to these layers.
 
+## Phase 3: Vulnerability Attention Queue
+
+The queue joins the CISA KEV catalog with FIRST/Empirical Security EPSS and public
+CVE contributor CVSS metrics. Every queue entry already has CISA evidence of
+exploitation; this is a KEV prioritization view, not a catalog of all CVEs.
+Default ordering places literal technology-watchlist matches first, then higher
+EPSS probability, then newest KEV addition, with CVE ID as a stable final tie.
+Users can choose EPSS-first or newest-first order and filter vendor, product,
+technical severity, search text, watchlist matches and additions in 7/30 days.
+Changing vendor clears the product filter. Queue filters reset on reload;
+technology-watchlist preferences persist and update the queue across tabs.
+
+Each card explains the keyword match and evidence of exploitation, separates
+EPSS likelihood from CVSS technical severity, retains the CISA required action,
+and links the original CVE record with contributor, vector/version and revision.
+A watchlist keyword is not installed-version exposure. Federal remediation dates
+apply to covered US federal agencies. Unknown ransomware use is not confirmed use.
+
+FIRST recommends its daily compressed score file for dashboards. The worker
+fetches it once per 24-hour admission, validates its model/date/header and numeric
+scores (including scientific notation), and retains only matches to the existing
+usable KEV cache. No watchlist data leaves the browser. Reads are bounded at
+15 MB compressed, 100 MB expanded and two million rows, with a 60-second request
+budget. Missing EPSS IDs remain unknown; valid zero probabilities remain zero.
+Source score date/model and matched/requested catalog counts remain visible.
+Both retrieval age and publication age govern freshness/expiry; fetching an old
+file cannot renew its scores. The **Higher likelihood** label uses a dashboard
+threshold of EPSS >=10%, not a FIRST-issued action recommendation. EPSS describes
+predicted exploitation activity in the next 30 days, not impact or a particular
+visitor's probability of compromise.
+
+CVSS enrichment deliberately checks only the 40 newest KEV additions every
+24 hours, with two concurrent public CVE reads and a 60-second overall budget.
+Coverage is explicit; other entries have Unknown severity. General base metrics
+from the CNA take precedence, with ADP contributors as fallback. Within a
+contributor, CVSS 4.0 precedes 3.1 then 3.0; the highest general base score within
+that version is retained. Scenario-specific metrics and CVSS 2.0 are not used.
+Unscored published records remain null. A failed record fetch/normalization
+preserves the entire last-good CVSS snapshot and original clock.
+
+The two enrichment feeds have independent health entries. Failure of either
+retains usable KEV/watchlist prioritization; missing or expired KEV hides the
+queue with an unavailable message. Refresh retries cache reads only. Visible
+panels poll every minute; dataset subscriptions update consumers immediately
+on recovery. Teardown removes subscriptions and the poll timer. No new API key
+is required. Bulk NVD ingestion, asset discovery, AI briefs and notifications
+remain later work.
+
+Official references: [EPSS batch guidance](https://www.first.org/epss/data),
+[CVE record schema](https://github.com/CVEProject/cve-schema) and
+[public CVE records](https://www.cve.org/).
+
 ## Data path
 
 `provider → seed-cyber-dashboard worker → validated Redis snapshot + atomic
-seed-meta → GET /api/cyber-dashboard?dataset=news|kev|incidents|infrastructure|health → shared browser
+seed-meta → GET /api/cyber-dashboard?dataset=news|kev|incidents|infrastructure|epss|cvss|health → shared browser
 service → lazy panel`
 
 Readers never trigger provider work and Cyber data stays off global bootstrap.
@@ -89,6 +141,8 @@ RSS and JSON responses have time and byte limits, and links must be HTTPS.
 
 | Source | Scheduled attempt | Delayed after | Expires after |
 | --- | --- | --- | --- |
+| FIRST / Empirical Security EPSS | 24 hours | 48 hours from retrieval or score date | 96 hours from retrieval or score date |
+| CVE contributor CVSS (40 newest KEV additions) | 24 hours | 48 hours | 72 hours |
 | UMD GoTech public incident sample | 6 hours | 12 hours | 48 hours |
 | Shared infrastructure projection | 5 minutes | 150 minutes from collector fetch | 3 hours from collector fetch |
 | CISA KEV | 1 hour | 2 hours | 48 hours |
@@ -116,7 +170,7 @@ populate the new cache namespace. Provider failures remain visible.
 ## Verification
 
 - `node --import tsx --test tests/cyber-dashboard.test.mjs tests/cyber-watchlist.test.mts tests/cyber-dashboard-api.test.mjs`
-- `VITE_BRAND=planetslam npx playwright test e2e/cyber-dashboard.spec.ts e2e/cyber-incidents.spec.ts --project=chromium`
+- `VITE_BRAND=planetslam npx playwright test e2e/cyber-dashboard.spec.ts e2e/cyber-incidents.spec.ts e2e/cyber-priorities.spec.ts --project=chromium`
 - `npm run typecheck`, `npm run typecheck:api`, `npm run lint:boundaries`
 - Branded Vite production build, then local Compose worker/API/browser checks.
 

@@ -93,6 +93,8 @@ const publisherMetadataFeed = (provider) => ({
  * become a provider rename or regroup.
  */
 export const PROVIDER_IDENTITY_GROUPS = Object.freeze({
+  'first-epss': Object.freeze({ provider: 'FIRST / Empirical Security EPSS', memberHosts: Object.freeze(['www.first.org', 'epss.empiricalsecurity.com']), reason: 'FIRST publishes the EPSS methodology and directs dashboard batch users to the Empirical Security daily score file.', reviewReference: 'PlanetSlam Cyber Phase 3 official EPSS data documentation, 2026-11-06' }),
+  'cve-program': Object.freeze({ provider: 'CVE Program', memberHosts: Object.freeze(['www.cve.org', 'cveawg.mitre.org']), reason: 'The CVE public record interface publishes contributor metrics displayed by the CVE Program record pages.', reviewReference: 'PlanetSlam Cyber Phase 3 CVE record schema and public record review, 2026-11-06' }),
   'umd-cyber-events': Object.freeze({
     provider: 'UMD GoTech Cyber Events Database',
     memberHosts: Object.freeze(['cybereventsdatabase.org', 'base44.app']),
@@ -133,7 +135,7 @@ export const PROVIDER_IDENTITY_GROUPS = Object.freeze({
     provider: 'British Geological Survey World Mineral Statistics',
     memberHosts: Object.freeze(['ogcapi.bgs.ac.uk', 'www.bgs.ac.uk']),
     reason: 'The BGS OGC API supplies the observations and the BGS statistics page supplies the required public attribution link.',
-    reviewReference: 'Issue #6449 commodity-vulnerability provenance review',
+    reviewReference: 'PlanetSlam Cyber Phase 3 EPSS and CVE schema review, 2026-11-06; Issue #6449 commodity-vulnerability provenance review',
   }),
   'al-jazeera': Object.freeze({
     provider: 'Al Jazeera',
@@ -219,6 +221,10 @@ export const PROVIDER_IDENTITY_GROUPS = Object.freeze({
 });
 
 const PROVIDER_OVERRIDES = {
+  'www.first.org': { provider: 'FIRST / Empirical Security EPSS', identityGroup: 'first-epss', license: 'Scores are published freely with no registration required; retain attribution and source terms review.', attribution: 'FIRST EPSS SIG and Empirical Security; preserve model, score date and the distinction between likelihood and severity.', status: 'terms-review' },
+  'epss.empiricalsecurity.com': { provider: 'FIRST / Empirical Security EPSS', identityGroup: 'first-epss', role: 'transport', license: 'Daily EPSS score transport recommended by FIRST for dashboards; source terms review retained.', attribution: 'FIRST EPSS SIG and Empirical Security; preserve model and score date.', status: 'terms-review' },
+  'www.cve.org': { provider: 'CVE Program', identityGroup: 'cve-program', license: 'Public CVE records; source terms review retained.', attribution: 'CVE Program and the originating CNA or ADP contributor; preserve CVSS version, vector and record revision.', status: 'terms-review' },
+  'cveawg.mitre.org': { provider: 'CVE Program', identityGroup: 'cve-program', role: 'transport', license: 'Public published CVE record transport; source terms review retained.', attribution: 'CVE Program and the originating CNA or ADP contributor; no CVSS metric is inferred from an absent score.', status: 'terms-review' },
   'cybereventsdatabase.org': {
     provider: 'UMD GoTech Cyber Events Database', identityGroup: 'umd-cyber-events',
     license: 'Public recent-record research sample; full dataset downloads require publisher access. Public access is not a blanket republication licence; retain source-specific terms review.',
@@ -1132,7 +1138,7 @@ const PROVIDER_OVERRIDES = {
 // a provider-bearing override a separate, explicit lifecycle event instead of
 // something `--write` can silently normalize into the manifest.
 export const PROVIDER_IDENTITY_REVIEW = Object.freeze({
-  sha256: '17c595839db9dde31888132415ede261be86fa3b2534ff097ddb65aaca6bcdc1',
+  sha256: '34dc1218fadd0408c58b04e49a08f8e63897292579e2c929099798414fc21d28',
   // 2026-11-02 (#10051): group the Philippine DOE with the CloudFront media
   // host that serves its weekly PDFs, and SONABHY with the Strapi CMS its
   // tariff page reads from.
@@ -1151,7 +1157,7 @@ export const PROVIDER_IDENTITY_REVIEW = Object.freeze({
   // SOURCE_ROOTS, so citing a host that is not already a registered source
   // invents a provider row for it. The B.C. catalogue URLs above are safe
   // because that host is itself an observed source; parallel.ai is not.
-  reviewReference: 'Issue #6449 BGS provenance review; plus Issue #7371 country corpus identity review; plus Issue #7005 IMD cyclone/marine source-rights probe; plus Issues #7012, #7036, and #6682 Toronto safety sources; plus PR #7576 source migration review; plus Issue #7000 publisher-centric source catalog; plus Issue #7001, Issue #6437, Issue #6622, Issue #6659, PR #6447, the 2026-09-01 FAOSTAT transport identity review, the 2026-09-04 FIRMS partial-coverage incident, and the 2026-09-05 Barchart WAF outage that moved S&P 500 breadth to the TradingView screener scan; plus Issue #7838, which added the read-only Sentry resolve-pin audit; plus PR #8394 JODI publication catalog lineage; plus the 2026-10-17 /verify audit that added the Al Jazeera claim-pool depth search; plus Issue #9352 part C, the US Consolidated Screening List export-control lists; plus Issue #10051 fuel-price batch 3, the DOE media host and SONABHY CMS groups; plus the 2026-11-06 PlanetSlam owner-requested first-party navigation review; plus the 2026-11-06 PlanetSlam Space phase 1-3 source onboarding review of official NASA media guidance, SDO data rules, NWS disclaimer, ESA terms, and The Space Devs service documentation; plus the 2026-11-06 UMD GoTech public homepage, public recent-record API and methodology review for Cyber Phase 2.',
+  reviewReference: 'PlanetSlam Cyber Phase 3 EPSS and CVE schema review, 2026-11-06; Issue #6449 BGS provenance review; plus Issue #7371 country corpus identity review; plus Issue #7005 IMD cyclone/marine source-rights probe; plus Issues #7012, #7036, and #6682 Toronto safety sources; plus PR #7576 source migration review; plus Issue #7000 publisher-centric source catalog; plus Issue #7001, Issue #6437, Issue #6622, Issue #6659, PR #6447, the 2026-09-01 FAOSTAT transport identity review, the 2026-09-04 FIRMS partial-coverage incident, and the 2026-09-05 Barchart WAF outage that moved S&P 500 breadth to the TradingView screener scan; plus Issue #7838, which added the read-only Sentry resolve-pin audit; plus PR #8394 JODI publication catalog lineage; plus the 2026-10-17 /verify audit that added the Al Jazeera claim-pool depth search; plus Issue #9352 part C, the US Consolidated Screening List export-control lists; plus Issue #10051 fuel-price batch 3, the DOE media host and SONABHY CMS groups; plus the 2026-11-06 PlanetSlam owner-requested first-party navigation review; plus the 2026-11-06 PlanetSlam Space phase 1-3 source onboarding review of official NASA media guidance, SDO data rules, NWS disclaimer, ESA terms, and The Space Devs service documentation; plus the 2026-11-06 UMD GoTech public homepage, public recent-record API and methodology review for Cyber Phase 2.',
 });
 
 export function providerIdentityDigest(providerOverrides = PROVIDER_OVERRIDES) {

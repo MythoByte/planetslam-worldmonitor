@@ -1,4 +1,4 @@
-export type CyberDataset = 'news' | 'kev' | 'health' | 'incidents' | 'infrastructure';
+export type CyberDataset = 'news' | 'kev' | 'health' | 'incidents' | 'infrastructure' | 'epss' | 'cvss';
 export interface CyberEnvelope<T = CyberData> {
   dataset: string; status: 'fresh' | 'stale' | 'unavailable'; provider: string; sourceUrl: string;
   fetchedAt: number | null; observedAt: number | null; expiresAt: number | null; message?: string; data: T | null;
@@ -8,7 +8,7 @@ export interface CyberKevItem { id: string; vendor: string; product: string; tit
 export interface CyberNewsData { items: CyberNewsItem[] }
 export interface CyberKevData { items: CyberKevItem[]; version: string; catalogAt: number; totalCount: number }
 export interface CyberHealthData { items: CyberEnvelope[] }
-export type CyberData = CyberNewsData | CyberKevData | CyberHealthData | CyberIncidentData | CyberInfrastructureData;
+export type CyberData = CyberNewsData | CyberKevData | CyberHealthData | CyberIncidentData | CyberInfrastructureData | CyberEpssData | CyberCvssData;
 
 export interface CyberIncident {
   id: string; organization: string; country: string; countryCode: string; sector: string; category: string;
@@ -22,3 +22,8 @@ export interface CyberInfrastructure {
   observedAt: number; latitude: number | null; longitude: number | null; url: string;
 }
 export interface CyberInfrastructureData { items: CyberInfrastructure[]; totalCount: number; truncated: boolean; sourceFetchedAt: number }
+
+export interface CyberEpssItem { id: string; probability: number; percentile: number }
+export interface CyberEpssData { items: CyberEpssItem[]; requestedCount: number; catalogFetchedAt: number; scoreDate: string; model: string }
+export interface CyberCvssItem { id: string; score: number | null; version: string | null; provider: string | null; vector: string | null; updatedAt: number | null }
+export interface CyberCvssData { items: CyberCvssItem[]; catalogFetchedAt: number }
