@@ -1,11 +1,10 @@
-# PlanetSlam Cyber dashboard — Phases 1–4
+# PlanetSlam Cyber dashboard — Phases 1–5
 
 Open `/dashboard?variant=cyber` or choose **Cyber** in the PlanetSlam edition
 switcher. The edition uses the shared layout/settings/theme and movable,
 resizable panels. New profiles enable the Cyber map. Existing saved map choices
 are preserved; **Show Cyber map** or an incident's **Locate on map** explicitly
-enables and reveals it. Attack statistics, installed
-version discovery, and notifications remain later phases.
+enables and reveals it. Attack statistics and installed version discovery remain later phases.
 
 - **Cyber News:** source-linked headlines and short excerpts from BleepingComputer,
   Krebs on Security, and The Hacker News. Seven-day coverage, latest first, with
@@ -110,8 +109,7 @@ retains usable KEV/watchlist prioritization; missing or expired KEV hides the
 queue with an unavailable message. Refresh retries cache reads only. Visible
 panels poll every minute; dataset subscriptions update consumers immediately
 on recovery. Teardown removes subscriptions and the poll timer. No new API key
-is required. Bulk NVD ingestion, asset discovery and notifications
-remain later work.
+is required. Bulk NVD ingestion and asset discovery remain later work.
 
 Official references: [EPSS batch guidance](https://www.first.org/epss/data),
 [CVE record schema](https://github.com/CVEProject/cve-schema) and
@@ -260,3 +258,80 @@ removes the timer and subscriptions. `compose.cyber.yaml` explicitly maps the
 optional server-side OpenRouter configuration. Rebuild the worker and API image
 when commissioning this phase. Existing source collection credentials and
 entitlements are unchanged; no additional provider key is required.
+
+## Phase 5: Cyber Alerts & Digests
+
+Monitoring is opt-in and off by default. Enable it in **Cyber Alerts & Digests**.
+It runs while that panel is enabled/mounted and the Cyber edition is open,
+including background tabs subject to browser timer throttling. It is not a
+closed-browser push subscription, email service or Telegram integration.
+No notification destination, provider key, account or billing change is required.
+Rules, baselines, alert history and watchlist matches stay in this browser under
+`planetslam-cyber-alerts-v1`; personalized data is never sent to the server.
+
+The controller reads existing cache-only endpoints roughly once a minute and
+on return to a visible tab. Checks are shared with the existing Cyber service
+cache; they never start provider collection or AI calls. First usable reads
+establish independent baselines without announcing existing records as new.
+Enabling monitoring or changing matching rules/watchlist terms establishes new
+baselines. Disabling monitoring retains history and stops browser delivery.
+Reloads retain baselines, rules and duplicate suppression. Paused or closed pages
+cannot promise observation of every upstream change; reopening compares currently
+available cached records to saved baselines.
+
+- **Watchlist vulnerabilities:** new qualifying KEV records or records becoming
+  qualified use literal vendor/product/title matches. Optional EPSS thresholds
+  (10/50/90%) and CVSS thresholds (High/Critical) both require known fresh scores.
+  Missing whole threshold feeds preserve the previous baseline. Unknown individual
+  scores do not satisfy a selected threshold; unknown remains allowed when that
+  threshold is disabled. CVSS still covers only 40 newest KEV additions. Alerts
+  indicate keyword relevance and known exploitation, not installed-version exposure.
+- **Incident research updates:** detect new observed records and meaningful changes
+  to organization, category, country, description, verification, event/report date,
+  original reporting or change log. Retrieval/revision timestamp changes alone do
+  not alert. Choose all reported records or watchlist keyword matches, with a
+  7/30/90-day report-age window. Monthly research cadence and claim uncertainty
+  remain explicit; an alert is not live attack detection.
+- **Source outages and recovery:** require 2/3/5 consecutive observed quality
+  transitions, covering delayed, unavailable and recovered states. The first
+  source observation is a baseline, including existing outages shown in status.
+  A network read failure retains baselines and reports incomplete monitoring;
+  it is not mislabeled as a provider outage. Manual checks count as observations.
+
+The inbox supports Mark all read and Clear inbox. Clearing retains baselines
+and duplicate suppression. Display/retention is bounded to 200 events / 30 days,
+with at most 1,000 dedupe entries, 10,000 KEV baselines and 1,000 research baselines.
+The daily digest summarizes bounded retained alerts since its previous cutoff.
+Choose a UTC hour; the first deadline is the next occurrence after enabling.
+If a deadline was missed, the next running check catches up once, not once for
+every missed day. Changing schedules cannot send a second digest on the same UTC
+day. Zero retained alerts is explicitly not evidence of safety or complete coverage.
+
+Browser notifications require an explicit **Enable browser notifications** click
+and granted browser permission in a supported secure context. Cooperating tabs
+serialize state and delivery through Web Locks. Without that coordination support,
+the inbox still works and browser delivery stays disabled. In-app cross-tab
+coordination is best effort on browsers without Web Locks. Mobile delivery uses
+an active service worker when available; desktop construction is the fallback.
+The existing service-worker click handler opens the local Cyber dashboard.
+Notification bodies are generic, tags are opaque, and watchlist/source details
+stay in the inbox. Choose realtime (up to three notifications per check) or daily
+digest-only delivery. Extra events remain in the inbox; they are not replayed in
+a later notification burst. Permission grant never replays old history. An async
+permission response cannot re-enable delivery after disabling/leaving the panel.
+
+Rules, baselines and event/digest claims are committed to one local storage record
+before any browser delivery. Failed reads never mean an empty profile. Writes
+are read back to verify persistence; unreadable, full or silently dropping storage
+pauses monitoring and sends no browser notification. Retry browser storage preserves
+history; corrupt state requires explicit Reset local alert data. Failed or uncertain
+notification delivery leaves the inbox intact and is not automatically replayed.
+A permission denial affects browser delivery, not inbox monitoring. Mounting the
+panel never requests permission. Teardown removes polling and event subscriptions;
+in-flight work checks its lifecycle revision before committing or notifying.
+
+Verification includes pure threshold/baseline/revision/UTC-schedule contracts,
+controlled desktop/mobile browser permission and two-tab tests, storage failures,
+service-worker delivery payloads, uncertain-delivery suppression and Phases 1–4
+regressions. Browser permission/platform support varies; these tests do not prove
+that every operating system displays notifications while the browser is suspended.

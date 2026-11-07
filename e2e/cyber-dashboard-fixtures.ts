@@ -1,8 +1,10 @@
 import type { Page } from '@playwright/test';
 import type { CyberDataset, CyberEnvelope } from '../src/types/cyber-dashboard';
 
+const FIXTURE_NOW = Date.now();
+
 export function cyberFixture(dataset: CyberDataset): CyberEnvelope<unknown> {
-  const now = Date.now();
+  const now = FIXTURE_NOW;
   const news = { items: [
     { id: 'n1', title: 'Synthetic Docker patch announcement', summary: '<img src=x onerror=alert(1)> Fixture text.', publisher: 'Synthetic publisher', url: 'https://example.com/docker', publishedAt: now - 60_000, topic: 'Vulnerabilities' },
     { id: 'n2', title: 'Synthetic ransomware incident report', summary: 'An unrelated synthetic story.', publisher: 'Synthetic publisher', url: 'https://example.com/incident', publishedAt: now - 120_000, topic: 'Ransomware' },
