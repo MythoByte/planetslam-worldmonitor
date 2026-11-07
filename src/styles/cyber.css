@@ -52,3 +52,10 @@ html[data-brand="planetslam"][data-variant="cyber"] .map-legend,
 html[data-brand="planetslam"][data-variant="cyber"] .deckgl-legend { display: none; }
 html[data-brand="planetslam"][data-variant="cyber"] .time-slider { display: none; }
 .cyber-map-inspect { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+
+html[data-brand="planetslam"][data-variant="cyber"] .cyber-priority-filters { display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:10px; margin:12px 0; }
+html[data-brand="planetslam"][data-variant="cyber"] .cyber-priority-filters label { display:flex; flex-direction:column; gap:5px; min-width:0; }
+html[data-brand="planetslam"][data-variant="cyber"] .cyber-priority-filters input, html[data-brand="planetslam"][data-variant="cyber"] .cyber-priority-filters select { width:100%; min-width:0; }
+html[data-brand="planetslam"][data-variant="cyber"] .cyber-card details p { overflow-wrap:anywhere; }
+html[data-brand="planetslam"][data-variant="cyber"] .cyber-methodology { margin:8px 0; }
+html[data-brand="planetslam"][data-variant="cyber"] .cyber-methodology summary { cursor:pointer; color:var(--accent); overflow-wrap:anywhere; }

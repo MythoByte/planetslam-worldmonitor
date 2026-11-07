@@ -1,7 +1,10 @@
+import { validPriorityData, EPSS_SOURCE, CVSS_SOURCE } from './_cyber-priority.js';
 import { validIncidentData, validInfrastructureData, INCIDENT_PROVIDER, INCIDENT_SOURCE_URL, INCIDENT_INTERVAL_MS, INCIDENT_MAX_AGE_MS, INFRA_MAX_AGE_MS, CYBER_NEWS_SOURCES } from './_cyber-incidents.js';
 // Shared normalized contract for the cache-only API and central worker.
 const MINUTE = 60_000;
 export const CYBER_DATASETS = Object.freeze({
+  epss: { provider: 'FIRST / Empirical Security EPSS', sourceUrl: EPSS_SOURCE, intervalMs: 24 * 60 * MINUTE, maxAgeMs: 96 * 60 * MINUTE },
+  cvss: { provider: 'CVE Program contributor metrics', sourceUrl: CVSS_SOURCE, intervalMs: 24 * 60 * MINUTE, maxAgeMs: 72 * 60 * MINUTE },
   incidents: { provider: INCIDENT_PROVIDER, sourceUrl: INCIDENT_SOURCE_URL, intervalMs: INCIDENT_INTERVAL_MS, maxAgeMs: INCIDENT_MAX_AGE_MS },
   infrastructure: { provider: 'Shared cyber IOC collection', sourceUrl: 'https://planetslam.com/dashboard?variant=cyber', intervalMs: 5 * MINUTE, staleAfterMs: 150 * MINUTE, maxAgeMs: INFRA_MAX_AGE_MS },
   kev: { provider: 'CISA Known Exploited Vulnerabilities', sourceUrl: 'https://www.cisa.gov/known-exploited-vulnerabilities-catalog', feedUrl: 'https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json', intervalMs: 60 * MINUTE, maxAgeMs: 48 * 60 * MINUTE },
@@ -16,6 +19,7 @@ export function httpsUrl(value) {
 const str = (v, max = 2000) => typeof v === 'string' && v.length <= max;
 const time = v => Number.isFinite(v) && v > 0;
 export function validCyberData(name, data) {
+  if (name === 'epss' || name === 'cvss') return validPriorityData(name, data);
   if (name === 'incidents') return validIncidentData(data);
   if (name === 'infrastructure') return validInfrastructureData(data);
   if (!Object.hasOwn(CYBER_DATASETS, name) || !data || !Array.isArray(data.items) || !data.items.length || data.items.length > 10000) return false;
@@ -31,13 +35,14 @@ export function cyberEnvelope(name, snapshot, now = Date.now()) {
   if (!config) throw new Error('Unknown cyber dataset');
   const valid = snapshot?.dataset === name && validCyberData(name, snapshot.data)
     && time(snapshot.fetchedAt) && snapshot.fetchedAt <= now + MINUTE
+    && (name !== 'epss' || Date.parse(snapshot.data.scoreDate + 'T00:00:00Z') <= now && snapshot.observedAt === Date.parse(snapshot.data.scoreDate + 'T00:00:00Z'))
     && (name !== 'infrastructure' || snapshot.data.sourceFetchedAt === snapshot.fetchedAt)
     && (!snapshot.observedAt || time(snapshot.observedAt) && snapshot.observedAt <= now + MINUTE);
-  const age = valid ? Math.max(0, now - snapshot.fetchedAt) : Infinity;
+  const age = valid ? Math.max(0, now - snapshot.fetchedAt, name === 'epss' ? now - Date.parse(snapshot.data.scoreDate + 'T00:00:00Z') : 0) : Infinity;
   const status = age > config.maxAgeMs ? 'unavailable' : age > (config.staleAfterMs ?? config.intervalMs * 2) ? 'stale' : 'fresh';
   return { dataset: name, status, provider: config.provider, sourceUrl: config.sourceUrl,
     fetchedAt: valid ? snapshot.fetchedAt : null, observedAt: valid ? snapshot.observedAt ?? null : null,
-    expiresAt: valid ? snapshot.fetchedAt + config.maxAgeMs : null,
+    expiresAt: valid ? Math.min(snapshot.fetchedAt + config.maxAgeMs, name === 'epss' ? Date.parse(snapshot.data.scoreDate + 'T00:00:00Z') + config.maxAgeMs : Infinity) : null,
     message: status === 'unavailable' ? 'No usable cached update. This does not mean there are no threats.' : status === 'stale' ? 'Provider refresh delayed; showing the last successful update.' : '',
     data: status === 'unavailable' ? null : snapshot.data };
 }

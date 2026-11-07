@@ -3,6 +3,7 @@ import { DEFAULT_MAP_LAYERS as SPACE_LAYERS } from './space';
 
 export const DEFAULT_PANELS: Record<string, PanelConfig> = {
   map: { name: 'Cyber Incidents & Infrastructure', enabled: true, priority: 1 },
+  'cyber-attention': { name: 'Vulnerability Attention Queue', enabled: true, priority: 1 },
   'cyber-incidents': { name: 'Reported Cyber Incidents', enabled: true, priority: 1 },
   'cyber-news': { name: 'Cyber News', enabled: true, priority: 1 },
   'cyber-kev': { name: 'Exploited Vulnerabilities', enabled: true, priority: 1 },

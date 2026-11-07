@@ -1,3 +1,4 @@
+import { fetchEpss, fetchCvss } from './_cyber-priority.mjs';
 import { normalizeCyberIncidents, readSharedCyberInfrastructure } from './_cyber-incidents.mjs';
 import { CYBER_DATASETS, httpsUrl, validCyberData } from '../api/_cyber-data.js';
 import { parseRssItems } from './seed-climate-news.mjs';
@@ -49,6 +50,8 @@ async function readProvider(url, fetchFn) {
 }
 export async function fetchCyberDataset(name, { fetchFn = fetch, now = Date.now(), command } = {}) {
   if (!Object.hasOwn(CYBER_DATASETS, name)) throw new Error('Unknown dataset');
+  if (name === 'epss') return fetchEpss({ fetchFn, command, now });
+  if (name === 'cvss') return fetchCvss({ fetchFn, command, now, readJson: async (url, fn) => JSON.parse(await readProvider(url, fn)) });
   if (name === 'infrastructure') return readSharedCyberInfrastructure(command, now);
   if (name === 'incidents') return normalizeCyberIncidents(JSON.parse(await readProvider('https://base44.app/api/apps/68c3041c75bb09b9728e4b37/entities/CyberEvent?sort=-event_date&limit=20', fetchFn)), now);
   if (name !== 'kev') return normalizeCyberNews(await readProvider(CYBER_DATASETS[name].feedUrl, fetchFn), name, now);

@@ -9,6 +9,8 @@ export function cyberFixture(dataset: CyberDataset): CyberEnvelope<unknown> {
   ] };
   const kev = { version: 'synthetic-1', totalCount: 1, catalogAt: now, items: [{ id: 'CVE-2026-99999', vendor: 'Synthetic Vendor', product: 'Docker', title: 'Synthetic Docker vulnerability', description: 'Fixture, not an actual vulnerability.', action: 'Apply the vendor update.', addedAt: now - 86400_000, dueDate: '2026-11-20', ransomware: 'Unknown', url: 'https://example.com/cve', references: ['https://example.com/vendor'] }] };
   const base = { dataset, status: 'fresh' as const, provider: 'Synthetic acceptance provider', sourceUrl: 'https://example.com/source', fetchedAt: now, observedAt: now, expiresAt: now + 3600000 };
+  if (dataset === 'epss') return { ...base, data: { items: [{ id: 'CVE-2026-99999', probability: 0.72, percentile: 0.98 }], requestedCount: 1, catalogFetchedAt: now, scoreDate: new Date(now).toISOString().slice(0,10), model: 'synthetic-model' } };
+  if (dataset === 'cvss') return { ...base, data: { items: [{ id: 'CVE-2026-99999', score: 9.8, version: '3.1', provider: 'Synthetic CNA', vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', updatedAt: now }], catalogFetchedAt: now } };
   if (dataset === 'incidents') return { ...base, data: { coverage: 'Public recent-record sample; monthly research updates', items: [
     { id: 'synthetic-us', organization: 'Synthetic Hospital', country: 'United States', countryCode: 'US', sector: 'Healthcare', category: 'Encryption', description: 'Synthetic reported event, not an actual incident.', eventAt: now - 86400000, reportedAt: now - 60000, updatedAt: now - 30000, verification: 'reported', latitude: 40, longitude: -100, url: 'https://example.com/catalog/us', reportUrl: 'https://example.com/report/us', changeLog: '' },
     { id: 'synthetic-de', organization: 'Synthetic Rail', country: 'Germany', countryCode: 'DE', sector: 'Transport', category: 'Denial of service', description: 'Synthetic claim, not independently verified.', eventAt: now - 41 * 86400000, reportedAt: now - 40 * 86400000, updatedAt: null, verification: 'claim-reported', latitude: 51, longitude: 10, url: 'https://example.com/catalog/de', reportUrl: 'https://example.com/report/de', changeLog: '' },
@@ -18,7 +20,7 @@ export function cyberFixture(dataset: CyberDataset): CyberEnvelope<unknown> {
     { id: 'synthetic-c2', indicator: '198.51.100.42', source: 'FEODO', country: 'DE', countryCode: 'DE', category: 'C2 SERVER', observedAt: now - 60000, latitude: 51.5, longitude: 10.5, url: 'https://example.com/feed' },
     { id: 'synthetic-url', indicator: 'https://malware.example.test/payload', source: 'URLHAUS', country: 'US', countryCode: 'US', category: 'MALWARE HOST', observedAt: now - 60000, latitude: 35, longitude: -90, url: 'https://example.com/feed2' },
   ] } };
-  if (dataset === 'health') return { ...base, data: { items: ['kev', 'bleeping', 'krebs', 'hackernews', 'incidents', 'infrastructure'].map(name => ({ ...base, dataset: name, provider: `Synthetic ${name}`, data: null })) } };
+  if (dataset === 'health') return { ...base, data: { items: ['kev', 'bleeping', 'krebs', 'hackernews', 'incidents', 'infrastructure', 'epss', 'cvss'].map(name => ({ ...base, dataset: name, provider: `Synthetic ${name}`, data: null })) } };
   return { ...base, data: dataset === 'news' ? news : kev };
 }
 export async function installCyberFixtures(page: Page, overrides: Partial<Record<CyberDataset, Partial<CyberEnvelope<unknown>>>> = {}) {

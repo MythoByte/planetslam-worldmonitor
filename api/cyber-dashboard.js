@@ -10,7 +10,7 @@ export default async function handler(req) {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers });
   if (req.method !== 'GET') return jsonResponse({ error: 'Method not allowed' }, 405, { ...headers, Allow: 'GET, OPTIONS' });
   const dataset = new URL(req.url).searchParams.get('dataset') || 'health';
-  if (!['news', 'health', 'kev', 'incidents', 'infrastructure'].includes(dataset)) return jsonResponse({ error: 'Unknown dataset' }, 400, headers);
+  if (!['news', 'health', 'kev', 'incidents', 'infrastructure', 'epss', 'cvss'].includes(dataset)) return jsonResponse({ error: 'Unknown dataset' }, 400, headers);
   const names = dataset === 'news' ? CYBER_NEWS_SOURCES : dataset === 'health' ? Object.keys(CYBER_DATASETS) : [dataset];
   const rows = await readJsonBatchFromUpstashWithStatus(names.map(cyberKey), 3000, true);
   const now = Date.now(), results = names.map((n, i) => cyberEnvelope(n, rows[i]?.value, now));

@@ -190,6 +190,8 @@ COPY scripts/_cyber-incidents.mjs ./scripts/_cyber-incidents.mjs
 COPY scripts/lib/country-centroid.mjs ./scripts/lib/country-centroid.mjs
 COPY scripts/data/country-centroids.json ./scripts/data/country-centroids.json
 COPY api/_cyber-incidents.js ./api/_cyber-incidents.js
+COPY scripts/_cyber-priority.mjs ./scripts/_cyber-priority.mjs
+COPY api/_cyber-priority.js ./api/_cyber-priority.js
 COPY api/_cyber-data.js ./api/_cyber-data.js
 COPY scripts/seed-space.mjs ./scripts/seed-space.mjs
 COPY scripts/_space-providers.mjs ./scripts/_space-providers.mjs
