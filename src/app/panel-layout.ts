@@ -279,6 +279,7 @@ export const DEFERRED_PANEL_NATURAL_FOOTPRINTS: Readonly<Record<string, Deferred
   'space-observing': { rowSpan: 3 },
   'space-missions': { rowSpan: 2 },
   'space-brief': { rowSpan: 3 },
+  'cyber-alerts': { rowSpan: 3 },
   'cyber-brief': { rowSpan: 3 },
   'cyber-attention': { rowSpan: 3 },
   'cyber-incidents': { rowSpan: 3 },
@@ -2808,6 +2809,7 @@ export class PanelLayoutManager implements AppModule {
 
     // Space datasets are self-refreshing and stay off the global bootstrap path.
     // One lazy module supplies the cards; shared service requests are deduplicated.
+    this.lazyDefaultPanel('cyber-alerts', () => import('@/components/CyberAlertsPanel'), 'CyberAlertsPanel');
     this.lazyDefaultPanel('cyber-brief', () => import('@/components/CyberBriefPanel'), 'CyberBriefPanel');
     this.lazyDefaultPanel('cyber-attention', () => import('@/components/CyberAttentionPanel'), 'CyberAttentionPanel');
     this.lazyDefaultPanel('cyber-incidents', () => import('@/components/CyberIncidentsPanel'), 'CyberIncidentsPanel');
