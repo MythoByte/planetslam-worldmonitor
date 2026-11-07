@@ -10,14 +10,49 @@ refresh another source's last-good timestamp.
 | Dataset | Provider and source | Coverage | Refresh / maximum usable cache age |
 | --- | --- | --- | --- |
 | Earthquakes | [USGS GeoJSON feeds](https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php) | Reported M2.5+ earthquakes in the past day. Detection coverage varies geographically. Magnitude and depth remain measurements; unknown impact severity stays unknown. | 5 min / 1 hour |
-| Natural events | [NASA EONET v3](https://eonet.gsfc.nasa.gov/docs/v3) | Up to 300 open, curated natural events, including fires, volcanoes, storms and floods. Uses the latest supplied point geometry. Polygon-only records remain listed without invented point locations. | 30 min / 24 hours |
+| Natural events | [NASA EONET v3](https://eonet.gsfc.nasa.gov/docs/v3) | Up to 600 distinct open, curated natural events from two capped requests, including fires, volcanoes, storms, floods, drought, landslides, anomalous snow and temperature extremes when supplied. Uses the latest supplied point geometry. Polygon-only records remain listed without invented point locations. | 30 min / 24 hours |
 | Impact assessments | [GDACS](https://www.gdacs.org/) | Selected global earthquake, cyclone, flood, volcano, wildfire and drought assessments. GDACS colors describe estimated humanitarian impact, not a local warning or earthquake magnitude. Credit GDACS / European Commission Joint Research Centre / UN OCHA, CC BY 4.0. | 15 min / 3 hours |
-| Weather warnings | [NOAA NWS alerts](https://www.weather.gov/documentation/services-web-alerts) | Actual active alerts for the US and territories. Alerts lacking geometry remain in the list. Supplied polygons use an approximate display center. Issue time is the bulletin timestamp. | 5 min / 30 min |
+| Weather warnings | [NOAA NWS alerts](https://www.weather.gov/documentation/services-web-alerts) | Actual active land and marine alerts for the US, territories and NWS marine areas. Covers heat/cold, tornado, severe thunderstorm, winter, avalanche and coastal hazards when issued. Alerts lacking geometry remain in the list. Supplied polygons use an approximate display center. Issue time is the bulletin timestamp. | 5 min / 30 min |
 | Tsunami bulletins | [NOAA NTWC](https://www.tsunami.gov/events/xml/PAAQAtom.xml) | National Tsunami Warning Center feed. Information/no-threat and cancellation messages never become warnings. Bulletins older than 24 hours are removed. Coverage is the warning center's area, not all national warning services worldwide. | 5 min / 30 min |
 | Weather | [MET Norway Locationforecast](https://api.met.no/doc/locationforecast/HowTO) | Model forecasts for New York, Los Angeles, Vancouver, London, Oslo, Tokyo, Manila, Delhi, Sydney, Auckland, São Paulo and Cape Town. Includes the first available model time and 24 forecast steps, temperature, wind and hourly precipitation when supplied. | 1 hour / 6 hours; model issue age limited to 12 hours |
 | River levels | [NOAA NWPS](https://water.noaa.gov/) | Observed stages and provider flood thresholds for Ohio River at Pittsburgh (PTTP1), Mississippi River at St. Louis (EADM7), and Mississippi River at Memphis (MEMT1). Values retain provider units and timestamps. No global river-level coverage is implied. | 15 min / 2 hours; observation age also limited to 2 hours |
 | Air quality | Existing `climate:air-quality:v1` station cache | Reuses the existing OpenAQ and optional WAQI integration, including its commissioning and attribution requirements. Stale station observations are removed. PM2.5 does not establish that wildfire smoke caused pollution. | Existing worker cadence; Earth accepts cache and measurements up to 3 hours old |
 | Earth news | [NASA Earth Observatory / NASA Science](https://science.nasa.gov/feed/?science_org=19791%2C22453), [NOAA NHC](https://www.nhc.noaa.gov/index-at.xml), [The Guardian Environment](https://www.theguardian.com/us/environment/rss) | Selected English-language feeds. Official updates and reporting remain labelled distinctly. NHC is Atlantic coverage. Topic and broad-region tags are inferred from headlines. Reporting is displayed as headline and source link, without republishing article text. | NASA 30 min / 12 hours; NHC 15 min / 3 hours; Guardian 30 min / 6 hours |
+
+## Extended hazard coverage
+
+Phase 4 uses the providers above with dedicated categories and compound-hazard
+filter tags. It does not infer an extreme-temperature event from the 12 city
+forecasts. Original alert names, severity and mode remain visible.
+
+| Category | Source and interpretation | Limits |
+| --- | --- | --- |
+| Heatwaves and extreme heat | NWS heat watches, warnings and advisories; EONET temperature-extreme events whose title identifies heat. | NWS coverage is regional; no universal temperature threshold or global heatwave index is inferred. |
+| Extreme cold and frost | NWS cold, wind-chill, freeze and frost products; EONET temperature-extreme events whose title identifies cold. | A generic EONET temperature-extreme record stays under Weather if heat/cold cannot be distinguished. |
+| Drought | GDACS drought impact assessments and selected EONET drought events. | No global rainfall-deficit, soil-moisture or drought-index raster; impact assessments are not local water restrictions. |
+| Tornadoes | NWS tornado watches/warnings and explicitly identified EONET storm titles. | Warning/watch coverage does not establish that a tornado was observed. |
+| Hail and lightning threats | NWS explicit HAZARD sections; a positive `maxHailSize` parameter also supplies a hail tag. News headlines can carry inferred topic tags. | A thunderstorm warning alone adds neither tag. Generic safety instructions do not create hazard tags. No lightning-strike network, radar-derived hail observations or strike playback. |
+| Winter storms | NWS winter, snow, blizzard and ice-storm products; selected EONET anomalous snow events. | Warning coverage and curated events, not global snow-depth measurements. |
+| Landslides | Selected EONET landslide events and explicit NWS HAZARD sections. | No complete landslide inventory or global slope-failure forecast. |
+| Avalanches | NWS avalanche advisory/watch/warning products; an EONET landslide event only gains an avalanche tag when its title explicitly identifies one. | EONET's landslide category includes several kinds of mass movement; its presence alone never establishes an avalanche. No global avalanche danger rating or snowpack model. |
+| Coastal and marine hazards | NWS coastal/lakeshore flood, storm-surge, high-surf, hazardous-seas, rip-current, beach-hazard and selected marine products. | NWS coverage only; no global wave-height or storm-surge forecast layer. Coastal flood and surge records also remain discoverable under Flooding. |
+
+The [EONET category catalog](https://eonet.gsfc.nasa.gov/api/v3/categories)
+defines drought, landslides (including avalanches), snow and temperature extremes.
+Earth requests up to 300 open events across the catalog and up to 300 more
+from drought, landslide, snow and temperature-extreme categories. The second
+fixed request prevents rare categories from being crowded out by wildfire
+entries. Records are merged by the original EONET event ID, retaining the newest
+geometry; both responses must validate before the source is refreshed. Sparse
+categories may still have no returned records. EONET category assignments govern classification; wildfire
+place names such as Cold Springs do not become cold-weather events. Titles refine
+ambiguous temperature, landslide and severe-storm categories only.
+
+The [NWS alert-type catalog](https://api.weather.gov/alerts/types) defines the
+products exposed by the existing active-alert endpoint. Compound tags make one
+bulletin discoverable under several hazards without turning it into several
+events. News tags remain headline-based browsing hints, separate from official
+warning classifications. Empty category results never establish an all-clear.
 
 MET Norway data is licensed under **CC BY 4.0**. Display credit to MET Norway and
 link to its source. The [MET Norway FAQ](https://api.met.no/doc/FAQ) explicitly
@@ -40,7 +75,7 @@ entities is rejected.
 ## API contract
 
 Datasets are `earthquakes`, `events`, `alerts`, `weather`, `rivers`, `airquality`,
-`news`, and `health`. Unknown dataset names are rejected. Only GET and OPTIONS
+`news`, `history`, and `health`. Unknown dataset names are rejected. Only GET and OPTIONS
 are accepted, with the existing origin policy.
 
 Each envelope includes `dataset`, `status`, `provider`, `sourceUrl`, `coverage`,
@@ -63,6 +98,30 @@ Broad map browsing regions are approximate geographic groups, not reverse
 geocoded national borders. Event details retain the source's actual title and
 location description. EONET's open state is a catalog state and should not be
 interpreted as confirmation of an active local emergency.
+
+## Recorded history API
+
+`/api/earth?dataset=history` is a cache-only reader of `earth:history:v1`.
+Its envelope contains `data: { items, events }`: `items` are capture frames with
+`recordedAt`, source-status metadata, `eventKeys`, `totalEvents` and `truncated`;
+`events` are shared `{ key, event }` revisions referenced by those frame keys.
+An event retains its original observation time, mode and warning expiry.
+Historical warnings never return to the current-alert datasets.
+
+The worker captures at most once per hour and keeps up to seven days/168 frames,
+500 events per frame, 4,000 distinct revisions and 2 MiB total. Records prioritize
+severity and then recency when a frame exceeds capacity. Capacity eviction can
+shorten the retained date range; frame truncation remains explicit. Old frames
+outside the retention window disappear on read. Recording begins when the new
+worker is enabled; there is no backfill or interpolation across missed captures.
+A source outage remains visible in its frame metadata. If every event source is
+unavailable, the worker preserves the archive without inventing an empty frame.
+
+`fresh` history means a capture is less than two hours old, not that its records
+are current alerts. Delayed recording is labelled `stale`. The archive uses a
+separate lock and atomic seed-metadata publication; failed reads, invalid state
+or failed writes cannot advance the last-good archive clock. No extra provider
+requests are needed to record history.
 
 ## Worker operation
 
@@ -98,7 +157,7 @@ admission is stored in Redis.
 Run the focused provider, freshness, ingestion and API tests:
 
 ```sh
-node --test tests/earth-data.test.mjs tests/earth-providers.test.mjs
+node --test tests/earth-data.test.mjs tests/earth-providers.test.mjs tests/earth-history.test.mjs
 ```
 
 Synthetic checks exercise malformed upstream data, safe URLs, independent clocks,

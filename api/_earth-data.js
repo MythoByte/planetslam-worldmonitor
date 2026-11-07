@@ -1,6 +1,6 @@
 // Shared, edge-safe Earth wire contract and per-provider freshness projection.
 const MINUTE = 60_000;
-export const EARTH_KINDS = ['earthquake', 'flood', 'wildfire', 'storm', 'volcano', 'tsunami', 'weather', 'other'];
+export const EARTH_KINDS = ['earthquake', 'flood', 'wildfire', 'storm', 'volcano', 'tsunami', 'weather', 'other', 'heat', 'cold', 'drought', 'tornado', 'lightning', 'hail', 'winter', 'landslide', 'avalanche', 'coastal'];
 export const EARTH_LOCATIONS = [
   ['new-york', 'New York', 40.71, -74.01, 'North America'],
   ['los-angeles', 'Los Angeles', 34.05, -118.24, 'North America'],
@@ -22,7 +22,7 @@ export const EARTH_GAUGES = [
 ];
 export const EARTH_DATASETS = Object.freeze({
   earthquakes: { provider: 'USGS', sourceUrl: 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php', coverage: 'USGS M2.5+ earthquakes reported in the past day; detection coverage varies by region.' },
-  events: { provider: 'NASA EONET', sourceUrl: 'https://eonet.gsfc.nasa.gov/', coverage: 'Up to 300 open events curated by NASA EONET. Not a complete inventory or an official warning service.' },
+  events: { provider: 'NASA EONET', sourceUrl: 'https://eonet.gsfc.nasa.gov/', coverage: 'Up to 600 distinct open events from two NASA EONET requests capped at 300 each, including a dedicated drought, landslide, snow and temperature-extremes request. Not a complete inventory or an official warning service.' },
   alerts: { provider: 'GDACS / NOAA NWS / NOAA Tsunami Warning Centers', sourceUrl: 'https://www.gdacs.org/', coverage: 'GDACS selected global hazards; NWS warnings cover the United States and territories; tsunami bulletins cover NOAA warning-center areas.' },
   weather: { provider: 'MET Norway', sourceUrl: 'https://api.met.no/', coverage: 'Modelled weather for 12 selected cities worldwide. Forecast values, not station observations. MET Norway, CC BY 4.0.' },
   airquality: { provider: 'OpenAQ / optional WAQI', sourceUrl: 'https://openaq.org/', coverage: 'Reuse of centrally seeded station measurements. Requires the existing OpenAQ/WAQI integration; unavailable stations are not inferred. PM2.5 is not evidence of a wildfire cause.' },
@@ -60,6 +60,7 @@ export function validEarthData(sourceId, data) {
   if (!config || !data || !Array.isArray(data.items) || data.items.length > 2500) return false;
   return data.items.every(item => {
     if (!item || !text(item.id, 1000) || item.sourceId !== sourceId) return false;
+    if (item.hazards !== undefined && (!Array.isArray(item.hazards) || item.hazards.length > EARTH_KINDS.length || !item.hazards.every(kind => EARTH_KINDS.includes(kind)))) return false;
     if (config.dataset === 'news') return text(item.title) && safeUrl(item.url) && text(item.publisher, 200)
       && finiteTime(item.publishedAt) && EARTH_KINDS.includes(item.kind) && text(item.region, 200) && typeof item.official === 'boolean';
     if (config.dataset === 'weather') return text(item.name, 200) && coordinate(item.latitude, 90) && coordinate(item.longitude, 180)

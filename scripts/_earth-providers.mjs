@@ -44,16 +44,45 @@ function xml(content) {
   if (!raw?.rss?.channel && !raw?.feed) throw new Error('Expected RSS or Atom feed');
   return raw;
 }
-export function classifyEarthKind(value) {
-  if (/tsunami/i.test(value)) return 'tsunami';
-  if (/earthquake|seismic|aftershock/i.test(value)) return 'earthquake';
-  if (/flood|inundat|storm surge/i.test(value)) return 'flood';
-  if (/wildfire|forest fire|bushfire|smoke|fire weather/i.test(value)) return 'wildfire';
-  if (/volcan|eruption|lava|ash cloud/i.test(value)) return 'volcano';
-  if (/cyclone|hurricane|typhoon|tornado|storm|lightning|hail|tropical weather/i.test(value)) return 'storm';
-  if (/weather|heat|cold|snow|rain|drought|wind|freeze|frost|blizzard/i.test(value)) return 'weather';
-  return 'other';
+// Primary categories stay stable; secondary tags retain compound hazards without
+// duplicating a warning. Only provider category/headline text is classified here.
+const HAZARD_PATTERNS = [
+  ['tsunami', /tsunami/i],
+  ['earthquake', /earthquake|seismic|aftershock/i],
+  ['avalanche', /avalanche/i],
+  ['landslide', /landslide|mudslide|debris flow|rockslide|rockfall/i],
+  ['coastal', /coastal flood|lakeshore flood|storm surge|high surf|hazardous seas|dangerous waves|rip current|beach hazard|freezing spray|small craft|marine weather|special marine/i],
+  ['flood', /flood|inundat|storm surge/i],
+  ['wildfire', /wildfire|forest fire|bushfire|smoke|fire weather|red flag|extreme fire danger/i],
+  ['volcano', /volcan|eruption|lava|ash cloud|ashfall/i],
+  ['tornado', /tornado|waterspout/i],
+  ['winter', /winter|blizzard|snow|ice storm|freezing rain|sleet/i],
+  ['heat', /\bheat(?:wave|waves)?\b|extreme warmth|record warmth/i],
+  ['cold', /\bcold\b|wind chill|\bfreeze\b|\bfrost\b/i],
+  ['drought', /drought/i],
+  ['lightning', /lightning/i],
+  ['hail', /\bhail\b/i],
+  ['storm', /cyclone|hurricane|typhoon|storm|tropical weather|gale|high wind|extreme wind/i],
+];
+export function classifyEarthHazards(value) {
+  const hazards = HAZARD_PATTERNS.filter(([, pattern]) => pattern.test(String(value))).map(([kind]) => kind);
+  if (hazards.length) return hazards;
+  return [/weather|rain|wind|temperature extremes|tempExtremes/i.test(value) ? 'weather' : 'other'];
 }
+export function classifyEarthKind(value) { return classifyEarthHazards(value)[0]; }
+
+function nwsHazards(properties) {
+  const hazards = classifyEarthHazards(properties.event);
+  // Descriptions also contain generic safety advice. Only an explicit HAZARD
+  // section or positive structured hail size can add hail/lightning tags.
+  const hazardText = string(properties.description).match(/(?:^|\n)\s*HAZARD[. :]+([\s\S]*?)(?=\n\s*(?:SOURCE|IMPACT|PRECAUTIONARY)[. :]|$)/i)?.[1]?.slice(0, 1000) || '';
+  for (const kind of ['hail', 'lightning', 'landslide', 'avalanche']) {
+    if (HAZARD_PATTERNS.find(([id]) => id === kind)[1].test(hazardText) && !hazards.includes(kind)) hazards.push(kind);
+  }
+  if (array(properties.parameters?.maxHailSize).some(value => number(value) !== null && number(value) > 0) && !hazards.includes('hail')) hazards.push('hail');
+  return hazards;
+}
+
 function newsRegion(value) {
   if (/\b(US|USA|United States|Canada|Mexico|California|Florida|Alaska|Hawaii)\b/i.test(value)) return 'North America';
   if (/\b(Brazil|Argentina|Chile|Peru|Colombia|Amazon)\b/i.test(value)) return 'South America';
@@ -81,6 +110,20 @@ export function normalizeEarthquakes(raw, now = Date.now()) {
   });
   return result(items, rows);
 }
+function eonetHazards(row) {
+  const hazards = array(row.categories).flatMap(category => {
+    const value = `${category.id || ''} ${category.title || ''}`;
+    // Place names such as Cold Creek and Storm King occur in wildfire titles.
+    // Refine a provider category with the title only when that category needs it.
+    if (/landslide/i.test(value)) return /avalanche/i.test(row.title) ? ['avalanche', 'landslide'] : ['landslide'];
+    if (/tempExtremes|temperature extremes/i.test(value)) {
+      const kind = classifyEarthKind(row.title); return ['heat', 'cold'].includes(kind) ? [kind] : ['weather'];
+    }
+    if (/severeStorms|severe storms/i.test(value)) return classifyEarthHazards(`${value} ${row.title}`);
+    return classifyEarthHazards(value);
+  });
+  return hazards.length ? [...new Set(hazards)] : ['other'];
+}
 export function normalizeEonet(raw) {
   const rows = requiredArray(raw?.events, 'EONET');
   if (rows.length && !rows.some(row => row && row.id && row.title && Array.isArray(row.geometry))) throw new Error('Malformed EONET event records');
@@ -93,7 +136,7 @@ export function normalizeEonet(raw) {
     const url = array(row.sources).map(s => https(s.url)).find(Boolean) || https(row.link);
     if (!row.id || !row.title || !latestGeometry || !url) return [];
     const [longitude, latitude] = point ? point.coordinates.map(Number) : [null, null];
-    return [{ id: `eonet:${row.id}`, sourceId: 'eonet', title: text(row.title), kind: classifyEarthKind(array(row.categories).map(c => `${c.id} ${c.title}`).join(' ')),
+    return [{ id: `eonet:${row.id}`, sourceId: 'eonet', title: text(row.title), kind: eonetHazards(row)[0], hazards: eonetHazards(row),
       latitude, longitude, region: earthRegion(latitude, longitude), severity: 'unknown', status: 'Open in NASA EONET', mode: 'observed',
       observedAt: time(latestGeometry.date), expiresAt: null, url, provider: 'NASA EONET', summary: text(row.description || '') }];
   });
@@ -115,7 +158,7 @@ export function normalizeGdacs(content, now = Date.now()) {
     if (!url || !row.title || !observedAt || latitude === null || longitude === null || !validCoordinates([longitude, latitude])) return [];
     const code = string(row['gdacs:eventtype']), level = text(row['gdacs:alertlevel']);
     return [{ id: `gdacs:${code}:${text(row['gdacs:eventid'])}`, sourceId: 'gdacs', title: text(row.title),
-      kind: ({ EQ: 'earthquake', TC: 'storm', FL: 'flood', VO: 'volcano', WF: 'wildfire', DR: 'weather' })[code] || 'other',
+      kind: ({ EQ: 'earthquake', TC: 'storm', FL: 'flood', VO: 'volcano', WF: 'wildfire', DR: 'drought' })[code] || 'other',
       latitude, longitude, region: earthRegion(latitude, longitude), severity: ({ Red: 'severe', Orange: 'moderate', Green: 'minor' })[level] || 'unknown',
       status: `${level || 'Unknown'} GDACS impact estimate`, mode: code === 'TC' ? 'forecast' : 'observed', observedAt,
       // GDACS todate is an event period, NOT the expiry of its current impact assessment.
@@ -144,7 +187,7 @@ export function normalizeNws(raw, now = Date.now()) {
     eligibleCount++;
     if (!p.id || !p.event || !observedAt || !expiresAt || !url) return [];
     const point = geometryPoint(row.geometry), longitude = point ? Number(point[0]) : null, latitude = point ? Number(point[1]) : null;
-    return [{ id: `nws:${p.id}`, sourceId: 'nws', title: text(p.headline || p.event), kind: classifyEarthKind(p.event),
+    return [{ id: `nws:${p.id}`, sourceId: 'nws', title: text(p.headline || p.event), kind: classifyEarthKind(p.event), hazards: nwsHazards(p),
       latitude, longitude, region: 'North America', severity: ['extreme', 'severe', 'moderate', 'minor'].includes(String(p.severity).toLowerCase()) ? p.severity.toLowerCase() : 'unknown',
       status: text(p.event), mode: /warning|watch|advisory/i.test(p.event) ? 'warning' : 'forecast', observedAt, expiresAt,
       url, provider: text(p.senderName || 'NOAA NWS', 200), summary: text(`${p.areaDesc || ''}. ${p.description || ''} ${p.instruction || ''}`),
@@ -210,7 +253,7 @@ export function normalizeEarthNews(content, sourceId) {
     const url = https(typeof row.link === 'string' ? row.link : array(row.link).find(link => !link['@_rel'] || link['@_rel'] === 'alternate')?.['@_href']);
     if (!title || !publishedAt || !url) return [];
     return [{ id: `${sourceId}:${url}`, sourceId, title, url, publisher: config.provider, publishedAt,
-      kind: classifyEarthKind(title), region: newsRegion(title), official: config.official === true,
+      kind: classifyEarthKind(title), hazards: classifyEarthHazards(title), region: newsRegion(title), official: config.official === true,
       // Reporting sources retain headline/source links; no republishing article text.
       summary: config.official ? text(row.description || row.summary, 280) : '' }];
   });
@@ -227,7 +270,25 @@ export async function fetchEarthSource(sourceId, { now = Date.now(), fetchFn } =
   const config = EARTH_SOURCES[sourceId];
   if (!config) throw new Error('Unknown Earth source');
   if (sourceId === 'usgs') return normalizeEarthquakes(await json('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson', fetchFn), now);
-  if (sourceId === 'eonet') return normalizeEonet(await json('https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=300', fetchFn));
+  if (sourceId === 'eonet') {
+    // The broad feed can be dominated by wildfire entries. Fetch the extended
+    // categories independently so their records cannot be crowded out by its cap.
+    // Treat both responses as one source: partial success never refreshes it.
+    const responses = await Promise.all([
+      json('https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=300', fetchFn),
+      json('https://eonet.gsfc.nasa.gov/api/v3/events?category=drought,landslides,snow,tempExtremes&status=open&limit=300', fetchFn),
+    ]);
+    const feeds = responses.map(raw => {
+      if (requiredArray(raw?.events, 'EONET').length > 300) throw new Error('EONET response exceeds configured bound');
+      return normalizeEonet(raw);
+    });
+    const events = new Map();
+    for (const feed of feeds) for (const item of feed.data.items) {
+      const prior = events.get(item.id);
+      if (!prior || item.observedAt >= prior.observedAt) events.set(item.id, item);
+    }
+    return { data: { items: [...events.values()] }, observedAt: newest(feeds.map(feed => feed.observedAt)) };
+  }
   if (sourceId === 'gdacs') return normalizeGdacs(await providerText('https://www.gdacs.org/xml/rss.xml', fetchFn), now);
   if (sourceId === 'nws') return normalizeNws(await json('https://api.weather.gov/alerts/active?status=actual', fetchFn), now);
   if (sourceId === 'tsunami') return normalizeTsunami(await providerText('https://www.tsunami.gov/events/xml/PAAQAtom.xml', fetchFn), now);

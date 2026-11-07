@@ -1,7 +1,7 @@
 import { getRpcBaseUrl } from './rpc-client';
 import { EARTH_SELECT_EVENT } from '@/types/earth';
 export type { EarthSelection } from '@/types/earth';
-import type { EarthSource, EarthSelection, EarthDataset, EarthEnvelope, EarthEvent, EarthEventFilter, EarthNewsItem, EarthWeatherItem, EarthWeatherPoint } from '@/types/earth';
+import type { EarthHistoryData, EarthHistoryFrame, EarthSource, EarthSelection, EarthDataset, EarthEnvelope, EarthEvent, EarthEventFilter, EarthNewsItem, EarthWeatherItem, EarthWeatherPoint } from '@/types/earth';
 
 const cache = new Map<EarthDataset, { at: number; value: EarthEnvelope<unknown> }>();
 let selectedEarthEventId = '';
@@ -19,6 +19,15 @@ const pending = new Map<EarthDataset, Promise<EarthEnvelope<unknown>>>();
 
 /** Age an already fetched envelope before any consumer displays it again. */
 export function ageEarthEnvelope<T>(envelope: EarthEnvelope<T>, now = Date.now()): EarthEnvelope<T> {
+  // Historical events keep the warning expiry and source state recorded at that time.
+  // Only the archive envelope itself ages against the current clock.
+  if (envelope.dataset === 'history') {
+    const data = envelope.data as EarthHistoryData | null;
+    const expired = envelope.expiresAt !== null && now >= envelope.expiresAt;
+    const delayed = envelope.fetchedAt !== null && now - envelope.fetchedAt >= 2 * 3600_000;
+    return { ...envelope, status: expired ? 'unavailable' : delayed && envelope.status === 'fresh' ? 'stale' : envelope.status,
+      data: expired || envelope.status === 'unavailable' ? null : data ? { ...data, items: data.items.filter(frame => frame.recordedAt >= now - 7 * 86400_000 && frame.recordedAt <= now + 60_000) } as T : null };
+  }
   if (envelope.dataset === 'health' && envelope.data && typeof envelope.data === 'object' && 'items' in envelope.data) {
     const data = envelope.data as { items: EarthEnvelope<unknown>[] };
     const items = data.items.map(item => ageEarthEnvelope(item, now));
@@ -78,6 +87,10 @@ export async function fetchEarthDataset<T>(dataset: EarthDataset, force = false)
         || (value.data !== null && (typeof value.data !== 'object' || !Array.isArray((value.data as { items?: unknown }).items)))) {
         throw new Error('Invalid Earth data response');
       }
+      if (dataset === 'history' && value.data !== null) {
+        const history = value.data as EarthHistoryData;
+        if (!Array.isArray(history.events) || !history.items.every(frame => Number.isFinite(frame.recordedAt) && Array.isArray(frame.eventKeys) && Array.isArray(frame.sources))) throw new Error('Invalid Earth history response');
+      }
       cache.set(dataset, { at: Date.now(), value });
       return value;
     })().catch(error => { cache.delete(dataset); throw error; }).finally(() => pending.delete(dataset));
@@ -88,7 +101,7 @@ export async function fetchEarthDataset<T>(dataset: EarthDataset, force = false)
 
 export function filterEarthEvents(items: EarthEvent[], filter: EarthEventFilter = {}, now = Date.now()): EarthEvent[] {
   return items.filter(item => (item.expiresAt === null || item.expiresAt > now)
-    && (!filter.hazard || filter.hazard === 'all' || item.kind === filter.hazard)
+    && (!filter.hazard || filter.hazard === 'all' || (item.kind === filter.hazard || item.hazards?.includes(filter.hazard as EarthEvent['kind'])))
     && (!filter.region || filter.region === 'all' || item.region === filter.region)
     && (!filter.severity || filter.severity === 'all' || item.severity === filter.severity)
     && (!filter.hours || item.observedAt >= now - filter.hours * 3600_000))
@@ -112,4 +125,10 @@ export function currentEarthWeather(item: EarthWeatherItem, now = Date.now()): {
   const preceding = points.filter(point => point.time <= now && now - point.time < 3600_000);
   const current = preceding[preceding.length - 1] || points.find(point => point.time > now && point.time - now < 3600_000) || null;
   return { current, forecast: points.filter(point => point.time >= now) };
+}
+
+/** Resolve only revisions actually retained in the selected historical snapshot. */
+export function earthHistoryEvents(data: EarthHistoryData, frame: EarthHistoryFrame): EarthEvent[] {
+  const records = new Map(data.events.map(record => [record.key, record.event]));
+  return frame.eventKeys.flatMap(key => { const event = records.get(key); return event ? [event] : []; });
 }

@@ -14,3 +14,13 @@
 html[data-brand="planetslam"][data-variant="earth"] .map-legend,
 html[data-brand="planetslam"][data-variant="earth"] .deckgl-legend,
 html[data-brand="planetslam"][data-variant="earth"] .time-slider { display:none; }
+.earth-history { margin:10px 0; padding:8px; border:1px solid var(--accent); border-radius:5px; }
+.earth-history > strong { color:var(--accent); }
+.earth-history input[type="range"] { display:block; width:100%; margin:8px 0; }
+.earth-history output { display:block; font-weight:600; }
+.earth-map-layer-options { margin:10px 0; }
+.earth-map-layer-options > summary { font-weight:400; }
+
+.earth-history-records { padding-left:16px; overflow-wrap:anywhere; }
+.earth-history-records li { margin:10px 0; }
+.earth-history-records a { color:var(--accent); }

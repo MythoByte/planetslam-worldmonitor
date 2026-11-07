@@ -10,16 +10,25 @@ export function earthFixture(dataset: EarthDataset): EarthEnvelope<unknown> {
   const all: Record<EarthDataset, unknown> = {
     earthquakes: { items: [{ ...event, id: 'fixture-quake', title: 'Synthetic Pacific earthquake', kind: 'earthquake', magnitude: 4.5, depthKm: 12, severity: 'unknown', region: 'Pacific' }] },
     events: { items: [event, { ...event, id: 'fixture-fire', title: 'Synthetic wildfire observation', kind: 'wildfire', latitude: 38, longitude: -120, region: 'California' }] },
-    alerts: { items: [{ ...event, id: 'fixture-flood', title: 'Synthetic flood warning', kind: 'flood', mode: 'warning', severity: 'severe', expiresAt: now + 3600_000, latitude: null, longitude: null, region: 'United States' }] },
+    alerts: { items: [{ ...event, id: 'fixture-flood', title: 'Synthetic flood warning', kind: 'flood', mode: 'warning', severity: 'severe', expiresAt: now + 3600_000, latitude: null, longitude: null, region: 'United States' }, { ...event, id: 'fixture-hail', title: 'Synthetic severe thunderstorm with hail', kind: 'storm', hazards: ['storm', 'hail', 'lightning'], mode: 'warning', severity: 'severe', expiresAt: now + 3600_000, region: 'United States' }, { ...event, id: 'fixture-heat', title: 'Synthetic heat warning', kind: 'heat', mode: 'warning', expiresAt: now + 3600_000, region: 'United States' }] },
     weather: { items: [{ id: 'london', sourceId: 'synthetic', name: 'London', latitude: 51.5, longitude: -.12, region: 'Europe', modelRunAt: now - 3600_000, current: weatherPoint, forecast: [weatherPoint], sourceUrl: 'https://example.com/earth/weather' },
       { id: 'tokyo', sourceId: 'synthetic', name: 'Tokyo', latitude: 35.68, longitude: 139.69, region: 'Asia', modelRunAt: now, current: { ...weatherPoint, temperatureC: 22 }, forecast: [weatherPoint], sourceUrl: 'https://example.com/earth/weather' }] },
     news: { items: [{ id: 'news1', sourceId: 'synthetic', title: 'Synthetic volcano agency update', url: event.url, summary: '<script>window.earthXss=true</script> Synthetic update.', publisher: 'Synthetic official source', publishedAt: now - 60_000, kind: 'volcano', region: 'Hawaiʻi', official: true },
       { id: 'news2', sourceId: 'synthetic', title: 'Synthetic flood reporting', url: 'https://example.com/earth/news/flood', summary: 'Synthetic reporting.', publisher: 'Synthetic news publisher', publishedAt: now - 120_000, kind: 'flood', region: 'United States', official: false, relatedUrls: ['https://example.com/earth/related'] }] },
     rivers: { items: [{ id: 'pitt', sourceId: 'synthetic', name: 'Synthetic Pittsburgh gauge', latitude: 40.44, longitude: -80, region: 'United States', observedAt: now - 60_000, stage: 16.4, unit: 'ft', floodCategory: 'no_flooding', thresholds: { action: 18, minor: 25, moderate: 31, major: 38 }, sourceUrl: 'https://example.com/earth/gauge' }] },
     airquality: { items: [{ id: 'aq1', sourceId: 'synthetic', name: 'Synthetic city', countryCode: 'US', latitude: 40, longitude: -80, region: 'United States', observedAt: now - 120_000, pm25: 8, aqi: 33, riskLevel: 'Good', provider: 'Synthetic air-quality feed', sourceUrl: 'https://example.com/earth/aq' }] },
+    history: { items: [
+      { recordedAt: now - 7200_000, sources: [{ id: 'synthetic', provider: 'Synthetic archive source', status: 'fresh', fetchedAt: now - 7200_000, observedAt: now - 7260_000, coverage: 'Synthetic past coverage' }], eventKeys: ['historical-flood', 'historical-unmapped'], totalEvents: 2, truncated: false },
+      { recordedAt: now - 3600_000, sources: [{ id: 'synthetic', provider: 'Synthetic archive source', status: 'unavailable', fetchedAt: null, observedAt: null, coverage: 'Synthetic missing source' }], eventKeys: [], totalEvents: 0, truncated: false },
+      { recordedAt: now - 1000, sources: [{ id: 'synthetic', provider: 'Synthetic archive source', status: 'fresh', fetchedAt: now - 1000, observedAt: now - 60_000, coverage: 'Synthetic recent coverage' }], eventKeys: ['historical-coastal'], totalEvents: 2, truncated: true },
+    ], events: [
+      { key: 'historical-unmapped', event: { ...event, id: 'past-unmapped', title: 'Synthetic unmapped landslide record', kind: 'landslide', latitude: null, longitude: null, observedAt: now - 7260_000 } },
+      { key: 'historical-flood', event: { ...event, id: 'past-flood', title: 'Synthetic expired flood warning', kind: 'flood', mode: 'warning', observedAt: now - 7260_000, expiresAt: now - 5400_000 } },
+      { key: 'historical-coastal', event: { ...event, id: 'past-coastal', title: 'Synthetic coastal snapshot', kind: 'coastal', hazards: ['coastal', 'flood'], mode: 'warning', observedAt: now - 60_000, expiresAt: now + 3600_000 } },
+    ] },
     health: { items: [] },
   };
-  if (dataset === 'health') all.health = { items: (Object.keys(all) as EarthDataset[]).filter(d => d !== 'health').map(d => ({ ...earthFixture(d), data: null })) };
+  if (dataset === 'health') all.health = { items: (Object.keys(all) as EarthDataset[]).filter(d => d !== 'health' && d !== 'history').map(d => ({ ...earthFixture(d), data: null })) };
   return { dataset, status: 'fresh', provider: 'Synthetic Earth acceptance provider', sourceUrl: 'https://example.com/earth/source', coverage: 'Synthetic bounded test coverage; not actual hazard information.', fetchedAt: now, observedAt: now - 60_000, expiresAt: now + 3600_000, data: all[dataset] };
 }
 export async function installEarthFixtures(page: Page, overrides: Partial<Record<EarthDataset, Partial<EarthEnvelope<unknown>>>> = {}) {

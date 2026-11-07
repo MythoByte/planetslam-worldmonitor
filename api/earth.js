@@ -1,6 +1,7 @@
 import { getCorsHeaders, isDisallowedOrigin } from './_cors.js';
 import { jsonResponse } from './_json-response.js';
 import { readJsonBatchFromUpstashWithStatus } from './_upstash-json.js';
+import { EARTH_HISTORY_KEY, earthHistoryEnvelope } from './_earth-history.js';
 import { EARTH_DATASETS, EARTH_SOURCES, earthKey, earthEnvelope } from './_earth-data.js';
 export const config = { runtime: 'edge' };
 
@@ -11,6 +12,10 @@ export default async function handler(req) {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers });
   if (req.method !== 'GET') return jsonResponse({ error: 'Method not allowed' }, 405, { ...headers, Allow: 'GET, OPTIONS' });
   const dataset = new URL(req.url).searchParams.get('dataset') || 'health';
+  if (dataset === 'history') {
+    const [row] = await readJsonBatchFromUpstashWithStatus([EARTH_HISTORY_KEY], 3000, true);
+    return jsonResponse(earthHistoryEnvelope(row?.value), 200, headers);
+  }
   if (dataset !== 'health' && !Object.hasOwn(EARTH_DATASETS, dataset)) return jsonResponse({ error: 'Unknown dataset' }, 400, headers);
   const ids = Object.keys(EARTH_SOURCES).filter(id => dataset === 'health' || EARTH_SOURCES[id].dataset === dataset);
   const rows = await readJsonBatchFromUpstashWithStatus(ids.map(earthKey), 3000, true);
