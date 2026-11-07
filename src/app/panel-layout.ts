@@ -3910,6 +3910,9 @@ export class PanelLayoutManager implements AppModule {
   }
 
   savePanelOrder(): { persisted: boolean } {
+    // The homepage temporarily presents existing panels in different regions.
+    // Keep the advanced workspace's saved order when exporting settings there.
+    if (IS_PLANETSLAM && document.documentElement.dataset.psHome === 'true') return { persisted: true };
     const grid = document.getElementById('panelsGrid');
     const bottomGrid = document.getElementById('mapBottomGrid');
     if (!grid || !bottomGrid) return { persisted: false };
