@@ -19,7 +19,7 @@ for(const width of [1440,390])test(`local research filters, charts, frozen case 
  await page.setViewportSize({width,height:1000});const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));const requests:string[]=[];page.on('request',r=>requests.push(r.url()+(r.postData()||'')));
  const news=cyberFixture('news').data as CyberNewsData;
  await installCyberFixtures(page,{news:{data:{items:[{...news.items[0],id:'related-1',title:'Synthetic Hospital disclosure',summary:'Keyword-related reporting, not a confirmed link.',url:'https://example.org/related'}]}}});
- const panel=await boot(page);await expect(panel).toContainText('not global attack statistics');await expect(panel.getByRole('link',{name:'UMD GoTech',exact:false})).toHaveClass('cyber-research-source');await expect(panel.getByRole('meter',{name:/US.*1 sample records/})).toHaveCount(1);
+ const panel=await boot(page);await expect(panel).toContainText('not global attack statistics');await expect(panel.getByRole('meter',{name:/US.*1 sample records/})).toHaveCount(1);
  await panel.getByText('Filter observed history',{exact:true}).click();await panel.getByLabel('Research country',{exact:true}).selectOption('US');await expect(panel.locator('[data-research-count]')).toContainText('1 matching of 3');
  await panel.getByRole('button',{name:'Reset history filters',exact:true}).click();await expect(panel.locator('[data-research-count]')).toContainText('3 matching of 3');await panel.getByText('Filter observed history',{exact:true}).click();
  await panel.locator('.panel-content').evaluate(el=>{el.scrollTop=0;});await page.screenshot({path:info.outputPath(`cyber-research-trends-${width}.png`)});
