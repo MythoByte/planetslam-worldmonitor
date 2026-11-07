@@ -30,9 +30,15 @@ function result(items, rows, observedAt) {
   if (rows.length && !items.length) throw new Error('No valid provider records');
   return { data: { items }, observedAt: observedAt ?? newest(items.map(item => item.observedAt ?? item.publishedAt ?? item.modelRunAt)) };
 }
-async function providerText(url, fetchFn = (...args) => globalThis.fetch(...args)) {
+async function providerText(url, fetchFn = (...args) => globalThis.fetch(...args), freshness = undefined) {
   const response = await fetchFn(url, { headers: { 'User-Agent': UA, Accept: 'application/json,application/geo+json,application/atom+xml,application/rss+xml,application/xml;q=0.9' }, signal: AbortSignal.timeout(20_000), redirect: 'error' });
   if (!response.ok) throw new Error(`Provider HTTP ${response.status}`);
+  if (freshness) {
+    const date = Date.parse(response.headers.get('date') || '');
+    const age = response.headers.get('age');
+    if (Number.isFinite(date) && (date > freshness.now + 60_000 || freshness.now - date > freshness.maxAgeMs)
+      || age !== null && (!Number.isFinite(Number(age)) || Number(age) < 0 || Number(age) * 1000 > freshness.maxAgeMs)) throw new Error('Provider response cache expired');
+  }
   const content = await response.text();
   if (content.length > 5_000_000) throw new Error('Provider response too large');
   return content;
@@ -70,6 +76,13 @@ export function classifyEarthHazards(value) {
   return [/weather|rain|wind|temperature extremes|tempExtremes/i.test(value) ? 'weather' : 'other'];
 }
 export function classifyEarthKind(value) { return classifyEarthHazards(value)[0]; }
+
+function nwsReferences(properties) {
+  return [...new Set(array(properties.references).flatMap(reference => {
+    const id = string(reference?.identifier).trim();
+    return id && id.length <= 996 ? [`nws:${id}`] : [];
+  }))].slice(0, 100);
+}
 
 function nwsHazards(properties) {
   const hazards = classifyEarthHazards(properties.event);
@@ -144,6 +157,41 @@ export function normalizeEonet(raw) {
   if (rows.length && !items.length && rows.some(row => !row.closed)) throw new Error('No valid EONET records');
   return { data: { items }, observedAt: newest(items.map(item => item.observedAt)) };
 }
+/** Closed is an EONET curation decision, not evidence that a hazard is safe. */
+export function normalizeEonetClosed(raw, now = Date.now()) {
+  const rows = requiredArray(raw?.events, 'EONET closed');
+  if (rows.length > 300 || rows.some(row => !row?.id || !row.title || !Array.isArray(row.geometry) || !time(row.closed))) throw new Error('Malformed EONET closed records');
+  const eligible = rows.filter(row => time(row.closed) <= now + 60_000 && now - time(row.closed) <= 7 * 86400_000);
+  const items = eligible.flatMap(row => {
+    // Reuse trusted category/location validation, replacing only the terminal metadata.
+    const normalized = normalizeEonet({ events: [{ ...row, closed: null }] }).data.items[0];
+    return normalized ? [{ ...normalized, sourceId: 'eonet-closed', lifecycle: 'closed', observedAt: time(row.closed),
+      status: 'Closed by NASA EONET · curation status, not an all-clear', expiresAt: null }] : [];
+  });
+  return { data: { items }, observedAt: newest(items.map(item => item.observedAt)) };
+}
+
+/** Cancellation expiry describes a withdrawn message, not a current warning. */
+export function normalizeNwsCancellations(raw, now = Date.now()) {
+  const rows = requiredArray(raw?.features, 'NWS cancellations'), generatedAt = time(raw?.updated);
+  if (raw?.type !== 'FeatureCollection' || rows.length > 500 || !generatedAt || generatedAt > now + 60_000) throw new Error('Invalid NWS cancellation feed generation');
+  if (rows.some(row => !row?.properties?.id || row.properties.status !== 'Actual' || row.properties.messageType !== 'Cancel' || !time(row.properties.sent))) throw new Error('Malformed NWS cancellation records');
+  const items = rows.flatMap(row => {
+    const p = row.properties, observedAt = time(p.sent);
+    if (observedAt > now + 60_000 || now - observedAt > 7 * 86400_000) return [];
+    const url = https(p['@id'] || row.id), supersedes = nwsReferences(p);
+    if (!p.event || !url || !supersedes.length) throw new Error('NWS cancellation lacks identity or references');
+    const point = geometryPoint(row.geometry), longitude = point ? Number(point[0]) : null, latitude = point ? Number(point[1]) : null;
+    return [{ id: `nws:${p.id}`, sourceId: 'nws-cancel', lifecycle: 'cancelled', supersedes,
+      title: text(p.headline || `${p.event} cancellation`), kind: classifyEarthKind(p.event), hazards: nwsHazards(p),
+      latitude, longitude, region: 'North America', severity: ['extreme', 'severe', 'moderate', 'minor'].includes(String(p.severity).toLowerCase()) ? p.severity.toLowerCase() : 'unknown',
+      status: 'Cancelled by NOAA NWS · not an all-clear', mode: 'observed', observedAt, expiresAt: null,
+      url, provider: text(p.senderName || 'NOAA NWS', 200), summary: text(`${p.areaDesc || ''}. ${p.description || ''} ${array(p.parameters?.NWSheadline).join(' ')} ${p.instruction || ''}`),
+      locationApproximate: !!point && row.geometry?.type !== 'Point' }];
+  });
+  return { data: { items }, observedAt: newest(items.map(item => item.observedAt)) };
+}
+
 export function normalizeGdacs(content, now = Date.now()) {
   const raw = xml(content);
   if (!raw.rss?.channel) throw new Error('Expected GDACS RSS feed');
@@ -187,7 +235,7 @@ export function normalizeNws(raw, now = Date.now()) {
     eligibleCount++;
     if (!p.id || !p.event || !observedAt || !expiresAt || !url) return [];
     const point = geometryPoint(row.geometry), longitude = point ? Number(point[0]) : null, latitude = point ? Number(point[1]) : null;
-    return [{ id: `nws:${p.id}`, sourceId: 'nws', title: text(p.headline || p.event), kind: classifyEarthKind(p.event), hazards: nwsHazards(p),
+    return [{ id: `nws:${p.id}`, sourceId: 'nws', title: text(p.headline || p.event), kind: classifyEarthKind(p.event), hazards: nwsHazards(p), supersedes: nwsReferences(p),
       latitude, longitude, region: 'North America', severity: ['extreme', 'severe', 'moderate', 'minor'].includes(String(p.severity).toLowerCase()) ? p.severity.toLowerCase() : 'unknown',
       status: text(p.event), mode: /warning|watch|advisory/i.test(p.event) ? 'warning' : 'forecast', observedAt, expiresAt,
       url, provider: text(p.senderName || 'NOAA NWS', 200), summary: text(`${p.areaDesc || ''}. ${p.description || ''} ${p.instruction || ''}`),
@@ -269,6 +317,13 @@ export function normalizeEarthNews(content, sourceId) {
 export async function fetchEarthSource(sourceId, { now = Date.now(), fetchFn } = {}) {
   const config = EARTH_SOURCES[sourceId];
   if (!config) throw new Error('Unknown Earth source');
+  if (sourceId === 'nws-cancel') {
+    // NWS collection.updated is the last collection change, not response generation.
+    // Quiet cancellation indexes can legitimately have an old updated timestamp.
+    const content = await providerText('https://api.weather.gov/alerts?status=actual&message_type=cancel&limit=500', fetchFn, { now, maxAgeMs: 30 * 60_000 });
+    return normalizeNwsCancellations(JSON.parse(content), now);
+  }
+  if (sourceId === 'eonet-closed') return normalizeEonetClosed(await json('https://eonet.gsfc.nasa.gov/api/v3/events?status=closed&days=7&limit=300', fetchFn), now);
   if (sourceId === 'usgs') return normalizeEarthquakes(await json('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson', fetchFn), now);
   if (sourceId === 'eonet') {
     // The broad feed can be dominated by wildfire entries. Fetch the extended

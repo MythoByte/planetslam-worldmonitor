@@ -1,5 +1,5 @@
 /** Public Earth wire contracts; credentials and provider requests stay server-side. */
-export type EarthDataset = 'earthquakes' | 'events' | 'alerts' | 'weather' | 'news' | 'health' | 'rivers' | 'airquality' | 'history';
+export type EarthDataset = 'earthquakes' | 'events' | 'alerts' | 'weather' | 'news' | 'health' | 'rivers' | 'airquality' | 'history' | 'changes';
 export type EarthStatus = 'fresh' | 'stale' | 'unavailable';
 export type EarthHazard = 'earthquake' | 'flood' | 'wildfire' | 'storm' | 'volcano' | 'tsunami' | 'weather' | 'other' | 'heat' | 'cold' | 'drought' | 'tornado' | 'lightning' | 'hail' | 'winter' | 'landslide' | 'avalanche' | 'coastal';
 export type EarthSeverity = 'extreme' | 'severe' | 'moderate' | 'minor' | 'unknown';
@@ -14,6 +14,7 @@ export interface EarthItems<T> { items: T[]; sources?: EarthSource[] }
 export interface EarthEvent {
   id: string; sourceId: string; title: string; kind: EarthHazard; hazards?: EarthHazard[]; latitude: number | null; longitude: number | null;
   region: string; severity: EarthSeverity; status: string; mode: 'observed' | 'forecast' | 'warning';
+  supersedes?: string[]; lifecycle?: 'cancelled' | 'closed';
   observedAt: number; expiresAt: number | null; url: string; provider: string; summary: string; locationApproximate?: boolean; magnitude?: number; depthKm?: number;
 }
 export interface EarthNewsItem {

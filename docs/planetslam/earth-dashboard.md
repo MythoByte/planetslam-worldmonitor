@@ -1,4 +1,4 @@
-# PlanetSlam Earth — phases 1–4
+# PlanetSlam Earth — phases 1–5
 
 Earth is the PlanetSlam edition for weather, natural hazards, official alerts,
 Earth news and webcams. Open `/dashboard?variant=earth` or choose **Earth** in
@@ -29,8 +29,8 @@ the existing variant ownership rules.
 - Earth news with hazard, region and official/reporting filters, publisher dates,
   original links and exact duplicate grouping. Selected events show matching
   source references or explicitly labelled regional context when available.
-- Nine curated official webcams across volcano, mountain, river, coast and
-  weather categories. Filters and saved favorites work without connecting media.
+- Thirteen curated operator webcams across volcano, mountain, river, coast and
+  weather categories, including five YouTube live-camera sources. Filters and saved favorites work without connecting media.
   Selecting an event can narrow the directory to cameras within 250 km.
 
 Selecting a map location reveals its source record. Selecting an event opens its
@@ -61,6 +61,36 @@ configuration supported by the existing worker. Earth does not invent station
 readings or treat poor air quality as evidence of wildfire smoke. The initial release does not include a smoke-plume forecast layer,
 complete global river monitoring, every local warning authority, or exhaustive
 camera coverage.
+
+## My Earth: saved locations, alerts and daily brief
+
+**My Earth** saves up to ten named latitude/longitude locations in this browser.
+Choose a saved location or use **Use my location** to request browser geolocation;
+location access is requested only after that button is clicked. Saved places and
+preferences stay in this browser; Earth feeds use shared snapshots rather than
+provider lookups with your coordinates. They are not synced to another device or
+an account. Centering the map uses the existing map view and can update its URL. Remove a saved location to delete its local entry.
+
+Choose a radius, hazard types, minimum severity and minimum earthquake magnitude.
+Unknown severity has an explicit inclusion setting; magnitude remains separate
+from impact severity. Nearby matching uses supplied event points or approximate
+alert-area centers. Records without coordinates cannot be matched by radius.
+These results do not replace local warning-area or point-in-polygon coverage.
+
+The in-app inbox tracks new and changed matching records while the dashboard is
+open. First use and preference changes establish a baseline without producing an
+alert flood. Repeated provider messages are deduplicated; NWS CAP references link
+replacement messages. Source outages preserve known state instead of claiming
+that a hazard ended. Expiry, provider cancellation, curation closure and missing
+records have distinct meanings; none implies an all-clear or verified recovery.
+The inbox is local to this browser and does not send background push, email or
+SMS notifications.
+
+The daily brief is a deterministic, dated UTC summary of available matching
+records from the previous 24 hours, with original sources, event times and
+coverage limits. It refreshes with available data and does not invent a forecast,
+local safety assessment or missing observations. Older ongoing records can still
+appear in the nearby list even when outside the daily brief's time window.
 
 ## Extended hazard coverage
 

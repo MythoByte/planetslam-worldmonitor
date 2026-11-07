@@ -275,6 +275,7 @@ export function variantSwitcherHref(
 // lift these defaults into one shared table imported by both the `Panel`
 // constructor and this map, removing the duplication entirely (see #4490).
 export const DEFERRED_PANEL_NATURAL_FOOTPRINTS: Readonly<Record<string, DeferredPanelShellFootprint>> = {
+  'earth-watch': { rowSpan: 5 },
   'earth-events': { rowSpan: 3 },
   'earth-alerts': { rowSpan: 3 },
   'earth-weather': { rowSpan: 3 },
@@ -2837,6 +2838,7 @@ export class PanelLayoutManager implements AppModule {
       this.lazyImportedPanel(key, () => import('@/components/EarthPanel'), 'EarthPanel',
         (EarthPanel) => new EarthPanel(key, title, dataset));
     }
+    this.lazyDefaultPanel('earth-watch', () => import('@/components/EarthWatchPanel'), 'EarthWatchPanel');
     this.lazyDefaultPanel('earth-cameras', () => import('@/components/EarthCamerasPanel'), 'EarthCamerasPanel');
     const cyberPanels = [
       ['cyber-news', 'Cyber News', 'news'], ['cyber-kev', 'Exploited Vulnerabilities', 'kev'],

@@ -1,5 +1,5 @@
 import { Panel } from './Panel';
-import { EARTH_CAMERAS, EARTH_CAMERA_KINDS, earthCameraDistanceKm, type EarthCameraKind } from '@/config/earth-cameras';
+import { EARTH_CAMERAS, EARTH_CAMERA_KINDS, earthCameraDistanceKm, isEarthYouTubeCamera, type EarthCameraKind } from '@/config/earth-cameras';
 import { loadFromStorage, saveToStorage } from '@/utils';
 import { safeHtml, joinSafeHtml, safeUrlAttr } from '@/utils/sanitize';
 import { openLiveVideo, type LiveVideoSession } from '@/services/live-video/session';
@@ -14,6 +14,7 @@ export class EarthCamerasPanel extends Panel {
   private snapshots = new Map<string, number>();
   private cameraKind: EarthCameraKind | 'all' = 'all';
   private region = 'all';
+  private media: 'all' | 'youtube' | 'snapshot' = 'all';
   private favoritesOnly = false;
   private selectedCameraId = '';
   private pendingCameraFocus = '';
@@ -32,6 +33,7 @@ export class EarthCamerasPanel extends Panel {
     this.content.addEventListener('change', event => {
       const input = event.target as HTMLInputElement;
       if (input.name === 'earth-camera-kind') this.cameraKind = input.value as EarthCameraKind | 'all';
+      if (input.name === 'earth-camera-media') this.media = input.value as 'all' | 'youtube' | 'snapshot';
       if (input.name === 'earth-camera-region') this.region = input.value;
       if (input.name === 'earth-camera-favorites') this.favoritesOnly = input.checked;
       this.render();
@@ -68,7 +70,7 @@ export class EarthCamerasPanel extends Panel {
   private applySelection(detail: EarthSelection): void {
     if (detail.kind === 'camera' && EARTH_CAMERAS.some(camera => camera.id === detail.id)) {
       this.selectedCameraId = detail.id; this.pendingCameraFocus = detail.id;
-      this.cameraKind = 'all'; this.region = 'all'; this.nearby = null; this.favoritesOnly = false; this.render();
+      this.cameraKind = 'all'; this.region = 'all'; this.media = 'all'; this.nearby = null; this.favoritesOnly = false; this.render();
       this.runWhenConnected(() => {
         // Deferred panels may enter a content-visibility skipped subtree. Reveal
         // the panel first; focus its card once the browser has laid it out.
@@ -81,7 +83,7 @@ export class EarthCamerasPanel extends Panel {
       || typeof detail.longitude !== 'number' || !Number.isFinite(detail.longitude) || Math.abs(detail.longitude) > 180) return;
     this.selectedCameraId = ''; this.pendingCameraFocus = '';
     this.nearby = { latitude: detail.latitude, longitude: detail.longitude };
-    this.cameraKind = 'all'; this.region = 'all'; this.favoritesOnly = false; this.render();
+    this.cameraKind = 'all'; this.region = 'all'; this.media = 'all'; this.favoritesOnly = false; this.render();
     if (detail.nearby) this.runWhenConnected(() => this.element.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
   }
 
@@ -101,6 +103,7 @@ export class EarthCamerasPanel extends Panel {
   private render(): void {
     this.stopAll();
     let cameras = EARTH_CAMERAS.filter(camera => (this.cameraKind === 'all' || camera.kind === this.cameraKind)
+      && (this.media === 'all' || this.media === 'youtube' && isEarthYouTubeCamera(camera) || this.media === 'snapshot' && !!camera.imageUrl)
       && (this.region === 'all' || camera.region === this.region) && (!this.favoritesOnly || this.favorites.has(camera.id))
       && (!this.nearby || earthCameraDistanceKm(this.nearby.latitude, this.nearby.longitude, camera) <= 250));
     cameras = [...cameras].sort((a, b) => this.nearby
@@ -110,12 +113,15 @@ export class EarthCamerasPanel extends Panel {
     this.setSafeContentImmediate(safeHtml`<div class="earth-camera-body"><p class="earth-camera-note">Official cameras for natural events and local conditions. Connect on demand; media pauses when this panel is offscreen. Camera coverage is limited to the locations below.</p>
       <div class="earth-camera-filters"><label>Camera type <select name="earth-camera-kind" aria-label="Camera type"><option value="all">All types</option>${joinSafeHtml(EARTH_CAMERA_KINDS.map(kind => safeHtml`<option value="${kind}" ${this.cameraKind === kind ? 'selected' : ''}>${kind}</option>`))}</select></label>
       <label>Camera region <select name="earth-camera-region" aria-label="Camera region"><option value="all">All regions</option>${joinSafeHtml(regions.map(region => safeHtml`<option value="${region}" ${this.region === region ? 'selected' : ''}>${region}</option>`))}</select></label>
+      <label>Camera media <select name="earth-camera-media" aria-label="Camera media"><option value="all" ${this.media === 'all' ? 'selected' : ''}>All media</option><option value="youtube" ${this.media === 'youtube' ? 'selected' : ''}>YouTube live sources</option><option value="snapshot" ${this.media === 'snapshot' ? 'selected' : ''}>Periodic snapshots</option></select></label>
       <label class="earth-camera-favorites"><input type="checkbox" name="earth-camera-favorites" ${this.favoritesOnly ? 'checked' : ''}> Saved only</label></div>
       ${this.nearby ? safeHtml`<p class="earth-camera-nearby">Cameras within 250 km of the selected location. Geographic context does not verify an event. <button type="button" data-earth-clear-nearby>Show all cameras</button></p>` : safeHtml``}
       <p class="earth-camera-count" aria-live="polite">${cameras.length} cameras${this.nearby ? ' nearby' : ' in this view'}</p>
       <div class="earth-camera-wall">${joinSafeHtml(cameras.map(camera => safeHtml`<article class="earth-camera-card" data-earth-camera="${camera.id}" data-earth-camera-selected="${this.selectedCameraId === camera.id}" tabindex="-1">
         <header><h3>${camera.title}</h3><button type="button" data-earth-camera-favorite="${camera.id}" aria-label="Save ${camera.title}" aria-pressed="${this.favorites.has(camera.id)}">${this.favorites.has(camera.id) ? '★ Saved' : '☆ Save'}</button></header>
-        <p class="earth-camera-mode">${camera.imageUrl ? 'Periodic snapshot · not live video' : 'Live video source · playback unverified'} · ${camera.kind}</p>
+        <p class="earth-camera-mode">${camera.imageUrl ? 'Periodic snapshot · not live video' : isEarthYouTubeCamera(camera) ? 'YouTube live source · connect to verify playback' : 'Live video source · playback unverified'} · ${camera.kind}</p>
+        ${camera.note ? safeHtml`<p class="earth-camera-note">${camera.note}</p>` : safeHtml``}
+        ${camera.sourceCheckedAt ? safeHtml`<p class="earth-camera-note">Source checked ${camera.sourceCheckedAt} · current playback checked on connection</p>` : safeHtml``}
         <div class="earth-camera-player" data-earth-camera-player="${camera.id}"><button type="button" data-earth-camera-play="${camera.id}">${camera.imageUrl ? 'Load snapshot' : 'Connect live camera'}</button></div>
         <p class="earth-camera-state" data-earth-camera-state="${camera.id}" aria-live="polite">Ready to connect · availability unverified</p>
         <p class="earth-camera-credit">${camera.operator}<small>${camera.region} · ${camera.latitude.toFixed(3)}°, ${camera.longitude.toFixed(3)}°${this.nearby ? ` · ${Math.round(earthCameraDistanceKm(this.nearby.latitude, this.nearby.longitude, camera))} km away` : ''}</small></p>

@@ -1,0 +1,38 @@
+.earth-watch-panel { --earth-watch-accent: #77d6b2; }
+.earth-watch-body { padding:12px; line-height:1.5; color:var(--text-primary); overflow-wrap:anywhere; }
+.earth-watch-body h3 { font-size:13px; margin:14px 0 8px; }
+.earth-watch-body h4 { font-size:12px; margin:5px 0; }
+.earth-watch-body p { margin:7px 0; }
+.earth-watch-body a { color:var(--earth-watch-accent); }
+.earth-watch-body details { border:1px solid var(--border-color); border-radius:5px; padding:8px; margin:10px 0; }
+.earth-watch-body summary { cursor:pointer; color:var(--earth-watch-accent); font-size:12px; }
+.earth-watch-body input, .earth-watch-body select, .earth-watch-body button { box-sizing:border-box; font:inherit; color:var(--text-primary); background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:4px; padding:7px; max-width:100%; }
+.earth-watch-body input:focus-visible, .earth-watch-body select:focus-visible, .earth-watch-body button:focus-visible { outline:2px solid var(--earth-watch-accent); outline-offset:2px; }
+.earth-watch-body button { cursor:pointer; }
+.earth-watch-body button:disabled { cursor:default; opacity:.55; }
+.earth-watch-body input[type="checkbox"] { accent-color:var(--earth-watch-accent); }
+.earth-watch-toolbar, .earth-watch-actions { display:flex; flex-wrap:wrap; align-items:end; gap:8px; margin:10px 0; font-size:11px; }
+.earth-watch-toolbar > label { flex:1 1 140px; display:grid; gap:4px; min-width:0; }
+.earth-watch-toolbar select { width:100%; }
+.earth-watch-fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px; margin:10px 0; }
+.earth-watch-fields label { min-width:0; display:grid; gap:4px; font-size:11px; color:var(--text-secondary); }
+.earth-watch-fields input, .earth-watch-fields select { width:100%; min-width:0; }
+.earth-watch-check { display:flex; align-items:center; gap:6px; font-size:11px; margin:9px 0; }
+.earth-watch-body fieldset { min-width:0; margin:10px 0; border:1px solid var(--border-color); padding:8px; }
+.earth-watch-body legend { font-size:11px; color:var(--text-secondary); }
+.earth-watch-hazards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; font-size:10px; }
+.earth-watch-hazards label { display:flex; align-items:center; gap:5px; min-width:0; }
+.earth-watch-note, .earth-watch-meta { color:var(--text-secondary); font-size:10px; }
+.earth-watch-message { border-left:2px solid var(--earth-watch-accent); padding:7px 10px; font-size:11px; }
+.earth-watch-message[role="alert"] { border-color:#ed9d90; }
+.earth-watch-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin:12px 0; }
+.earth-watch-stats > div { border:1px solid var(--border-color); background:var(--bg-secondary); border-radius:5px; padding:8px; }
+.earth-watch-stats strong { display:block; font-size:17px; color:var(--earth-watch-accent); }
+.earth-watch-stats span { display:block; font-size:10px; color:var(--text-secondary); }
+.earth-watch-brief { border:1px solid var(--earth-watch-accent); border-radius:6px; padding:10px; margin:12px 0; }
+.earth-watch-event, .earth-watch-change { border-bottom:1px solid var(--border-color); padding:9px 0; }
+.earth-watch-change > strong { font-size:10px; color:var(--earth-watch-accent); }
+.earth-watch-change[data-unread="true"] { border-left:2px solid var(--earth-watch-accent); padding-left:8px; }
+.earth-watch-empty { padding:12px; border:1px dashed var(--border-color); border-radius:5px; font-size:12px; }
+.earth-watch-sources { font-size:10px; color:var(--text-secondary); }
+@media(max-width:600px) { .earth-watch-body { padding:10px; } .earth-watch-fields { grid-template-columns:1fr; } .earth-watch-hazards { grid-template-columns:1fr; } .earth-watch-stats { gap:4px; } .earth-watch-stats > div { padding:6px; } }

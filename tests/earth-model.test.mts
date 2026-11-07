@@ -113,3 +113,11 @@ test('historical snapshots retain past warning expiry, independently age the arc
   assert.equal(ageEarthEnvelope(history, now + 86400_000).data, null);
   assert.deepEqual(ageEarthEnvelope({ ...history, expiresAt: null }, now + 8 * 86400_000).data!.items, []);
 });
+
+test('terminal status history ages by its own seven-day window and never enters active event filtering', () => {
+  const cancelled = event({ id: 'cancelled', lifecycle: 'cancelled', observedAt: now - 86400_000 });
+  const old = event({ id: 'old-cancellation', lifecycle: 'cancelled', observedAt: now - 8 * 86400_000 });
+  const data = envelope({ dataset: 'changes', data: { items: [cancelled, old], sources: [{ id: 'synthetic', provider: 'Synthetic terminal source', status: 'fresh', coverage: 'Synthetic cancellation records', fetchedAt: now, observedAt: now - 86400_000, expiresAt: now + 3600_000 }] } });
+  assert.deepEqual(ageEarthEnvelope(data, now).data!.items.map(item => item.id), ['cancelled']);
+  assert.deepEqual(filterEarthEvents([cancelled], {}, now), []);
+});
