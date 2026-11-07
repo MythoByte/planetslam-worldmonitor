@@ -1,4 +1,4 @@
-# Optional central Phase 1 worker. Uses the existing Redis service, no provider keys.
+# Central Cyber worker. Optional AI curation reuses an existing server-side OpenRouter key.
 # docker compose -f docker-compose.yml -f compose.cyber.yaml --profile cyber up -d --build cyber-dashboard-seeder
 services:
   cyber-dashboard-seeder:
@@ -12,6 +12,8 @@ services:
       UPSTASH_REDIS_REST_URL: http://redis-rest:80
       UPSTASH_REDIS_REST_TOKEN: "${REDIS_TOKEN:?REDIS_TOKEN required}"
       UPSTASH_ALLOW_INSECURE_HTTP: "true"
+      OPENROUTER_API_KEY: "${OPENROUTER_API_KEY:-}"
+      CYBER_BRIEF_MODEL: "${CYBER_BRIEF_MODEL:-deepseek/deepseek-v4-flash}"
     depends_on:
       redis-rest:
         condition: service_started

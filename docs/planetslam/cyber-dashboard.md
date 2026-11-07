@@ -1,10 +1,10 @@
-# PlanetSlam Cyber dashboard — Phases 1–3
+# PlanetSlam Cyber dashboard — Phases 1–4
 
 Open `/dashboard?variant=cyber` or choose **Cyber** in the PlanetSlam edition
 switcher. The edition uses the shared layout/settings/theme and movable,
 resizable panels. New profiles enable the Cyber map. Existing saved map choices
 are preserved; **Show Cyber map** or an incident's **Locate on map** explicitly
-enables and reveals it. Attack statistics, AI briefings, installed
+enables and reveals it. Attack statistics, installed
 version discovery, and notifications remain later phases.
 
 - **Cyber News:** source-linked headlines and short excerpts from BleepingComputer,
@@ -110,7 +110,7 @@ retains usable KEV/watchlist prioritization; missing or expired KEV hides the
 queue with an unavailable message. Refresh retries cache reads only. Visible
 panels poll every minute; dataset subscriptions update consumers immediately
 on recovery. Teardown removes subscriptions and the poll timer. No new API key
-is required. Bulk NVD ingestion, asset discovery, AI briefs and notifications
+is required. Bulk NVD ingestion, asset discovery and notifications
 remain later work.
 
 Official references: [EPSS batch guidance](https://www.first.org/epss/data),
@@ -120,7 +120,7 @@ Official references: [EPSS batch guidance](https://www.first.org/epss/data),
 ## Data path
 
 `provider → seed-cyber-dashboard worker → validated Redis snapshot + atomic
-seed-meta → GET /api/cyber-dashboard?dataset=news|kev|incidents|infrastructure|epss|cvss|health → shared browser
+seed-meta → GET /api/cyber-dashboard?dataset=news|kev|incidents|infrastructure|epss|cvss|brief|health → shared browser
 service → lazy panel`
 
 Readers never trigger provider work and Cyber data stays off global bootstrap.
@@ -141,6 +141,7 @@ RSS and JSON responses have time and byte limits, and links must be HTTPS.
 
 | Source | Scheduled attempt | Delayed after | Expires after |
 | --- | --- | --- | --- |
+| Cyber Daily Brief | 15-minute cache check / one UTC-day snapshot | Previous UTC date | 48 hours after generation |
 | FIRST / Empirical Security EPSS | 24 hours | 48 hours from retrieval or score date | 96 hours from retrieval or score date |
 | CVE contributor CVSS (40 newest KEV additions) | 24 hours | 48 hours | 72 hours |
 | UMD GoTech public incident sample | 6 hours | 12 hours | 48 hours |
@@ -170,7 +171,7 @@ populate the new cache namespace. Provider failures remain visible.
 ## Verification
 
 - `node --import tsx --test tests/cyber-dashboard.test.mjs tests/cyber-watchlist.test.mts tests/cyber-dashboard-api.test.mjs`
-- `VITE_BRAND=planetslam npx playwright test e2e/cyber-dashboard.spec.ts e2e/cyber-incidents.spec.ts e2e/cyber-priorities.spec.ts --project=chromium`
+- `VITE_BRAND=planetslam npx playwright test e2e/cyber-dashboard.spec.ts e2e/cyber-incidents.spec.ts e2e/cyber-priorities.spec.ts e2e/cyber-brief.spec.ts --project=chromium`
 - `npm run typecheck`, `npm run typecheck:api`, `npm run lint:boundaries`
 - Branded Vite production build, then local Compose worker/API/browser checks.
 
@@ -205,3 +206,56 @@ does not establish blanket redistribution rights; the attribution ledger retains
 terms-review status. Credit: Harry, C., & Gallagher, N. (2018), *Classifying Cyber
 Events*, and the UMD GoTech Cyber Events Database. The issuer's origin is the
 University of Maryland, US; this is unrelated to victim or actor geography.
+
+## Phase 4: Cyber Daily Brief
+
+The briefing covers the previous complete UTC day: from 00:00 UTC inclusive to
+the following 00:00 UTC exclusive. Its generation date and time are separate
+from the reporting window. Source headlines, publication dates, collection
+clocks and URLs remain attached to every entry. New KEV additions refer to
+CISA catalog inclusion dates, not a claim that exploitation first began then.
+
+The central worker reads only existing validated news, KEV and incident caches.
+It selects at most 15 news records and 12 KEV additions in that window, plus
+three older incident research records explicitly labeled context. Tracking-URL
+news duplicates use the existing aggregator policy. It captures up to 30 evidence
+candidates and displays up to eight highlights (four news, three KEV, one research).
+Older research by itself cannot establish a daily brief. Missing feeds and no
+selected records never establish a quiet day or a global attack count.
+
+Optional AI curation reuses `OPENROUTER_API_KEY` and the existing worker LLM
+helper, pinned to OpenRouter with `CYBER_BRIEF_MODEL` (default
+`deepseek/deepseek-v4-flash`). A shared Redis admission token permits one bounded
+20-second/1,000-token attempt per UTC date, across worker replicas and retries.
+The model receives public evidence text and IDs, never browser watchlist terms.
+It may select evidence IDs and their existing sentence/fact IDs only; new prose,
+new URLs, unknown citations, duplicate items and metadata are rejected. Displayed
+text is always a source excerpt. A deterministic source digest with an explicit
+reason is retained when AI is unconfigured, fails, returns invalid output or has
+already used the daily attempt. This is extractive AI curation, not independently
+verified reporting or an AI-generated risk assessment.
+
+A successful current-day brief remains an immutable snapshot until the next UTC
+day. The worker checks every 15 minutes; no-evidence failures preserve the last
+good brief and its clock. The brief becomes a previous-day snapshot on the next
+UTC day and expires 48 hours after generation, independently of fetch copies.
+Read-time projection ages each original feed clock and preserves dated excerpts
+even after a feed snapshot expires, with that state shown in the evidence details.
+The brief's fresh status means generated for this UTC date, not complete coverage
+or that every original source remains live. Partial coverage remains visible for
+that day's snapshot and is not silently rewritten during the day.
+
+**Your watchlist in this briefing** matches all captured candidates locally,
+including evidence not selected by AI, and shows up to five matching records.
+It is bounded briefing coverage; the existing Watchlist and Attention Queue
+provide broader cached views. Keyword matches do not establish installed-version
+exposure. Watchlist changes update this section immediately and survive reloads
+through the existing watchlist preference store. No personalized terms leave the
+browser. The AI brief and its cache are shared; they contain no private inventory.
+
+The panel uses shared, deduplicated cache reads and polls while mounted and
+visible. Refresh reads the cache only, without provider or AI calls. Teardown
+removes the timer and subscriptions. `compose.cyber.yaml` explicitly maps the
+optional server-side OpenRouter configuration. Rebuild the worker and API image
+when commissioning this phase. Existing source collection credentials and
+entitlements are unchanged; no additional provider key is required.

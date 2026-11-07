@@ -9,6 +9,16 @@ export function cyberFixture(dataset: CyberDataset): CyberEnvelope<unknown> {
   ] };
   const kev = { version: 'synthetic-1', totalCount: 1, catalogAt: now, items: [{ id: 'CVE-2026-99999', vendor: 'Synthetic Vendor', product: 'Docker', title: 'Synthetic Docker vulnerability', description: 'Fixture, not an actual vulnerability.', action: 'Apply the vendor update.', addedAt: now - 86400_000, dueDate: '2026-11-20', ransomware: 'Unknown', url: 'https://example.com/cve', references: ['https://example.com/vendor'] }] };
   const base = { dataset, status: 'fresh' as const, provider: 'Synthetic acceptance provider', sourceUrl: 'https://example.com/source', fetchedAt: now, observedAt: now, expiresAt: now + 3600000 };
+  if (dataset === 'brief') {
+    const periodEnd = Date.parse(new Date(now).toISOString().slice(0, 10) + 'T00:00:00Z'), periodStart = periodEnd - 86400000;
+    const item = (id: string, kind: string, title: string, text: string, url: string) => ({ id, kind, title, dataset: kind === 'news' ? 'bleeping' : kind === 'kev' ? 'kev' : 'incidents', publisher: 'Synthetic publisher', url, publishedAt: kind === 'research' ? periodStart - 30 * 86400000 : periodStart + 3600000, fetchedAt: now, freshUntil: now + 1800000, expiresAt: now + 3600000, status: 'fresh', facts: [{ id: 'f1', text }] });
+    return { ...base, data: { date: new Date(now).toISOString().slice(0, 10), generatedAt: now, periodStart, periodEnd, mode: 'ai-curated', model: 'synthetic-model', aiStatus: 'curated', candidates: [
+      item('e1', 'news', 'Synthetic Docker daily report', '<img src=x onerror=alert(1)> Synthetic source excerpt.', 'https://example.org/daily-news'),
+      item('e2', 'kev', 'CVE-2026-99999 Synthetic KEV addition', 'Synthetic KEV required action: apply the vendor update.', 'https://example.org/daily-kev'),
+      item('e3', 'research', 'Synthetic older research report', 'Synthetic monthly research context, not a current event.', 'https://example.org/daily-research'),
+      item('e4', 'news', 'Synthetic Linux notice', 'Unselected Linux evidence candidate.', 'https://example.org/linux'),
+    ], items: ['e1','e2','e3'].map(id => ({ id, factIds: ['f1'] })), coverage: ['bleeping','krebs','hackernews','kev','incidents'].map(dataset => ({dataset,status: dataset === 'krebs' ? 'unavailable' : 'fresh',fetchedAt:now,observedAt:periodStart+3600000,freshUntil:now+1800000,expiresAt:now+3600000,itemCount:2,selectedCount:dataset === 'krebs' ? 0 : 1})) } };
+  }
   if (dataset === 'epss') return { ...base, data: { items: [{ id: 'CVE-2026-99999', probability: 0.72, percentile: 0.98 }], requestedCount: 1, catalogFetchedAt: now, scoreDate: new Date(now).toISOString().slice(0,10), model: 'synthetic-model' } };
   if (dataset === 'cvss') return { ...base, data: { items: [{ id: 'CVE-2026-99999', score: 9.8, version: '3.1', provider: 'Synthetic CNA', vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', updatedAt: now }], catalogFetchedAt: now } };
   if (dataset === 'incidents') return { ...base, data: { coverage: 'Public recent-record sample; monthly research updates', items: [
@@ -20,7 +30,7 @@ export function cyberFixture(dataset: CyberDataset): CyberEnvelope<unknown> {
     { id: 'synthetic-c2', indicator: '198.51.100.42', source: 'FEODO', country: 'DE', countryCode: 'DE', category: 'C2 SERVER', observedAt: now - 60000, latitude: 51.5, longitude: 10.5, url: 'https://example.com/feed' },
     { id: 'synthetic-url', indicator: 'https://malware.example.test/payload', source: 'URLHAUS', country: 'US', countryCode: 'US', category: 'MALWARE HOST', observedAt: now - 60000, latitude: 35, longitude: -90, url: 'https://example.com/feed2' },
   ] } };
-  if (dataset === 'health') return { ...base, data: { items: ['kev', 'bleeping', 'krebs', 'hackernews', 'incidents', 'infrastructure', 'epss', 'cvss'].map(name => ({ ...base, dataset: name, provider: `Synthetic ${name}`, data: null })) } };
+  if (dataset === 'health') return { ...base, data: { items: ['kev', 'bleeping', 'krebs', 'hackernews', 'incidents', 'infrastructure', 'epss', 'cvss', 'brief'].map(name => ({ ...base, dataset: name, provider: `Synthetic ${name}`, data: null })) } };
   return { ...base, data: dataset === 'news' ? news : kev };
 }
 export async function installCyberFixtures(page: Page, overrides: Partial<Record<CyberDataset, Partial<CyberEnvelope<unknown>>>> = {}) {
