@@ -1,11 +1,12 @@
 #!/usr/bin/env node
+import { generateCyberBrief } from './_cyber-brief.mjs';
 import { randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { loadEnvFile, getRedisCredentials, redisCommand, acquireLock, releaseLock, writeExtraKeyWithMetaAtomically } from './_seed-utils.mjs';
 import { CYBER_DATASETS, cyberKey, validCyberData } from '../api/_cyber-data.js';
 import { fetchCyberDataset } from './_cyber-providers.mjs';
 
-export async function seedCyber({ now = Date.now(), names = ['kev', ...Object.keys(CYBER_DATASETS).filter(n => n !== 'kev')], fetchDataset = fetchCyberDataset,
+export async function seedCyber({ now = Date.now(), names = ['kev', ...Object.keys(CYBER_DATASETS).filter(n => n !== 'kev' && n !== 'brief'), 'brief'], fetchDataset = fetchCyberDataset, generateBrief = generateCyberBrief,
   command, lock = acquireLock, unlock = releaseLock, publish = writeExtraKeyWithMetaAtomically } = {}) {
   const runId = randomUUID();
   const results = [];
@@ -25,7 +26,7 @@ export async function seedCyber({ now = Date.now(), names = ['kev', ...Object.ke
       if (!held) { results.push({ dataset, status: 'locked' }); continue; }
       const admission = await command(['SET', `cyber-dashboard:attempt:${dataset}:v1`, String(now), 'NX', 'PX', config.intervalMs]);
       if (admission?.result !== 'OK') { results.push({ dataset, status: 'cooldown' }); continue; }
-      const response = await fetchDataset(dataset, { now, command });
+      const response = dataset === 'brief' ? await generateBrief({ now: Date.now(), command }) : await fetchDataset(dataset, { now, command });
       if (response?.skipped) { results.push({ dataset, status: response.skipped }); continue; }
       if (!validCyberData(dataset, response?.data) || !Number.isFinite(response.observedAt) || response.observedAt <= 0 || response.observedAt > Date.now() + 60_000) throw new Error('Invalid normalized data');
       const fetchedAt = dataset === 'infrastructure' ? response.fetchedAt : Date.now();

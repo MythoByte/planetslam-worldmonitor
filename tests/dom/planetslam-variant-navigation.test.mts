@@ -25,7 +25,7 @@ describe('PlanetSlam same-origin editions', () => {
     const panels = await import('@/config/panels');
     const settings = panels.getInitialPanelSettingsForVariant('cyber');
     expect(Object.entries(settings).filter(([, value]) => value.enabled).map(([key]) => key).sort())
-      .toEqual(['cyber-attention', 'cyber-health', 'cyber-incidents', 'cyber-kev', 'cyber-news', 'cyber-watchlist', 'map']);
+      .toEqual(['cyber-attention', 'cyber-brief', 'cyber-health', 'cyber-incidents', 'cyber-kev', 'cyber-news', 'cyber-watchlist', 'map']);
     expect(settings.map?.enabled).toBe(true);
     expect(Object.values(panels.DEFAULT_MAP_LAYERS).every(value => value === false)).toBe(true);
     for (const key of ['cyber-health', 'cyber-kev', 'cyber-news', 'cyber-watchlist']) {

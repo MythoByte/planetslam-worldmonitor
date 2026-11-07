@@ -1,8 +1,10 @@
+import { validCyberBrief, projectCyberBrief, CYBER_BRIEF_MAX_AGE_MS } from './_cyber-brief.js';
 import { validPriorityData, EPSS_SOURCE, CVSS_SOURCE } from './_cyber-priority.js';
 import { validIncidentData, validInfrastructureData, INCIDENT_PROVIDER, INCIDENT_SOURCE_URL, INCIDENT_INTERVAL_MS, INCIDENT_MAX_AGE_MS, INFRA_MAX_AGE_MS, CYBER_NEWS_SOURCES } from './_cyber-incidents.js';
 // Shared normalized contract for the cache-only API and central worker.
 const MINUTE = 60_000;
 export const CYBER_DATASETS = Object.freeze({
+  brief: { provider: 'PlanetSlam Cyber source digest', sourceUrl: 'https://planetslam.com/dashboard?variant=cyber', intervalMs: 15 * MINUTE, maxAgeMs: CYBER_BRIEF_MAX_AGE_MS },
   epss: { provider: 'FIRST / Empirical Security EPSS', sourceUrl: EPSS_SOURCE, intervalMs: 24 * 60 * MINUTE, maxAgeMs: 96 * 60 * MINUTE },
   cvss: { provider: 'CVE Program contributor metrics', sourceUrl: CVSS_SOURCE, intervalMs: 24 * 60 * MINUTE, maxAgeMs: 72 * 60 * MINUTE },
   incidents: { provider: INCIDENT_PROVIDER, sourceUrl: INCIDENT_SOURCE_URL, intervalMs: INCIDENT_INTERVAL_MS, maxAgeMs: INCIDENT_MAX_AGE_MS },
@@ -19,6 +21,7 @@ export function httpsUrl(value) {
 const str = (v, max = 2000) => typeof v === 'string' && v.length <= max;
 const time = v => Number.isFinite(v) && v > 0;
 export function validCyberData(name, data) {
+  if (name === 'brief') return validCyberBrief(data);
   if (name === 'epss' || name === 'cvss') return validPriorityData(name, data);
   if (name === 'incidents') return validIncidentData(data);
   if (name === 'infrastructure') return validInfrastructureData(data);
@@ -33,6 +36,7 @@ export function validCyberData(name, data) {
 export function cyberEnvelope(name, snapshot, now = Date.now()) {
   const config = CYBER_DATASETS[name];
   if (!config) throw new Error('Unknown cyber dataset');
+  if (name === 'brief') return { dataset: name, provider: config.provider, sourceUrl: config.sourceUrl, ...projectCyberBrief(snapshot, now) };
   const valid = snapshot?.dataset === name && validCyberData(name, snapshot.data)
     && time(snapshot.fetchedAt) && snapshot.fetchedAt <= now + MINUTE
     && (name !== 'epss' || Date.parse(snapshot.data.scoreDate + 'T00:00:00Z') <= now && snapshot.observedAt === Date.parse(snapshot.data.scoreDate + 'T00:00:00Z'))

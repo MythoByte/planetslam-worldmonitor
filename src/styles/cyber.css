@@ -59,3 +59,5 @@ html[data-brand="planetslam"][data-variant="cyber"] .cyber-priority-filters inpu
 html[data-brand="planetslam"][data-variant="cyber"] .cyber-card details p { overflow-wrap:anywhere; }
 html[data-brand="planetslam"][data-variant="cyber"] .cyber-methodology { margin:8px 0; }
 html[data-brand="planetslam"][data-variant="cyber"] .cyber-methodology summary { cursor:pointer; color:var(--accent); overflow-wrap:anywhere; }
+html[data-brand="planetslam"][data-variant="cyber"] .cyber-brief-heading { display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; }
+html[data-brand="planetslam"][data-variant="cyber"] .cyber-brief-section > h3 { margin:20px 0 8px; color:var(--accent); }
