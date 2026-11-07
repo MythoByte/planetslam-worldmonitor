@@ -1,5 +1,6 @@
 import { installPlanetSlamLinks } from '@/services/planetslam-links';
 import './styles/planetslam.css';
+import { IS_PLANETSLAM } from '@/config/brand';
 import './styles/base-layer.css';
 import './bootstrap/zod-csp';
 import { SITE_VARIANT } from '@/config/variant';
@@ -690,6 +691,12 @@ if (urlParams.get('settings') === '1') {
       .init(webMcpController)
       .then(() => {
         clearChunkReloadGuard(chunkReloadStorageKey);
+        if (IS_PLANETSLAM && location.pathname === '/' && SITE_VARIANT === 'full') {
+          void import('./app/planetslam-home').then(({ mountPlanetSlamHome }) => {
+            const cleanup = mountPlanetSlamHome();
+            window.addEventListener('pagehide', event => { if (!event.persisted) cleanup(); });
+          });
+        }
       })
       .catch((error: unknown) => {
         console.error(error);
