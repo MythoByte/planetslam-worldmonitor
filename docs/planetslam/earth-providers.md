@@ -112,3 +112,29 @@ NTWC, MET Norway, NOAA gauge and NASA/NHC news endpoints. The Guardian endpoint
 must use its final `/us/environment/rss` URL because `/environment/rss` redirects.
 Provider availability and camera playback should be checked again in the review
 and production environments. No production change is implied by these checks.
+
+## Bespin air-quality commissioning
+
+Set `OPENAQ_API_KEY` in the protected deployment `runtime.env`. The key is mapped
+only into a dedicated `air-quality-seeder` service; it is not needed by the
+browser, application service, or Earth event worker. `WAQI_API_KEY` remains an
+optional supplement and is not required for OpenAQ ingestion.
+
+The full relay image packages `scripts/seed-health-air-quality.mjs`. Bespin uses
+its existing `provider-seed-runner.mjs` to run that importer immediately and then
+on a 3,600-second interval. The runner redacts secret values from child output
+and bounds each run. The importer uses a Redis lock to avoid overlapping runs.
+Restarting the scheduled service reloads changed environment-file values.
+
+A successful import writes both `health:air-quality:v1` and
+`climate:air-quality:v1`, with their seed metadata. Earth reads the climate cache
+through `/api/earth?dataset=airquality`; no application restart is needed.
+Verify actual station observations, API freshness and the rendered Earth panel
+separately from container startup. A provider may have no recent measurements
+for a particular location.
+
+OpenAQ readings retain PM2.5 concentration and measurement times. Their displayed
+AQI is an estimate derived from the latest concentration using the
+[current EPA PM2.5 breakpoints](https://aqs.epa.gov/aqsweb/documents/codetables/aqi_breakpoints.html),
+which took effect in May 2024. It is not an official daily AQI or EPA NowCast.
+The product index is capped at 500 and preserves the existing four risk buckets.
