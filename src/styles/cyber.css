@@ -68,3 +68,5 @@ html[data-brand="planetslam"][data-variant="cyber"] .cyber-brief-section > h3 { 
 .cyber-research-label { display: flex; flex-direction: column; gap: 5px; margin: 12px 0; }
 .cyber-panel textarea { width: 100%; box-sizing: border-box; resize: vertical; color: var(--text-primary); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; padding: 8px; font: inherit; }
 .cyber-panel [aria-pressed="true"] { border-color: var(--cyber-accent); }
+
+.cyber-panel .cyber-research-source { color: var(--cyber-accent); }
