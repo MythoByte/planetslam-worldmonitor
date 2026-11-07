@@ -14,7 +14,7 @@ Base: `22fb3a1bed27e78b537305f5341fd2090399280e` (2026-11-07).
 
 ## References
 
-The older local `dev/repos/planetslam/moc.PNG` and `logo.PNG` were inspected. They show a wordmark and an older homepage, not the requested Worlds in Collision artwork. Captain explicitly deferred the artwork during implementation. This version uses the existing PlanetSlam mark with its natural aspect ratio and a 44px header height. Collision artwork and icon replacement are a later change.
+The older local `dev/repos/planetslam/moc.PNG` and `logo.PNG` were inspected. They show a wordmark and an older homepage, not the requested Worlds in Collision artwork. Captain initially deferred the artwork, then supplied `PlanetSlam-Homepage-Design-Reference.png` from the PlanetSlam Development folder. Its compact situation bar, prominent map, short intelligence rail and concise cards guide the spacing refinement. The supplied reference remains outside the repository. This version retains the existing PlanetSlam mark with its natural aspect ratio and a 44px header height; a separate collision logo asset remains a later change.
 
 ## Implementation and validation
 
@@ -22,13 +22,21 @@ The full-variant PlanetSlam `/` route mounts `src/app/planetslam-home.ts` after 
 
 Homepage collapse preferences use `planetslam-home-collapsed-v1`. Reset only changes that namespace. The advanced workspace's saved panel order is protected while homepage panels appear in different regions. Generic workspace links retain the current map/deep-link query. Search and settings forward to existing controls, including the mobile command deck. Layer controls proxy the renderer's original handlers, keeping layer limits, persistence and URL updates intact. The original layer control remains available in fullscreen.
 
-The CSS lives in a separate, lazy stylesheet, scoped to `data-ps-home`. Overrides of upstream `!important` panel spans and map heights live in the existing `base` cascade layer; this is necessary because important declarations inside a layer outrank unlayered declarations. Desktop uses 240px/650px minimum/300px rails; smaller screens use a layer drawer and two- or one-column cards. The document scrolls naturally. Original detailed map modes and workspace resize controls remain available in the advanced workspace.
+The CSS lives in a separate, lazy stylesheet, scoped to `data-ps-home`. Overrides of upstream `!important` panel spans and map heights live in the existing `base` cascade layer; this is necessary because important declarations inside a layer outrank unlayered declarations. Desktop uses 210px/650px minimum/280px rails and a 540px map; smaller screens use a layer drawer and two- or one-column cards. The document scrolls naturally. Original detailed map modes and workspace resize controls remain available in the advanced workspace.
 
 Health uses the existing per-source freshness tracker. It separates browser connectivity from feed freshness, reports stale/error/missing coverage and shows source timestamps. Disabled sources are identified in source details and excluded from the monitored denominator. No homepage threat score or aggregate critical-only alert count is invented. Available timeline values remain the upstream panel's explicitly labelled critical/high aggregate. When an enabled source is unavailable, a module entry remains discoverable through a workspace link rather than silently disappearing.
 
 News summaries show the first three items with their original source and timestamp; Show full module reveals the remaining items. Rail charts and detailed groups use the same progressive disclosure. Disabled, unavailable or dedicated-edition modules remain accessible through the module directory and workspace links.
 
 News uses WindowedList chunks rather than one flat list. Homepage summaries hide later chunks as well as rows after the first three in the initial chunk. Their content container uses document sizing instead of dashboard scroll containment. Expanding a module dispatches the existing list scroll event after layout, allowing the same renderer to populate newly revealed chunks. The browser fixture includes twenty unrelated synthetic stories to cross the fifteen-item virtualization threshold and exercise three chunks, three visible summary items and all twenty expanded items.
+
+### Compact homepage refinement
+
+The situation bar, panel headers and action footers use less padding. Threat Timeline, Key Regions and the critical-alert availability note remain beside the map; strategic posture moves into the cards below. Cards occupy measured eight-pixel grid rows, avoiding blank space beneath short cards. ResizeObserver updates placement when data arrives or a module expands. Temporary inline row spans override upstream panels that set their own important spans; the advanced workspace retains its saved layout. Mobile uses ordinary single-column document flow.
+
+The homepage market panel shows only S&P 500 (`^GSPC`), Nasdaq (`^IXIC`) and Dow Jones (`^DJI`) from existing quote responses. It filters unavailable-symbol notices to those indices and hides watchlist/disclosure controls. The complete quote array and original chart indices stay intact, and `/dashboard` retains stocks, watchlists and commodities. Missing index data uses the existing unavailable state; no values are fabricated.
+
+The compact-layout browser checks cover all three widths, nonoverlapping cards, index-only rows, the S&P chart opening the correct underlying quote, and the complete advanced market list. `indices-*` screenshots use synthetic prices and are layout evidence only.
 
 ### Evidence and checks
 

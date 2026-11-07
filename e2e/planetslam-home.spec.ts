@@ -27,6 +27,14 @@ const headlines = [
   'Acceptance dispatch: Film festival announces documentary awards',
 ];
 
+const marketQuotes = [
+  { symbol: 'AAPL', name: 'Apple', display: 'AAPL' },
+  { symbol: '^GSPC', name: 'S&P 500', display: 'SPX' },
+  { symbol: 'NVDA', name: 'NVIDIA', display: 'NVDA' },
+  { symbol: '^DJI', name: 'Dow Jones', display: 'DOW' },
+  { symbol: '^IXIC', name: 'NASDAQ Composite', display: 'COMP' },
+].map((quote, index) => ({ ...quote, price: 100 + index, change: 1, sparkline: [99, 100, 101] }));
+
 for (const width of [1440, 1024, 390]) {
   test(`homepage discovery and layout at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 1000 });
@@ -38,6 +46,7 @@ for (const width of [1440, 1024, 390]) {
           'threat-timeline': { name: 'Threat Timeline', enabled: true, priority: 1 },
           cii: { name: 'Country Instability', enabled: true, priority: 1 },
           'strategic-posture': { name: 'AI Strategic Posture', enabled: true, priority: 1 },
+          markets: { name: 'Markets', enabled: true, priority: 1 },
         }),
       } },
     });
@@ -52,6 +61,9 @@ for (const width of [1440, 1024, 390]) {
         link: `https://example.com/bulletin/${index}`, publishedAt: Date.now(), isAlert: false,
       })) } }, feedStatuses: {}, generatedAt: new Date().toISOString(),
     } }));
+    await page.route('**/api/market/v1/list-market-quotes*', route => route.fulfill({ json: {
+      quotes: marketQuotes, finnhubSkipped: false, rateLimited: false, unavailableSymbols: [], asOf: new Date().toISOString(),
+    } }));
     await page.goto('/');
     await expect(page.locator('html')).toHaveAttribute('data-ps-home', 'true', { timeout: 60_000 });
     await expect(page.getByRole('heading', { name: 'Global situation' })).toBeVisible();
@@ -61,6 +73,7 @@ for (const width of [1440, 1024, 390]) {
     await expect(page.locator('.ps-alerts')).toContainText('not supplied');
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
     if (width === 1440) expect(await page.locator('#mapSection').evaluate(el => el.getBoundingClientRect().width)).toBeGreaterThanOrEqual(650);
+    await expect(page.locator('.ps-intelligence [data-panel="strategic-posture"]')).toHaveCount(0);
     if (width === 1440) {
       const accessibility = await new AxeBuilder({ page }).include('.ps-header').include('.ps-intro').include('.ps-utility').include('.ps-alerts').withTags(['wcag2a', 'wcag2aa']).analyze();
       expect(accessibility.violations).toEqual([]);
@@ -118,6 +131,28 @@ for (const width of [1440, 1024, 390]) {
     await page.locator(width < 1101 ? '.ps-nav-settings' : '.ps-header > button').filter({ hasText: 'Customize' }).click();
     await expect(page.locator('#us-theme')).toBeVisible();
     await page.locator('.unified-settings-close').click();
+    if (width < 1101) await page.getByRole('button', { name: 'Menu', exact: true }).click();
+    const markets = page.locator('[data-panel="markets"].ps-module');
+    await markets.scrollIntoViewIfNeeded();
+    await expect(markets.locator('[data-market-symbol]')).toHaveCount(3);
+    expect(await markets.locator('[data-market-symbol]').evaluateAll(rows => rows.map(row => row.getAttribute('data-market-symbol')))).toEqual(['^GSPC', '^DJI', '^IXIC']);
+    expect(await markets.locator('[data-market-chart]').evaluateAll(rows => rows.map(row => row.getAttribute('data-market-chart')))).toEqual(['1', '3', '4']);
+    if (width === 1440) {
+      await markets.locator('[data-market-symbol="^GSPC"]').click();
+      await expect(page.locator('.market-chart-name')).toHaveText('S&P 500');
+      await page.locator('.market-chart-close').click();
+    }
+    await expect(markets.getByRole('button', { name: 'Show full module', exact: true })).toHaveCount(0);
+    if (width >= 768) {
+      await expect.poll(() => page.locator('#panelsGrid').evaluate(grid => {
+        const cards = [...grid.children].filter((node): node is HTMLElement => node instanceof HTMLElement && node.matches('.ps-module, .ps-directory-card'));
+        const boxes = cards.map(card => card.getBoundingClientRect()).filter(box => box.height > 0);
+        return boxes.every((box, index) => boxes.every((other, otherIndex) => index === otherIndex || box.right <= other.left + 1 || other.right <= box.left + 1 || box.bottom <= other.top + 1 || other.bottom <= box.top + 1));
+      })).toBe(true);
+    }
+    await markets.locator('.panel-header').evaluate(el => el.scrollIntoView({ block: 'start', behavior: 'instant' }));
+    await expect(markets.locator('[data-market-symbol]').last()).toBeInViewport();
+    await page.screenshot({ path: `docs/planetslam/homepage-evidence/indices-${width}.png` });
     // Exercise network emulation once, after the other viewport contexts have
     // finished: Chromium can broadcast ERR_NETWORK_CHANGED across contexts.
     if (width === 390) {
@@ -129,5 +164,9 @@ for (const width of [1440, 1024, 390]) {
     await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready', 'true');
     await expect(page.locator('.ps-header')).toHaveCount(0);
     await expect(page.locator('#panelsGrid [data-panel="politics"]')).toBeAttached();
+    const fullMarkets = page.locator('#panelsGrid [data-panel="markets"]');
+    await fullMarkets.scrollIntoViewIfNeeded();
+    await expect(fullMarkets.locator('[data-market-symbol="AAPL"]')).toBeVisible();
+    await expect(fullMarkets.locator('[data-market-symbol]')).toHaveCount(marketQuotes.length);
   });
 }

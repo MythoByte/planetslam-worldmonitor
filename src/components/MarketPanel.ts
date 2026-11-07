@@ -42,6 +42,10 @@ const UNAVAILABLE_REASON_KEYS: Record<MarketQuoteUnavailableReason, string> = {
   MARKET_QUOTE_UNAVAILABLE_REASON_SEED_UNAVAILABLE: 'components.markets.unavailable.seed',
 };
 
+// Presentation scope only. Keep the complete quote array for the workspace and
+// for chart activation, whose row indices refer to the original response.
+const HOMEPAGE_INDICES = new Set(['^GSPC', '^IXIC', '^DJI']);
+
 function unavailableSymbolLine(group: UnavailableSymbolGroup): string {
   // An unrecognized reason (a server ahead of this bundle) still names the
   // symbols rather than dropping the line — silence is the bug being fixed.
@@ -57,10 +61,16 @@ export class MarketPanel extends Panel {
   private _marketsRateLimited = false;
   private _marketsUnavailable: readonly MarketQuoteUnavailable[] = [];
   private _disclosures: ChinaCorporateDisclosureSnapshot | null = null;
+  private homepageIndicesOnly = false;
 
   constructor() {
     super({ id: 'markets', title: t('panels.markets'), infoTooltip: t('components.markets.infoTooltip') });
     this.header.appendChild(createWatchlistButton());
+    this.element.addEventListener('planetslam:market-indices', () => {
+      if (this.homepageIndicesOnly) return;
+      this.homepageIndicesOnly = true;
+      this._renderMarketsAndDisclosures();
+    });
 
     // Delegated once on the persistent content element (each render only swaps
     // innerHTML): click or Enter/Space on a plottable ticker opens its terminal chart.
@@ -93,16 +103,19 @@ export class MarketPanel extends Panel {
   }
 
   private _renderMarketsAndDisclosures(): void {
-    const disclosureHtml = renderChinaCorporateDisclosureSignals(this._disclosures);
-    const marketsHtml = this._markets
-      .map((stock, idx) => {
+    const markets = this.homepageIndicesOnly
+      ? this._markets.filter(stock => HOMEPAGE_INDICES.has(stock.symbol))
+      : this._markets;
+    const disclosureHtml = this.homepageIndicesOnly ? '' : renderChinaCorporateDisclosureSignals(this._disclosures);
+    const marketsHtml = markets
+      .map((stock) => {
         const attrs = getMarketChartRowAttributes(
           stock,
-          idx,
+          this._markets.indexOf(stock),
           t('components.markets.chart.title', { symbol: stock.display }),
         );
         return `
-      <div${attrs}>
+      <div${attrs} data-market-symbol="${escapeHtml(stock.symbol)}">
         <div class="market-info">
           <span class="market-name">${escapeHtml(stock.name)}</span>
           <span class="market-symbol">${escapeHtml(stock.display)}</span>
@@ -117,13 +130,15 @@ export class MarketPanel extends Panel {
       })
       .join('');
     const content = composeMarketPanelContent({
-      hasMarkets: this._markets.length > 0,
+      hasMarkets: markets.length > 0,
       marketsHtml,
       disclosureHtml,
       unavailableMessage: this._marketsRateLimited
         ? t('common.rateLimitedMarket')
         : t('common.failedMarketData'),
-      unavailableSymbolLines: groupUnavailableSymbols(this._marketsUnavailable).map(unavailableSymbolLine),
+      unavailableSymbolLines: groupUnavailableSymbols(this.homepageIndicesOnly
+        ? this._marketsUnavailable.filter(stock => HOMEPAGE_INDICES.has(stock.symbol))
+        : this._marketsUnavailable).map(unavailableSymbolLine),
     });
     if (content.kind === 'retry') {
       this.showRetrying(content.message);

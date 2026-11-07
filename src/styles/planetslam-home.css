@@ -75,9 +75,9 @@ html[data-ps-home] #app > :is(.header, .mobile-tab-bar, .dashboard-tabs-mount, .
 .ps-control:hover { border-color: var(--ps-cyan); }
 .ps-menu { display: none; }
 .ps-nav-settings { display: none; }
-.ps-intro { width: 100%; max-width: var(--ps-content-max); margin: 0 auto; padding: 28px var(--ps-page-gutter); display: flex; align-items: center; gap: 24px; }
-.ps-intro h1 { font-size: clamp(26px, 3vw, 36px); line-height: 1.2; margin: 5px 0 8px; letter-spacing: -.03em; }
-.ps-eyebrow { color: var(--ps-cyan); font-size: 11px; letter-spacing: .18em; margin: 0; font-weight: 700; }
+.ps-intro { width: 100%; max-width: var(--ps-content-max); margin: 0 auto; padding: 14px var(--ps-page-gutter); display: flex; align-items: center; gap: 20px; }
+.ps-intro h1 { font-size: 22px; line-height: 1.2; margin: 0 0 4px; letter-spacing: -.02em; }
+.ps-eyebrow { display: none; }
 .ps-tagline { color: var(--ps-text-secondary); margin: 0; }
 .ps-situation { display: grid; gap: 6px; margin-left: auto; max-width: 460px; }
 .ps-clock { font: 12px var(--ps-font-data); color: var(--ps-text-secondary); }
@@ -88,7 +88,7 @@ html[data-ps-home] #app > :is(.header, .mobile-tab-bar, .dashboard-tabs-mount, .
 .ps-button-primary:hover { background: var(--ps-orange-hover); }
 html[data-ps-home] #main.main-content {
   display: grid;
-  grid-template-columns: 240px minmax(650px, 1fr) 300px;
+  grid-template-columns: 210px minmax(650px, 1fr) 280px;
   gap: var(--ps-panel-gap);
   align-items: start;
   overflow: visible;
@@ -99,13 +99,16 @@ html[data-ps-home] #main.main-content {
   grid-template-rows: auto auto auto;
 }
 .ps-utility { grid-column: 1; grid-row: 1; min-width: 0; }
-.ps-utility > * { margin-bottom: 16px; }
-.ps-layer-drawer, .ps-sources { background: var(--ps-nav); border: 1px solid var(--ps-border); border-radius: var(--ps-radius-md); padding: 14px; }
+.ps-utility > * { margin-bottom: 12px; }
+.ps-utility > .ps-note { display: none; }
+.ps-layer-drawer, .ps-sources { background: var(--ps-nav); border: 1px solid var(--ps-border); border-radius: var(--ps-radius-md); padding: 12px; }
 html[data-ps-home] summary { cursor: pointer; min-height: 34px; font-weight: 600; }
-.ps-layer-search { background: var(--ps-bg); color: var(--ps-text); border: 1px solid var(--ps-border); border-radius: 6px; padding: 11px; width: 100%; margin: 8px 0 16px; font: inherit; }
-.ps-layer-group { margin-bottom: 12px; }
-.ps-layer-group > summary { font-size: 12px; color: var(--ps-text-secondary); }
-.ps-layer-group .ps-control { display: block; width: 100%; text-align: left; font-size: 12px; margin-bottom: 5px; background: transparent; }
+.ps-layer-search { background: var(--ps-bg); color: var(--ps-text); border: 1px solid var(--ps-border); border-radius: 6px; padding: 9px; width: 100%; margin: 4px 0 12px; font: inherit; }
+.ps-layer-group { margin-bottom: 6px; }
+html[data-ps-home] .ps-layer-group > summary { font-size: 11px; min-height: 24px; color: var(--ps-text-secondary); }
+.ps-layer-group .ps-control { display: block; width: 100%; text-align: left; font-size: 12px; min-height: 26px; padding: 4px 6px; margin-bottom: 4px; background: transparent; }
+html[data-ps-home] .ps-sources > summary { font-size: 12px; min-height: 28px; }
+.ps-utility > .ps-control { font-size: 12px; min-height: 32px; padding: 6px 10px; }
 .ps-layer-group .ps-control[aria-pressed='true'] { color: var(--ps-cyan-hover); background: var(--ps-panel); border-left: 3px solid var(--ps-cyan); }
 .ps-layer-group .ps-control[aria-pressed='true']::before { content: '✓ '; }
 .ps-source-row { display: grid; gap: 4px; border-bottom: 1px solid var(--ps-border); padding-bottom: 10px; font-size: 12px; overflow-wrap: anywhere; }
@@ -114,7 +117,7 @@ html[data-ps-home] #mapSection {
   grid-column: 2;
   grid-row: 1;
   width: 100%;
-  height: 610px !important;
+  height: 540px !important;
   min-height: 500px !important;
   max-height: none;
   border: 1px solid var(--ps-border);
@@ -126,31 +129,35 @@ html[data-ps-home] #mapSection {
 html[data-ps-home] #mapContainer { min-height: 0; }
 html[data-ps-home] #mapSection > .panel-header { padding: 14px; }
 html[data-ps-home] :is(#mapWidthResizeHandle, #mapPinBtn, #mapSideBtn, #mapResizeHandle, #mapBottomGrid) { display: none; }
-.ps-intelligence { grid-column: 3; grid-row: 1; display: grid; gap: 12px; min-width: 0; }
+.ps-intelligence { grid-column: 3; grid-row: 1; display: grid; gap: 10px; min-width: 0; }
 .ps-section-title { font-size: 16px; margin: 0; letter-spacing: -.01em; }
-.ps-card-heading { grid-column: 1 / -1; grid-row: 2; display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
+.ps-card-heading { grid-column: 1 / -1; grid-row: 2; display: flex; align-items: center; justify-content: space-between; }
 .ps-card-heading a, .ps-module-link { color: var(--ps-cyan-hover); text-decoration: none; }
 html[data-ps-home] #panelsGrid {
   grid-column: 1 / -1;
   grid-row: 3;
   display: grid !important;
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  gap: 16px;
+  gap: 0 12px;
   height: auto;
   overflow: visible;
   padding: 0;
-  grid-auto-rows: auto;
+  grid-auto-rows: 8px;
+  grid-auto-flow: row dense;
   align-items: start;
 }
 /* Upstream's !important span/height rules live in base. Important rules in
    that layer outrank unlayered rules, so neutralize only those contracts here. */
 @layer base {
-  html[data-ps-home] #mapSection { height: 610px !important; min-height: 500px !important; max-height: none !important; }
+  html[data-ps-home] #mapSection { height: 540px !important; min-height: 500px !important; max-height: none !important; }
+  html[data-ps-home] #panelsGrid { display: grid !important; }
   html[data-ps-home] .ps-module { height: auto !important; min-height: 0 !important; grid-row: auto !important; grid-column: auto !important; }
+  html[data-ps-home] #panelsGrid > .ps-module { grid-row: span var(--ps-card-rows, 1) !important; }
   html[data-ps-home] .ps-module .panel-content { height: auto !important; max-height: none !important; overflow: visible !important; }
   html[data-ps-home] #mapSection.live-news-fullscreen { height: 100dvh !important; min-height: 100dvh !important; max-height: 100dvh !important; }
   @media (max-width: 767px) {
     html[data-ps-home] #mapSection { height: 520px !important; min-height: 450px !important; }
+    html[data-ps-home] #panelsGrid > .ps-module { grid-row: auto !important; }
   }
 }
 html[data-ps-home] .ps-module {
@@ -166,22 +173,42 @@ html[data-ps-home] .ps-module {
   box-shadow: var(--ps-shadow-panel);
   overflow: hidden;
 }
-html[data-ps-home] .ps-module .panel-header { padding: 14px 16px; gap: 8px; height: auto; flex-wrap: wrap; }
+html[data-ps-home] .ps-module .panel-header { padding: 10px 12px; gap: 8px; height: auto; flex-wrap: wrap; }
 html[data-ps-home] .ps-module .panel-title { font: 600 14px var(--ps-font-ui); text-transform: none; }
-html[data-ps-home] .ps-module .panel-content { height: auto !important; max-height: none !important; overflow: visible !important; padding: 16px; font-size: 14px; }
+html[data-ps-home] .ps-module .panel-content { height: auto !important; max-height: none !important; overflow: visible !important; padding: 12px; font-size: 14px; }
 html[data-ps-home] .ps-module .panel-content { flex: none; min-height: 0; }
+html[data-ps-home] .ps-module.panel-deferred-shell { content-visibility: visible; contain-intrinsic-size: none; }
+html[data-ps-home] .ps-module.panel-deferred-shell .panel-content { min-height: 72px; }
 html[data-ps-home] .ps-module :is(.posture-no-data, .posture-loading) { min-height: 0; padding: 16px 0; }
 html[data-ps-home] #mapSection .layer-toggles { display: none; }
 html[data-ps-home] #mapSection.live-news-fullscreen { position: fixed; inset: 0; width: 100vw; z-index: 20000; border-radius: 0; }
 html[data-ps-home] #mapSection.live-news-fullscreen .layer-toggles { display: flex; }
 html[data-ps-home] .ps-module.ps-collapsed > .panel-content { display: none; }
-.ps-module-link { display: block; padding: 10px 16px; font-size: 12px; border-top: 1px solid var(--ps-border); }
-.ps-alerts { order: 4; background: var(--ps-nav); border: 1px solid var(--ps-border); border-radius: 10px; padding: 16px; }
+.ps-module-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--ps-border); }
+.ps-module-actions .ps-control { min-height: 30px; padding: 5px 8px; font-size: 12px; }
+.ps-module-link { display: inline-block; padding: 5px 0; font-size: 12px; }
+html[data-ps-home] .ps-module .panel-header > .ps-control { width: 30px; min-height: 30px; padding: 0; font-size: 0; }
+html[data-ps-home] .ps-module .panel-header > .ps-control::after { content: '−'; font-size: 18px; }
+html[data-ps-home] .ps-module .panel-header > .ps-control[aria-expanded='false']::after { content: '+'; }
+.ps-alerts { order: 4; background: var(--ps-nav); border: 1px solid var(--ps-border); border-radius: 10px; padding: 12px; }
 .ps-alerts h3 { margin: 0; font-size: 14px; }
-.ps-directory-card { padding: 20px; border: 1px solid var(--ps-border); border-radius: 10px; background: var(--ps-panel); }
+html[data-ps-home] .ps-alerts > summary { min-height: 24px; font-size: 12px; }
+.ps-alerts .ps-note { margin: 4px 0 0; }
+.ps-intelligence .ps-directory-card { padding: 12px; }
+.ps-intelligence .ps-directory-card p { margin: 0 0 8px; font-size: 12px; }
+html[data-ps-home] .ps-intelligence .threat-timeline-summary > div { min-height: 0; padding: 8px; }
+html[data-ps-home] .ps-intelligence .threat-timeline-stat-label { font-size: 11px; }
+html[data-ps-home] .ps-intelligence .ps-module:not(.ps-expanded) .threat-timeline-trend-copy { display: none; }
+.ps-directory-card { padding: 16px; border: 1px solid var(--ps-border); border-radius: 10px; background: var(--ps-panel); }
+#panelsGrid > .ps-directory-card { grid-row: span var(--ps-card-rows, 1); }
 .ps-directory-card h3 { font-size: 16px; margin: 0 0 10px; }
 .ps-directory-card p { color: var(--ps-text-secondary); margin: 0 0 16px; }
 .ps-directory-card a { color: var(--ps-cyan-hover); }
+html[data-ps-home] .ps-module :is(.panel-loading, .panel-error-state) { min-height: 80px; padding: 12px; }
+html[data-ps-home] [data-panel='markets'] .live-news-settings-btn { display: none; }
+html[data-ps-home] [data-panel='markets'] .market-item { padding: 10px 0; }
+html[data-ps-home] .ps-intelligence .ps-module:not(.ps-expanded) :is(.cii-components, .cii-bar-container) { display: none; }
+html[data-ps-home] [data-panel='strategic-posture']:not(.ps-expanded) .posture-theater:nth-of-type(n+3) { display: none; }
 html[data-ps-home] .ps-module :is(.panel-close-btn, .panel-collapse-btn, .panel-resize-handle, .panel-resize-handle-right) { display: none; }
 html[data-ps-home] .ps-module:not(.ps-expanded) .item:nth-child(n+4) { display: none; }
 html[data-ps-home] .ps-module:not(.ps-expanded) .windowed-chunk:nth-child(n+2) { display: none; }
@@ -229,12 +256,16 @@ html[data-ps-home] :is(button, a, input, summary) { scroll-margin-top: 90px; }
   .ps-brand { font-size: 17px; }
   .ps-header > .ps-control { font-size: 12px; padding: 8px; }
   .ps-header > .ps-control:nth-last-child(2) { display: none; }
-  .ps-intro { gap: 18px; padding-top: 22px; }
+  .ps-intro { gap: 12px; padding-top: 14px; }
   .ps-situation { flex-basis: 100%; }
   .ps-tagline { font-size: 12px; }
   .ps-utility { display: grid; }
   html[data-ps-home] #mapSection { height: 520px !important; min-height: 450px !important; }
   .ps-intelligence, html[data-ps-home] #panelsGrid { grid-template-columns: minmax(0, 1fr) !important; }
+  html[data-ps-home] #panelsGrid { grid-auto-rows: auto; gap: 12px; }
+  #panelsGrid > .ps-directory-card { grid-row: auto; }
+  .ps-layer-group .ps-control, .ps-module-actions .ps-control { min-height: 40px; }
+  html[data-ps-home] .ps-module .panel-header > .ps-control { min-height: 40px; width: 40px; }
   html[data-ps-home] .ps-module { min-width: 0; }
   html[data-ps-home] .ps-module .panel-content { padding: 12px; overflow-wrap: anywhere; }
   html[data-ps-home] #mapSection :is(.map-controls button, .time-btn, .map-dim-btn, #mapFullscreenBtn) { min-height: 40px; min-width: 40px; }

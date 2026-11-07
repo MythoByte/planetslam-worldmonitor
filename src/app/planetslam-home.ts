@@ -4,8 +4,8 @@ import '../styles/planetslam-home.css';
 import { safeStorageGet, safeStorageRemove, safeStorageSet } from '@/utils/safe-storage';
 
 const PREF = 'planetslam-home-collapsed-v1';
-const RAIL = ['threat-timeline', 'cii', 'strategic-posture'];
-const CARDS = ['intel', 'politics', 'middleeast', 'defense', 'shipping', 'military', 'cyber', 'markets', 'commodities', 'disaster-correlation', 'cascade', 'live-webcams', 'strategic-risk'];
+const RAIL = ['threat-timeline', 'cii'];
+const CARDS = ['intel', 'politics', 'middleeast', 'defense', 'shipping', 'military', 'cyber', 'markets', 'disaster-correlation', 'cascade', 'strategic-posture', 'live-webcams', 'strategic-risk'];
 
 function element<K extends keyof HTMLElementTagNameMap>(tag: K, className = '', text = ''): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
@@ -140,7 +140,7 @@ export function mountPlanetSlamHome(): () => void {
   rail.append(railTitle);
   const critical = element('details', 'ps-alerts');
   critical.open = !collapsed.includes('critical-alerts');
-  critical.append(element('summary', '', 'Critical alerts'), element('p', 'ps-note', 'An aggregate critical-alert count is not supplied. Review source-labelled events in Threat Timeline; missing data is not an all-clear.'));
+  critical.append(element('summary', '', 'Critical alerts'), element('p', 'ps-note', 'Critical-only count not supplied. Review source-labelled events in Threat Timeline.'));
   critical.addEventListener('toggle', () => {
     collapsed = collapsed.filter(key => key !== 'critical-alerts');
     if (!critical.open) collapsed.push('critical-alerts');
@@ -152,11 +152,32 @@ export function mountPlanetSlamHome(): () => void {
   grid.before(cardTitle);
   const mounted = new WeakSet<HTMLElement>();
   const controls = new Map<HTMLElement, HTMLButtonElement>();
+  const observedCards = new WeakSet<HTMLElement>();
+  let cardLayoutFrame = 0;
+  const cardResizeObserver = new ResizeObserver(scheduleCardLayout);
+
+  function scheduleCardLayout(): void {
+    if (cardLayoutFrame) return;
+    cardLayoutFrame = requestAnimationFrame(() => {
+      cardLayoutFrame = 0;
+      for (const card of grid.children) {
+        if (!(card instanceof HTMLElement) || !card.matches('.ps-module, .ps-directory-card')) continue;
+        const rows = String(Math.max(1, Math.ceil((card.getBoundingClientRect().height + 12) / 8)));
+        if (card.style.getPropertyValue('--ps-card-rows') !== rows) card.style.setProperty('--ps-card-rows', rows);
+        // Some upstream panels own inline !important row spans. Override only
+        // their temporary homepage placement, leaving saved workspace spans intact.
+        const placement = window.innerWidth < 768 ? 'auto' : 'span var(--ps-card-rows, 1)';
+        if (card.style.getPropertyValue('grid-row') !== placement || card.style.getPropertyPriority('grid-row') !== 'important') {
+          card.style.setProperty('grid-row', placement, 'important');
+        }
+      }
+    });
+  }
   const directory = new Map<string, HTMLElement>();
-  for (const [key, title] of [['threat-timeline', 'Threat Timeline'], ['cii', 'Key Regions'], ['strategic-posture', 'AI Strategic Posture']]) {
+  for (const [key, title] of [['threat-timeline', 'Threat Timeline'], ['cii', 'Key Regions']]) {
     const card = element('section', 'ps-directory-card');
     card.style.order = String(RAIL.indexOf(key!) + 1);
-    card.append(element('h3', '', title!), element('p', '', 'No current source data in this layout. Open the workspace for availability and configuration.'), link('Open dashboard ↗', '/dashboard'));
+    card.append(element('h3', '', title!), element('p', '', 'Source data unavailable in this layout.'), link('Open dashboard ↗', '/dashboard'));
     directory.set(key!, card);
     rail.append(card);
   }
@@ -168,7 +189,8 @@ export function mountPlanetSlamHome(): () => void {
     ['shipping', 'Maritime Activity', 'Vessel tracking, chokepoints and maritime infrastructure.', '/dashboard?layers=ais,waterways'],
     ['military', 'Aviation Monitoring', 'Explore existing military and commercial flight layers.', '/dashboard?layers=flights,military'],
     ['cyber', 'Cyber Intelligence', 'Open the dedicated cyber intelligence workspace.', '/dashboard?variant=cyber'],
-    ['markets', 'Markets & Commodities', 'Market data and commodity monitoring.', '/dashboard?variant=finance'],
+    ['markets', 'Market indices', 'S&P 500, Nasdaq and Dow Jones from existing market feeds.', '/dashboard?variant=finance'],
+    ['strategic-posture', 'AI Strategic Posture', 'Source-backed strategic assessments and coverage gaps.', '/dashboard'],
     ['disaster-correlation', 'Disaster Cascade', 'Explore hazards and connected events.', '/dashboard'],
     ['cascade', 'Infrastructure Impact', 'Explore dependencies and infrastructure exposure.', '/dashboard'],
     ['live-webcams', 'Live Webcams', 'Open existing camera collections.', '/dashboard'],
@@ -213,6 +235,11 @@ export function mountPlanetSlamHome(): () => void {
         continue;
       }
       panel.classList.add('ps-module');
+      if (key === 'markets') {
+        panel.dispatchEvent(new Event('planetslam:market-indices'));
+        const title = panel.querySelector('.panel-title');
+        if (title) title.textContent = 'Market indices';
+      }
       panel.style.order = String(RAIL.includes(key) ? RAIL.indexOf(key) + 1 : CARDS.indexOf(key));
       const control = button('', () => {
         collapsed = collapsed.includes(key) ? collapsed.filter(item => item !== key) : [...collapsed, key];
@@ -223,8 +250,9 @@ export function mountPlanetSlamHome(): () => void {
       control.setAttribute('aria-label', `Toggle ${panel.querySelector('.panel-title')?.textContent || key}`);
       panel.querySelector('.panel-header')?.append(control);
       const full = link('Open dashboard ↗', '/dashboard', 'ps-module-link');
-      panel.append(full);
-      {
+      const actions = element('div', 'ps-module-actions');
+      actions.append(full);
+      if (key !== 'markets') {
         const more = button('Show full module', () => {
           const expanded = panel.classList.toggle('ps-expanded');
           more.textContent = expanded ? 'Show summary' : 'Show full module';
@@ -234,15 +262,26 @@ export function mountPlanetSlamHome(): () => void {
           if (expanded) requestAnimationFrame(() => panel.querySelector('.windowed-list')?.dispatchEvent(new Event('scroll')));
         });
         more.setAttribute('aria-expanded', 'false');
-        panel.append(more);
+        actions.append(more);
       }
+      panel.append(actions);
       applyCollapse(panel);
     }
+    for (const card of grid.querySelectorAll<HTMLElement>(':scope > .ps-module, :scope > .ps-directory-card')) {
+      if (!observedCards.has(card)) {
+        observedCards.add(card);
+        cardResizeObserver.observe(card);
+      }
+    }
+    scheduleCardLayout();
   }
   rail.append(critical);
   attachPanels();
-  const observer = new MutationObserver(attachPanels);
-  observer.observe(main, { childList: true, subtree: true });
+  const observer = new MutationObserver(records => {
+    if (records.some(record => record.type === 'childList')) attachPanels();
+    if (records.some(record => record.type === 'attributes' && (record.target as HTMLElement).parentElement === grid)) scheduleCardLayout();
+  });
+  observer.observe(main, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
 
   function updateHealth(): void {
     const all = dataFreshness.getAllSources();
@@ -325,6 +364,8 @@ export function mountPlanetSlamHome(): () => void {
   window.dispatchEvent(new Event('resize'));
   return () => {
     observer.disconnect();
+    cardResizeObserver.disconnect();
+    cancelAnimationFrame(cardLayoutFrame);
     unsubscribe();
     unsubscribeAvailability();
     clearInterval(interval);
