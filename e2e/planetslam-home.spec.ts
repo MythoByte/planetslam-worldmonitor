@@ -134,6 +134,8 @@ for (const width of [1440, 1024, 390]) {
     if (width < 1101) await page.getByRole('button', { name: 'Menu', exact: true }).click();
     const markets = page.locator('[data-panel="markets"].ps-module');
     await markets.scrollIntoViewIfNeeded();
+    await expect(markets.locator('.panel-content')).toHaveCSS('content-visibility', 'visible');
+    await expect(markets.locator('.panel-content')).toHaveCSS('contain-intrinsic-size', 'none');
     await expect(markets.locator('[data-market-symbol]')).toHaveCount(3);
     expect(await markets.locator('[data-market-symbol]').evaluateAll(rows => rows.map(row => row.getAttribute('data-market-symbol')))).toEqual(['^GSPC', '^DJI', '^IXIC']);
     expect(await markets.locator('[data-market-chart]').evaluateAll(rows => rows.map(row => row.getAttribute('data-market-chart')))).toEqual(['1', '3', '4']);
