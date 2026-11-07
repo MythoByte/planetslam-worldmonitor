@@ -623,6 +623,8 @@ const HOST_ORIGINS = Object.freeze({
 // Provider-level overrides win when the host is a CDN, cloud, or shared
 // platform that would otherwise point at the wrong country.
 const PROVIDER_ORIGINS = Object.freeze({
+  // OSV aggregates international vulnerability databases, rather than one issuing authority.
+  'Open Source Vulnerabilities (OSV)': null,
   'UMD GoTech Cyber Events Database': 'US',
   // Space edition: national issuing agencies keep their origin regardless of
   // worldwide coverage. ESA is intergovernmental; community space platforms

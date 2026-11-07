@@ -1,10 +1,10 @@
-# PlanetSlam Cyber dashboard — Phases 1–6
+# PlanetSlam Cyber dashboard — Phases 1–7
 
 Open `/dashboard?variant=cyber` or choose **Cyber** in the PlanetSlam edition
 switcher. The edition uses the shared layout/settings/theme and movable,
 resizable panels. New profiles enable the Cyber map. Existing saved map choices
 are preserved; **Show Cyber map** or an incident's **Locate on map** explicitly
-enables and reveals it. Attack statistics and installed version discovery remain later phases.
+enables and reveals it. Global attack statistics and automatic installed-version discovery are not provided; Phase 7 uses declared inventory.
 
 - **Cyber News:** source-linked headlines and short excerpts from BleepingComputer,
   Krebs on Security, and The Hacker News. Seven-day coverage, latest first, with
@@ -408,3 +408,121 @@ or account-synchronized, and clearing browser data removes it.
 pause** clears only observations and stops immediate recapture; saved cases remain.
 **Resume capture** admits the next usable current snapshot. Resetting all research
 also removes investigations and notes. Teardown stops refreshes and storage listeners.
+
+## Phase 7: My Environment
+
+**My Environment** is a browser-local workspace for declared software inventory,
+OSV version-query evidence and private remediation tasks. It performs no host,
+network, container or filesystem discovery. Inventory does not establish that the
+software is actually deployed, reachable or exploitable. No additional API key,
+backend inventory database, AI call, account or provider seeder is introduced.
+Phase 7 is implemented for review; merge/publication follow separate authorization.
+
+### Local imports and identity review
+
+Add a package manually or choose **Inventory JSON file**. The asset/environment
+label is local context. Supported JSON inputs are CycloneDX 1.4–1.7 components,
+SPDX 2.2/2.3 packages, and this minimal inventory format:
+
+```json
+{
+  "format": "planetslam-inventory",
+  "version": 1,
+  "packages": [{"name": "lodash", "version": "4.17.19", "ecosystem": "npm"}]
+}
+```
+
+Files are bounded to 5 MiB and 2,000 traversed component nodes, with at most 500
+unique normalized inventory rows. Parsing is local; raw SBOM metadata, properties,
+supplier information and file contents are not stored or uploaded. A preview
+shows duplicates, missing versions and unresolved identities before confirmation.
+Default import mode replaces the selected asset's inventory; users can explicitly
+choose to add entries instead. Other assets and saved remediation tasks remain.
+Unchanged asset/package/version identities keep stable IDs. Bad documents and
+oversized combined inventories are rejected without a partial import.
+
+PURLs identify supported public registries: npm, PyPI, Go, Maven, crates.io,
+RubyGems, NuGet and Packagist. Registry case/normalization rules are preserved;
+Maven identities include group and artifact. Unknown PURL types, private registry
+qualifiers, conflicting declared/PURL names or versions, missing versions and
+unsupported version identifiers cannot be queried automatically. Distro packages,
+CPE-only/vendor products, version ranges and moving tags remain unknown. Resolve
+identities explicitly with **Edit declaration**. A name resemblance to a CISA
+product is not treated as version applicability.
+
+See the [CycloneDX JSON reference](https://cyclonedx.org/docs/1.6/json/) and
+[SPDX package information](https://spdx.github.io/spdx-spec/v2.3.1/package-information/)
+for the source formats. This is a bounded extraction of identity fields, not a
+complete SBOM graph, licence or provenance validator.
+
+### Explicit external version queries
+
+Importing, opening the panel, showing a saved finding, reloading the page or
+editing inventory never initiates an OSV lookup. **Review this package lookup**
+or **Review lookups for filtered inventory** shows the exact outbound JSON first.
+The plan deduplicates identical registry/name/version identities across assets
+and admits at most 25 distinct package versions per run. It is not silently
+expanded if inventory changes.
+
+Only **Send N package versions to OSV** sends the reviewed registry ecosystem,
+package name and version directly to the public OSV query API. The request omits
+cookies and referrer data. Asset labels, raw SBOM, remediation owners and notes
+are excluded. OSV sees the selected software identities/versions and the user's
+network address. There is no server proxy or automatic background lookup.
+
+OSV applies its ecosystem version semantics and upstream normalization; the UI
+labels evidence as an OSV version-query result. It does not implement a universal
+local version comparator or infer applicability from keywords. Read the
+[official OSV query contract](https://google.github.io/osv.dev/post-v1-query/).
+Results retain record links, aliases, provider modification dates and individual
+observation times. Fixed-version markers apply only to the matching package's
+SEMVER/ECOSYSTEM ranges; they are provider guidance, not automatic upgrade commands.
+Withdrawn records are omitted. Other-package results and malformed data fail closed.
+
+Queries are serial, with at most five pages, 20 seconds per request, 2 MiB per page
+and 50 advisory entries per package lookup. Missing/failed pages, oversized data
+and repeated continuation tokens remain partial/failed coverage. A successful
+empty result means only that OSV returned no advisories for that declaration;
+it is never an all-clear. Failed/incomplete refreshes retain previous evidence
+with its original per-advisory observation times, prioritizing newly observed
+entries within the retained budget. No stale evidence is renewed as a fresh match.
+Older-than-seven-day lookups are visibly marked for explicit rechecking.
+
+**Cancel remaining OSV lookups**, hiding/closing the panel, changing inventory or
+leaving the dashboard cancels pending work and invalidates late responses. Already
+sent disclosures cannot be retracted. There is no automatic retry or closed-browser
+service. At most 100 lookup snapshots and 500 advisory entries are kept per profile;
+storage-limit failures preserve the last readable saved state.
+
+Current fresh KEV context is joined only by exact advisory/CVE aliases, retaining
+CISA's evidence of exploitation and required action. No KEV link does not establish
+absent exploitation; stale/unavailable KEV context remains unknown. Federal due
+requirements and actual local exposure are not inferred from a link.
+
+### Private remediation workflow and exports
+
+**Add to remediation list** freezes the package/version, asset context, advisory
+and its observation date. Track open, in-progress, resolved or accepted, with an
+owner, due date and up to 4,000 characters of notes. These are manual workflow
+states, not a check that patches were deployed. At most 200 tasks are retained.
+Inventory edits/removal do not automatically close tasks or rewrite their evidence;
+changed context/version is labeled for review. An old version's lookup is not
+reused for a new version. Tasks can be deleted explicitly.
+
+**Save remediation** commits edits. **Reload saved remediation** restores the
+actual form values, including when the panel's HTML cache is unchanged. Conflicting
+cross-tab saves reject the overwrite and preserve the draft for review. Storage is
+serialized through Web Locks where supported; otherwise coordination is best effort.
+
+**Export private environment JSON** includes saved inventory, lookup snapshots,
+remediation notes and coverage. **Export private remediation CSV** also contains
+private asset labels, owners and notes, with CSV quoting and formula-prefix
+neutralization. These are local downloads, not cloud uploads; unsaved edits are
+excluded. Export files are archives, not an automatic workspace-restore format.
+
+Data lives under `planetslam-cyber-environment-v1` on this browser/origin, without
+account synchronization or encryption. Failed reads are not an empty inventory;
+malformed data requires explicit reset. Writes are validated and read back before
+success. **Clear inventory and lookups; keep tasks** retains task snapshots and
+notes. **Reset all environment data and notes** explicitly deletes all workspace
+content. Clearing browser data also removes it.
