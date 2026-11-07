@@ -34,3 +34,11 @@
 .earth-table { width: 100%; font-size: 11px; border-collapse: collapse; }
 .earth-table th, .earth-table td { text-align: left; padding: 7px 5px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
 @media (max-width: 600px) { .earth-body { padding: 10px; } .earth-stats { gap: 5px; } .earth-stat { padding: 7px; } .earth-stat strong { font-size: 14px; } }
+
+.earth-hazard-browse { margin: 12px 0; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; font-size: 11px; }
+.earth-hazard-browse summary { cursor: pointer; color: var(--earth-accent); font-weight: 600; }
+.earth-hazard-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.earth-hazard-grid button { display: flex; gap: 6px; justify-content: space-between; align-items: center; text-align: left; font-size: 11px; }
+.earth-hazard-grid button[aria-pressed="true"] { border-color: var(--earth-accent); }
+.earth-hazard-grid strong { color: var(--earth-accent); font-variant-numeric: tabular-nums; }
+.earth-coverage-note { border-left: 2px solid var(--earth-accent); padding: 7px 10px; color: var(--text-secondary); font-size: 11px; }

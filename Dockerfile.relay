@@ -199,6 +199,8 @@ COPY scripts/seed-health-air-quality.mjs ./scripts/seed-health-air-quality.mjs
 COPY scripts/seed-earth.mjs ./scripts/seed-earth.mjs
 COPY scripts/_earth-providers.mjs ./scripts/_earth-providers.mjs
 COPY api/_earth-data.js ./api/_earth-data.js
+COPY api/_earth-history.js ./api/_earth-history.js
+COPY api/_seed-envelope.js ./api/_seed-envelope.js
 COPY scripts/seed-space.mjs ./scripts/seed-space.mjs
 COPY scripts/_space-providers.mjs ./scripts/_space-providers.mjs
 COPY scripts/_space-orbits.mjs ./scripts/_space-orbits.mjs

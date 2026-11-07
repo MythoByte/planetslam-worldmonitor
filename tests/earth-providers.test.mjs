@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { normalizeEarthquakes, normalizeEonet, normalizeNws, normalizeGdacs, normalizeTsunami, normalizeMetWeather, normalizeRiver,
-  normalizeEarthNews, fetchEarthSource } from '../scripts/_earth-providers.mjs';
+  normalizeEarthNews, fetchEarthSource, classifyEarthKind, classifyEarthHazards } from '../scripts/_earth-providers.mjs';
 import { EARTH_LOCATIONS, EARTH_GAUGES, validEarthData } from '../api/_earth-data.js';
 const now = Date.now(), iso = new Date(now).toISOString();
 
@@ -142,4 +142,99 @@ test('reporting excludes unrelated general-environment headlines while preservin
   const out = normalizeEarthNews(`<rss><channel>${item('Synthetic plastic packaging chemical study')}${item('Synthetic glacier retreat')}${item('Synthetic flood warning')}</channel></rss>`, 'news-guardian');
   assert.deepEqual(out.data.items.map(row => row.title), ['Synthetic glacier retreat', 'Synthetic flood warning']);
   assert.deepEqual(normalizeEarthNews(`<rss><channel>${item('Synthetic plastic packaging chemical study')}</channel></rss>`, 'news-guardian').data.items, []);
+});
+
+
+test('extended hazard categories retain specific threats before broad weather/storm/flood tags', () => {
+  const fixtures = [
+    ['Extreme Heat Warning', 'heat'], ['Heatwave', 'heat'], ['Extreme Cold Warning', 'cold'],
+    ['Wind Chill Advisory', 'cold'], ['Drought', 'drought'], ['Tornado Warning', 'tornado'],
+    ['Lightning warning', 'lightning'], ['Large hail', 'hail'], ['Winter Storm Warning', 'winter'],
+    ['Snow Squall Warning', 'winter'], ['Ice Storm Warning', 'winter'], ['Landslides', 'landslide'],
+    ['Rainfall-induced debris flow', 'landslide'], ['Avalanche Warning', 'avalanche'],
+    ['Coastal Flood Warning', 'coastal'], ['Storm Surge Warning', 'coastal'],
+    ['Lakeshore Flood Watch', 'coastal'], ['High Surf Advisory', 'coastal'],
+    ['Hazardous Seas Warning', 'coastal'], ['Rip Current Statement', 'coastal'],
+    ['Temperature Extremes', 'weather'], ['Severe Thunderstorm Warning', 'storm'],
+  ];
+  for (const [value, kind] of fixtures) assert.equal(classifyEarthKind(value), kind, value);
+  assert.deepEqual(classifyEarthHazards('Coastal Flood Warning'), ['coastal', 'flood']);
+  assert.deepEqual(classifyEarthHazards('Ice Storm Warning'), ['winter', 'storm']);
+  assert.equal(classifyEarthKind('coldplay headline'), 'other');
+});
+
+test('EONET landslide categories do not imply an avalanche; titles distinguish temperature extremes', () => {
+  const event = (id, category, title) => ({ id, title, closed: null, categories: [{ id: category }],
+    link: `https://eonet.gsfc.nasa.gov/${id}`, geometry: [{ type: 'Point', coordinates: [10, 20], date: iso }] });
+  const out = normalizeEonet({ events: [event('s1', 'landslides', 'Synthetic mudslide'),
+    event('s2', 'landslides', 'Synthetic avalanche'), event('s3', 'tempExtremes', 'Synthetic heatwave'),
+    event('s4', 'tempExtremes', 'Synthetic cold wave'), event('s5', 'tempExtremes', 'Synthetic temperature extremes'),
+    event('s6', 'drought', 'Synthetic drought'), event('s7', 'snow', 'Synthetic anomalous snowfall'),
+    event('s8', 'wildfires', 'Synthetic Cold Creek Fire')] });
+  assert.deepEqual(out.data.items.map(item => item.kind), ['landslide', 'avalanche', 'heat', 'cold', 'weather', 'drought', 'winter', 'wildfire']);
+  assert.equal(out.data.items[0].hazards.includes('avalanche'), false);
+  assert.equal(out.data.items[1].hazards.includes('landslide'), true);
+  assert.deepEqual(out.data.items[7].hazards, ['wildfire']);
+  assert.ok(out.data.items.every(item => item.severity === 'unknown'));
+});
+
+test('GDACS drought impact assessments retain a dedicated drought category', () => {
+  const out = normalizeGdacs(`<rss><channel><pubDate>${iso}</pubDate><item><title>Synthetic drought</title><link>https://www.gdacs.org/report.aspx?eventid=1</link>
+    <pubDate>${iso}</pubDate><gdacs:iscurrent>true</gdacs:iscurrent><gdacs:eventtype>DR</gdacs:eventtype><gdacs:eventid>1</gdacs:eventid>
+    <gdacs:alertlevel>Orange</gdacs:alertlevel><geo:Point><geo:lat>10</geo:lat><geo:long>20</geo:long></geo:Point></item></channel></rss>`, now);
+  assert.equal(out.data.items[0].kind, 'drought');
+  assert.equal(out.data.items[0].mode, 'observed');
+  assert.equal(out.data.items[0].status, 'Orange GDACS impact estimate');
+});
+
+test('NWS hail and lightning secondary tags require explicit hazard content, not safety boilerplate', () => {
+  const alert = (id, description, parameters = {}) => ({ properties: { id, '@id': `https://api.weather.gov/alerts/${id}`,
+    event: 'Severe Thunderstorm Warning', sent: iso, expires: new Date(now + 3600_000).toISOString(),
+    status: 'Actual', messageType: 'Alert', severity: 'Severe', description, parameters } });
+  const out = normalizeNws({ type: 'FeatureCollection', updated: iso, features: [
+    alert('s1', 'HAZARD...Quarter size hail and frequent lightning.\n\nSOURCE...Radar indicated.\n\nIMPACT...Damage possible.'),
+    alert('s2', 'HAZARD...60 mph wind gusts.\n\nSOURCE...Radar indicated.\n\nPRECAUTIONARY...Lightning may strike outside the storm. Hail may damage vehicles.'),
+    alert('s3', '', { maxHailSize: ['1.00'] }), alert('s4', '', { maxHailSize: ['0.00'] }),
+  ] }, now);
+  assert.deepEqual(out.data.items.map(item => item.hazards), [['storm', 'hail', 'lightning'], ['storm'], ['storm', 'hail'], ['storm']]);
+  assert.ok(out.data.items.every(item => item.kind === 'storm' && item.mode === 'warning'));
+});
+
+test('news keeps secondary coastal/flood and winter/storm headline tags with attribution', () => {
+  const content = `<rss><channel><item><title>Synthetic coastal flood warning</title><link>https://example.org/coast</link><pubDate>${iso}</pubDate></item></channel></rss>`;
+  const item = normalizeEarthNews(content, 'news-guardian').data.items[0];
+  assert.equal(item.kind, 'coastal');
+  assert.deepEqual(item.hazards, ['coastal', 'flood']);
+  assert.equal(item.official, false);
+  assert.equal(item.summary, '');
+});
+
+
+test('EONET combines fixed broad and extended requests by event identity, preserving newest geometry', async () => {
+  const calls = [];
+  const event = (id, category, title, longitude = 10, date = iso) => ({ id, title, closed: null, categories: [{ id: category }],
+    link: `https://eonet.gsfc.nasa.gov/${id}`, geometry: [{ type: 'Point', coordinates: [longitude, 20], date }] });
+  const out = await fetchEarthSource('eonet', { fetchFn: async url => {
+    calls.push(url);
+    return Response.json({ events: url.includes('category=')
+      ? [event('s1', 'landslides', 'Synthetic avalanche', 12), event('s2', 'drought', 'Synthetic drought')]
+      : [event('s1', 'landslides', 'Synthetic avalanche', 11, new Date(now - 1000).toISOString()), event('s3', 'wildfires', 'Synthetic fire')] });
+  } });
+  assert.equal(calls.length, 2);
+  assert.ok(calls.includes('https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=300'));
+  assert.ok(calls.includes('https://eonet.gsfc.nasa.gov/api/v3/events?category=drought,landslides,snow,tempExtremes&status=open&limit=300'));
+  assert.equal(out.data.items.length, 3);
+  assert.equal(out.data.items.find(item => item.id === 'eonet:s1').longitude, 12);
+  assert.ok(out.data.items.every(item => item.sourceId === 'eonet'));
+  assert.equal(out.observedAt, now);
+});
+
+test('EONET extended failure and malformed/beyond-bound responses reject the whole refresh', async () => {
+  for (const bad of [() => new Response('outage', { status: 503 }), () => Response.json({ events: [{ malformed: true }] }),
+    () => Response.json({ events: Array(301).fill({}) })]) {
+    await assert.rejects(fetchEarthSource('eonet', { fetchFn: async url => url.includes('category=') ? bad() : Response.json({ events: [] }) }));
+  }
+  const empty = await fetchEarthSource('eonet', { fetchFn: async () => Response.json({ events: [] }) });
+  assert.deepEqual(empty.data.items, []);
+  assert.equal(empty.observedAt, null);
 });

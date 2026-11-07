@@ -9,11 +9,12 @@ export interface EarthMapMarker {
   severity: string;
   latitude: number;
   longitude: number;
+  recordedAt?: number;
 }
 export interface EarthMapSnapshot { markers: EarthMapMarker[] }
 export const EARTH_MARKER_EVENT = 'planetslam:earth-select';
 export function earthMarkerLabel(marker: EarthMapMarker): string {
-  return `${marker.title} · ${marker.kind === 'camera' ? 'webcam location' : `${marker.hazard} · ${marker.mode} · ${marker.severity}`}`;
+  return `${marker.recordedAt ? `Historical snapshot ${new Date(marker.recordedAt).toISOString()} · ` : ''}${marker.title} · ${marker.kind === 'camera' ? 'webcam location' : `${marker.hazard} · ${marker.mode} · ${marker.severity}`}`;
 }
 export function isEarthPosition(latitude: unknown, longitude: unknown): boolean {
   return typeof latitude === 'number' && Number.isFinite(latitude) && Math.abs(latitude) <= 90

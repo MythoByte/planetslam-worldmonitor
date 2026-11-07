@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { fetchEarthDataset, currentEarthWeather, ageEarthEnvelope, filterEarthEvents, relatedEarthNews, getSelectedEarthEventId, setSelectedEarthEventId } from '../src/services/earth.ts';
-import type { EarthEvent, EarthEnvelope, EarthItems, EarthNewsItem, EarthWeatherItem, EarthSource } from '../src/types/earth.ts';
+import { earthHistoryEvents, fetchEarthDataset, currentEarthWeather, ageEarthEnvelope, filterEarthEvents, relatedEarthNews, getSelectedEarthEventId, setSelectedEarthEventId } from '../src/services/earth.ts';
+import type { EarthHistoryData, EarthEvent, EarthEnvelope, EarthItems, EarthNewsItem, EarthWeatherItem, EarthSource } from '../src/types/earth.ts';
 const now = Date.now();
 const event = (patch: Partial<EarthEvent> = {}): EarthEvent => ({ id: 'synthetic-event', sourceId: 'synthetic', title: 'Synthetic flood',
   kind: 'flood', latitude: 10, longitude: 20, region: 'Europe', severity: 'moderate', status: 'Ongoing', mode: 'observed',
@@ -94,4 +94,22 @@ test('weather conditions advance to the current model hour and never reuse an ob
   assert.equal(projected.current!.temperatureC, 20); assert.deepEqual(projected.forecast.map(item => item.temperatureC), [21]);
   assert.equal(currentEarthWeather(weather, hour + 3 * 3600_000).current, null);
   assert.equal(weather.current.temperatureC, 10);
+});
+
+test('compound event tags make hail and lightning independently discoverable', () => {
+  const storm = event({ kind: 'storm', hazards: ['storm', 'hail', 'lightning'] });
+  assert.equal(filterEarthEvents([storm], { hazard: 'hail' }, now).length, 1);
+  assert.equal(filterEarthEvents([storm], { hazard: 'lightning' }, now).length, 1);
+  assert.equal(filterEarthEvents([storm], { hazard: 'tornado' }, now).length, 0);
+});
+
+test('historical snapshots retain past warning expiry, independently age the archive and never fabricate missing revisions', () => {
+  const historical = event({ expiresAt: now - 1000, observedAt: now - 7200_000 });
+  const data: EarthHistoryData = { items: [{ recordedAt: now - 3600_000, sources: [], eventKeys: ['r1', 'missing'], totalEvents: 2, truncated: false }], events: [{ key: 'r1', event: historical }] };
+  const history: EarthEnvelope<EarthHistoryData> = { ...envelope(), dataset: 'history', expiresAt: now + 86400_000, data };
+  const aged = ageEarthEnvelope(history, now);
+  assert.deepEqual(earthHistoryEvents(aged.data!, aged.data!.items[0]!), [historical]);
+  assert.equal(ageEarthEnvelope(history, now + 2 * 3600_000).status, 'stale');
+  assert.equal(ageEarthEnvelope(history, now + 86400_000).data, null);
+  assert.deepEqual(ageEarthEnvelope({ ...history, expiresAt: null }, now + 8 * 86400_000).data!.items, []);
 });

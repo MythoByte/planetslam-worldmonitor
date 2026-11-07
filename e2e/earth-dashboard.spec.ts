@@ -56,10 +56,11 @@ for (const width of [1440, 390]) {
     await mounted(page, 'health', 'Retrieval health');
     await page.locator('#mapContainer').scrollIntoViewIfNeeded();
     const map = page.getByTestId('earth-map-controls'); await expect(map).toBeVisible();
-    if (!(await map.evaluate(element => (element as HTMLDetailsElement).open))) await map.locator('summary').click();
+    if (!(await map.evaluate(element => (element as HTMLDetailsElement).open))) await map.locator('summary').first().click();
     await map.getByLabel('Inspect Earth location', { exact: true }).selectOption('event:fixture-volcano');
     await expect(map.getByRole('region', { name: 'Selected map location' })).toContainText('Synthetic Kīlauea activity');
-    await map.getByLabel('Wildfire', { exact: true }).uncheck();
+    await map.locator('.earth-map-layer-options > summary').click();
+    await map.getByLabel('Wildfires', { exact: true }).uncheck();
     expect(await page.evaluate(() => localStorage.getItem('planetslam-earth-map-v1'))).not.toContain('wildfire');
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
     await page.screenshot({ path: info.outputPath(`earth-map-${width}.png`) });
@@ -87,7 +88,7 @@ test('Earth outage labels and retry recover without inventing an all-clear', asy
 
 test('Earth replays a deferred camera selection and recovers an offline snapshot', async ({ page }, info) => {
   await installEarthFixtures(page); await boot(page);
-  const controls = page.getByTestId('earth-map-controls'); await controls.locator('summary').click();
+  const controls = page.getByTestId('earth-map-controls'); await controls.locator('summary').first().click();
   await expect(page.locator('#country-deep-dive-panel')).not.toBeVisible();
   await controls.getByLabel('Inspect Earth location', { exact: true }).selectOption('camera:paria-colorado');
   await mounted(page, 'cameras', 'Colorado River');
@@ -107,4 +108,77 @@ test('Earth replays a deferred camera selection and recovers an offline snapshot
     await mounted(page, 'events', 'Related reporting');
     await expect(panel(page, 'events').getByRole('region', { name: 'Selected Earth event' })).toContainText('Synthetic Kīlauea activity');
   }
+});
+
+for (const width of [1440, 390]) {
+  test(`Earth extended hazards and recorded history at ${width}px`, async ({ page }, info) => {
+    const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+    await page.setViewportSize({ width, height: 1000 });
+    await installEarthFixtures(page); await boot(page);
+    await mounted(page, 'alerts', 'Synthetic heat warning');
+    const alerts = panel(page, 'alerts');
+    await alerts.locator('.earth-hazard-browse > summary').click();
+    await alerts.locator('[data-earth-browse="hail"]').click();
+    await expect(alerts.getByLabel('Hazard', { exact: true })).toHaveValue('hail');
+    await expect(alerts).toContainText('Synthetic severe thunderstorm with hail');
+    await expect(alerts).not.toContainText('Synthetic heat warning');
+    await alerts.getByRole('button', { name: 'Details: Synthetic severe thunderstorm with hail', exact: true }).click();
+    await expect(alerts.getByRole('region', { name: 'Selected Earth event' })).toContainText('Hail threats');
+    await page.screenshot({ path: info.outputPath(`earth-phase4-hazards-${width}.png`) });
+    await page.locator('#mapContainer').scrollIntoViewIfNeeded();
+    const map = page.getByTestId('earth-map-controls');
+    await map.locator('summary').first().click();
+    await map.getByRole('button', { name: 'Explore event history', exact: true }).click();
+    const history = map.getByRole('region', { name: 'Earth event history' });
+    await expect(history).toContainText('Historical snapshots · not current alerts');
+    await expect(history).toContainText('3 recorded states');
+    const inspect = map.getByLabel('Inspect Earth location', { exact: true });
+    await expect(inspect.locator('option')).toHaveText(['Choose an event…', 'flood: Synthetic expired flood warning']);
+    await history.getByText('Recorded events (2)', { exact: true }).click();
+    await expect(history).toContainText('Synthetic unmapped landslide record');
+    await expect(history).toContainText('no map coordinates');
+    await inspect.selectOption('event:past-flood');
+    await expect(map.getByRole('region', { name: 'Selected map location' })).toContainText('Historical record');
+    await expect(map.getByRole('region', { name: 'Selected map location' })).toContainText('original expiry');
+    const slider = map.getByLabel('Recorded snapshot', { exact: true });
+    await slider.focus(); await slider.press('ArrowRight');
+    await expect(slider).toHaveValue('1');
+    await expect(inspect.locator('option')).toHaveCount(1);
+    await history.getByText('Sources at this recorded time', { exact: true }).click();
+    await expect(history).toContainText('unavailable');
+    await slider.press('ArrowRight');
+    await expect(slider).toHaveValue('2');
+    await expect(history).toContainText('capacity limited');
+    await inspect.selectOption('event:past-coastal');
+    await expect(map.getByRole('region', { name: 'Selected map location' })).toContainText('Synthetic coastal snapshot');
+    await map.scrollIntoViewIfNeeded();
+    await map.evaluate(element => { element.scrollTop = 0; });
+    await page.screenshot({ path: info.outputPath(`earth-phase4-history-${width}.png`) });
+    await map.getByRole('button', { name: 'Play history', exact: true }).click();
+    await expect(slider).toHaveValue('0');
+    await expect(slider).toHaveValue('1');
+    await expect(map.getByRole('button', { name: 'Pause playback', exact: true })).toBeVisible();
+    await map.getByRole('button', { name: 'Pause playback', exact: true }).click();
+    await map.getByRole('button', { name: 'Return to current events', exact: true }).click();
+    await expect(map.getByRole('region', { name: 'Earth event history' })).toHaveCount(0);
+    await expect(inspect.locator('option[value="event:fixture-volcano"]')).toHaveCount(1);
+    await expect(inspect.locator('option[value="event:past-flood"]')).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+    expect(errors).toEqual([]);
+  });
+}
+
+test('Earth history commissioning and retry never reuse current events as past records', async ({ page }, info) => {
+  await installEarthFixtures(page, { history: { status: 'unavailable', data: { items: [], events: [] }, fetchedAt: null, expiresAt: null } });
+  await boot(page);
+  const map = page.getByTestId('earth-map-controls');
+  await map.locator('summary').first().click();
+  await map.getByRole('button', { name: 'Explore event history', exact: true }).click();
+  await expect(map).toContainText('History begins when the upgraded worker runs');
+  await expect(map.getByLabel('Inspect Earth location', { exact: true }).locator('option')).toHaveCount(1);
+  await page.screenshot({ path: info.outputPath('earth-phase4-uncommissioned.png') });
+  await installEarthFixtures(page);
+  await map.getByRole('button', { name: 'Reload recorded history', exact: true }).click();
+  await expect(map.getByRole('region', { name: 'Earth event history' })).toContainText('3 recorded states');
+  await expect(map.getByLabel('Inspect Earth location', { exact: true }).locator('option[value="event:past-flood"]')).toHaveCount(1);
 });

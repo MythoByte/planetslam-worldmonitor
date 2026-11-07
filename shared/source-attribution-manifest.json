@@ -7963,6 +7963,9 @@
       "status": "excluded",
       "references": [
         {
+          "path": "api/_earth-history.js"
+        },
+        {
           "path": "scripts/_cyber-providers.mjs"
         },
         {
