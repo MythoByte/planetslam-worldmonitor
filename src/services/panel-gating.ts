@@ -1,3 +1,4 @@
+import { isPlanetSlamSourcePanel } from '@/config/planetslam-panels';
 /**
  * Premium access, panel gate reasons, and CTA routing.
  *
@@ -196,4 +197,9 @@ export function resolveGateAction(reason: PanelGateReason, deps: GateActionDeps)
     default:
       return () => {};
   }
+}
+
+/** Local source availability is panel-scoped and never grants a hosted Pro identity. */
+export function hasPanelDataAccess(panelId: string): boolean {
+  return isPlanetSlamSourcePanel(panelId) || hasPremiumAccess();
 }

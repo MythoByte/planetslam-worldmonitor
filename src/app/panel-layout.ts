@@ -1,3 +1,4 @@
+import { isPlanetSlamSourcePanel } from '@/config/planetslam-panels';
 import { isPanelHiddenForBrand } from '@/config/panels';
 import { BRAND, IS_PLANETSLAM } from '@/config/brand';
 import { clearTelegramIntelCache } from '@/services/telegram-intel';
@@ -991,8 +992,8 @@ export class PanelLayoutManager implements AppModule {
     // the same verdict at a period-end boundary.
     const billingAwareFreeTier = resolveBillingAwareGateReason(PanelGateReason.FREE_TIER);
     for (const [key, panel] of Object.entries(this.ctx.panels)) {
-      const isPremium = WEB_PREMIUM_PANELS.has(key)
-        || (this.ctx.isDesktopApp && key === 'telegram-intel');
+      const isPremium = !isPlanetSlamSourcePanel(key) && (WEB_PREMIUM_PANELS.has(key)
+        || (this.ctx.isDesktopApp && key === 'telegram-intel'));
       let reason = getPanelGateReason(state, isPremium);
 
       // Clerk-pro-only panels: even when hasPremiumAccess() returns

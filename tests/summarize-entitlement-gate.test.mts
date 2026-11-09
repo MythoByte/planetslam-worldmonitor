@@ -217,8 +217,8 @@ describe('summarization.ts wiring (source-grep — module not loadable under nod
     );
   });
 
-  it('gate probe is wired to hasPremiumAccess (dual-signal entitlement)', () => {
-    assert.match(src, /configureSummarizeGate\(\s*\(\)\s*=>\s*hasPremiumAccess\(\)/);
+  it('gate probe uses panel-scoped access (hosted entitlement or configured PlanetSlam source)', () => {
+    assert.match(src, /configureSummarizeGate\(\s*\(\)\s*=>\s*hasPanelDataAccess\('daily-market-brief'\)/);
   });
 
   it('every premium dispatch flows through tryApiProvider (single choke point)', () => {

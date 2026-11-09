@@ -1,3 +1,4 @@
+import { isPlanetSlamSourcePanel, PLANETSLAM_SOURCE_PANEL_NAMES } from './planetslam-panels';
 import { DEFAULT_PANELS as EARTH_PANELS, DEFAULT_MAP_LAYERS as EARTH_MAP_LAYERS, MOBILE_DEFAULT_MAP_LAYERS as EARTH_MOBILE_MAP_LAYERS } from './variants/earth';
 import { DEFAULT_PANELS as CYBER_PANELS, DEFAULT_MAP_LAYERS as CYBER_MAP_LAYERS } from './variants/cyber';
 import type { PanelConfig, MapLayers, DataSourceId } from '@/types';
@@ -1256,12 +1257,30 @@ export function getEffectivePanelConfig(key: string, variant: string): PanelConf
   if (!base) return { name: key, enabled: false, priority: 2 };
   const override = VARIANT_PANEL_OVERRIDES[variant]?.[key] ?? {};
   const config = { ...base, ...override };
+  if (isPlanetSlamSourcePanel(key)) {
+    const { premium: _premium, ...local } = config;
+    return { ...local, name: PLANETSLAM_SOURCE_PANEL_NAMES[key]!, enabled: true };
+  }
   return IS_PLANETSLAM && config.premium === 'locked'
     ? { ...config, enabled: false }
     : config;
 }
 
-/** PlanetSlam does not advertise panels requiring an upstream paid plan. */
+/** Restore only old lock-owned disables; a later ordinary user disable stays disabled. */
+export function restorePlanetSlamSourcePanels(settings: Record<string, PanelConfig>, variant: string): Record<string, PanelConfig> {
+  if (!IS_PLANETSLAM) return settings;
+  let next = settings;
+  const defaults = new Set(VARIANT_DEFAULTS[variant] ?? []);
+  for (const [key, config] of Object.entries(settings)) {
+    if (!isPlanetSlamSourcePanel(key) || config.premium !== 'locked') continue;
+    if (next === settings) next = { ...settings };
+    const { premium: _premium, ...local } = config;
+    next[key] = { ...local, name: PLANETSLAM_SOURCE_PANEL_NAMES[key]!, enabled: defaults.has(key) ? true : config.enabled };
+  }
+  return next;
+}
+
+/** PlanetSlam does not advertise panels requiring an unavailable upstream service. */
 export function isPanelHiddenForBrand(key: string, variant = SITE_VARIANT): boolean {
   return IS_PLANETSLAM && getEffectivePanelConfig(key, variant).premium === 'locked';
 }
@@ -1303,7 +1322,7 @@ export const FREE_MAX_PANELS = 40;
 export const FREE_MAX_SOURCES = 80;
 
 export function isFreePanelCapCounted(key: string): boolean {
-  return key !== 'map' && !key.startsWith('cw-');
+  return key !== 'map' && !key.startsWith('cw-') && !isPlanetSlamSourcePanel(key);
 }
 
 export function countFreePanelCapUsage(panelSettings: Record<string, PanelConfig>): number {
@@ -1332,7 +1351,7 @@ export function restoreFreeMapPanelAccess(
  * Mirrors the entitlement checks in panel-layout.ts (single source of truth).
  */
 export function isPanelEntitled(key: string, config: PanelConfig, isPro = false): boolean {
-  if (!config.premium) return true;
+  if (isPlanetSlamSourcePanel(key) || !config.premium) return true;
   // Dodo entitlements unlock all premium panels
   if (isEntitled()) return true;
   const apiKeyPanels = ['stock-analysis', 'stock-backtest', 'daily-market-brief', 'market-implications', 'regional-intelligence', 'deduction', 'chat-analyst', 'wsb-ticker-scanner', 'trade-policy', 'global-procurement'];

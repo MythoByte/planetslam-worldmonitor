@@ -1,3 +1,4 @@
+import { isDockerLocalAnalysisSession } from '../../../_shared/docker-local-analysis';
 import type {
   ServerContext,
   SummarizeArticleRequest,
@@ -178,6 +179,7 @@ export async function summarizeArticle(
 ): Promise<SummarizeArticleResponse> {
   const premiumIdentity = await resolvePremiumCallerIdentity(ctx.request);
   const isPremium = premiumIdentity.isPremium;
+  const localAnalysis = await isDockerLocalAnalysisSession(ctx.request);
   const { provider: requestedProvider, mode = 'brief', geoContext = '', variant = 'full', lang = 'en' } = req;
   // A restricted caller is served by their whole policy chain, in order,
   // whatever provider the client fallback chain named; the default chain is
@@ -198,7 +200,7 @@ export async function summarizeArticle(
   // Bounded like geoContext and the intel-brief framework: the append is
   // free text that the sanitizer scans and the system prompt carries.
   const MAX_SYSTEM_APPEND_LEN = 2000;
-  const systemAppend = isPremium && typeof req.systemAppend === 'string' ? req.systemAppend.slice(0, MAX_SYSTEM_APPEND_LEN) : '';
+  const systemAppend = (isPremium || localAnalysis) && typeof req.systemAppend === 'string' ? req.systemAppend.slice(0, MAX_SYSTEM_APPEND_LEN) : '';
   const requiresPremium = mode !== 'translate';
   // Every empty-summary envelope below (denied, skipped, rejected, failed)
   // serves no LLM output; the gateway reserved a daily-quota slot for this
@@ -209,7 +211,7 @@ export async function summarizeArticle(
     return payload;
   };
 
-  if (requiresPremium && !isPremium) {
+  if (requiresPremium && !isPremium && !localAnalysis) {
     const billingDenial = premiumIdentity.billingDenial;
     if (billingDenial) {
       if (billingDenial.retryable) {

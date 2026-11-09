@@ -1,3 +1,5 @@
+import { restorePlanetSlamSourcePanels } from '@/config/panels';
+import { hasPanelDataAccess } from '@/services/panel-gating';
 import type { Monitor, PanelConfig, MapLayers } from '@/types';
 import { WEB_APP_ORIGIN } from '@/config/web-origin';
 import {
@@ -973,8 +975,8 @@ export class App {
     }
 
     const _wmAccess = hasPremiumAccess();
-    if (_wmAccess) {
-      if (shouldPrime('trade-policy')) {
+    if (_wmAccess || hasPanelDataAccess('daily-market-brief')) {
+      if (_wmAccess && shouldPrime('trade-policy')) {
         primeTask('tradePolicy', () => this.dataLoader.loadTradePolicy());
       }
       if (shouldPrime('stock-analysis')) {
@@ -986,7 +988,7 @@ export class App {
       if (shouldPrime('daily-market-brief')) {
         primeTask('dailyMarketBrief', () => this.dataLoader.loadDailyMarketBrief());
       }
-      if (shouldPrime('market-implications')) {
+      if (_wmAccess && shouldPrime('market-implications')) {
         primeTask('marketImplications', () => this.dataLoader.loadMarketImplications());
       }
     }
@@ -1137,6 +1139,12 @@ export class App {
         STORAGE_KEYS.panels,
         DEFAULT_PANELS
       );
+
+      const sourcePanels = restorePlanetSlamSourcePanels(panelSettings, SITE_VARIANT);
+      if (sourcePanels !== panelSettings) {
+        panelSettings = sourcePanels;
+        saveToStorage(STORAGE_KEYS.panels, panelSettings);
+      }
 
       // One-time migration: preserve user preferences across panel key renames.
       const PANEL_KEY_RENAMES_MIGRATION_KEY = 'worldmonitor-panel-key-renames-v2.6.8';
@@ -4017,13 +4025,13 @@ export class App {
         'stockAnalysis',
         () => this.dataLoader.loadStockAnalysis(),
         REFRESH_INTERVALS.stockAnalysis,
-        () => hasPremiumAccess() && this.isPanelNearViewport('stock-analysis'),
+        () => hasPanelDataAccess('stock-analysis') && this.isPanelNearViewport('stock-analysis'),
       );
       this.refreshScheduler.scheduleRefresh(
         'daily-market-brief',
         () => this.dataLoader.loadDailyMarketBrief(),
         REFRESH_INTERVALS.dailyMarketBrief,
-        () => hasPremiumAccess() && this.isPanelNearViewport('daily-market-brief'),
+        () => hasPanelDataAccess('daily-market-brief') && this.isPanelNearViewport('daily-market-brief'),
       );
       this.refreshScheduler.scheduleRefresh(
         // inFlight lock key matches the hydration loader's runGuarded key
@@ -4031,7 +4039,7 @@ export class App {
         'stockBacktest',
         () => this.dataLoader.loadStockBacktest(),
         REFRESH_INTERVALS.stockBacktest,
-        () => hasPremiumAccess() && this.isPanelNearViewport('stock-backtest'),
+        () => hasPanelDataAccess('stock-backtest') && this.isPanelNearViewport('stock-backtest'),
       );
       this.refreshScheduler.scheduleRefresh(
         'market-implications',

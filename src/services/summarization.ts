@@ -27,7 +27,7 @@ import {
   suppressServerSummarization,
   suppressServerSummarizationFor,
 } from '@/services/summarize-gate';
-import { hasPremiumAccess } from '@/services/panel-gating';
+import { hasPanelDataAccess } from '@/services/panel-gating';
 import {
   createSummarizationAttemptState,
   logChainOutcome,
@@ -86,10 +86,11 @@ const premiumNewsClient = new NewsServiceClient(getRpcBaseUrl(), {
 // anon/free principals fall straight to the browser-T5 provider with ZERO
 // network attempts — before this gate, every summarize attempt fanned out up
 // to 2 doomed RPCs (ollama→openrouter through the same gated endpoint).
-// panel-gating's hasPremiumAccess is the dual-signal source of truth.
+// Hosted users retain the dual-signal entitlement check. PlanetSlam's local
+// daily brief uses its own configured providers through the signed-session gateway.
 // translateText is deliberately NOT gated: it uses mode='translate' via the
 // plain newsClient, which the server allows for non-premium callers.
-configureSummarizeGate(() => hasPremiumAccess());
+configureSummarizeGate(() => hasPanelDataAccess('daily-market-brief'));
 const summaryBreaker = createCircuitBreaker<SummarizeArticleResponse>({ name: 'News Summarization', cacheTtlMs: 0 });
 
 const summaryResultBreaker = createCircuitBreaker<SummarizationResult | null>({

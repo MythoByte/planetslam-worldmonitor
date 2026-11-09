@@ -1,3 +1,4 @@
+import { isPlanetSlamSourcePanel } from '@/config/planetslam-panels';
 import type { AppContext, AppModule } from '@/app/app-context';
 import { fetchUkmtoIncidents } from '@/services/ukmto-incidents';
 import { getRpcBaseUrl } from '@/services/rpc-client';
@@ -138,7 +139,7 @@ import { enrichEventsWithExposure } from '@/services/population-exposure';
 import { debounce, getCircuitBreakerCooldownInfo } from '@/utils';
 import { addLocalDays, localYmd } from '@/utils/local-date';
 import { isFeatureAvailable, isFeatureEnabled } from '@/services/runtime-config';
-import { hasPremiumAccess } from '@/services/panel-gating';
+import { hasPremiumAccess, hasPanelDataAccess } from '@/services/panel-gating';
 import { isDesktopRuntime, toApiUrl } from '@/services/runtime';
 import { filterFeedsByLanguage } from '@/services/feed-language';
 import { getAiFlowSettings } from '@/services/ai-flow-settings';
@@ -583,7 +584,7 @@ export class DataLoaderManager implements AppModule {
   init(): void {
     this.boundMarketWatchlistHandler = () => {
       void this.loadMarkets().then(async () => {
-        if (hasPremiumAccess()) {
+        if (hasPanelDataAccess('daily-market-brief')) {
           // All three loaders own a different panel and swallow their own
           // failures, so serializing them only added latency to a watchlist
           // edit. The boot path already fans them out the same way (#6770).
@@ -1113,10 +1114,10 @@ export class DataLoaderManager implements AppModule {
       if (shouldLoadAny(['markets', 'heatmap', 'commodities', 'crypto', 'energy-complex', 'crypto-heatmap', 'defi-tokens', 'ai-tokens', 'other-tokens'])) {
         tasks.push({ name: 'markets', task: () => runGuarded('markets', () => this.loadMarkets()) });
       }
-      if (hasPremiumAccess() && shouldLoad('stock-analysis')) {
+      if (hasPanelDataAccess('stock-analysis') && shouldLoad('stock-analysis')) {
         tasks.push({ name: 'stockAnalysis', task: () => runGuarded('stockAnalysis', () => this.loadStockAnalysis()) });
       }
-      if (hasPremiumAccess() && shouldLoad('stock-backtest')) {
+      if (hasPanelDataAccess('stock-backtest') && shouldLoad('stock-backtest')) {
         tasks.push({ name: 'stockBacktest', task: () => runGuarded('stockBacktest', () => this.loadStockBacktest()) });
       }
       // The daily market brief is loaded by the post-hydration pass below
@@ -1308,7 +1309,7 @@ export class DataLoaderManager implements AppModule {
 
     this.updateSearchIndex();
 
-    if (hasPremiumAccess() && runOncePerViewport('premium-briefs', ['daily-market-brief', 'market-implications'])) {
+    if (hasPanelDataAccess('daily-market-brief') && runOncePerViewport('premium-briefs', ['daily-market-brief', 'market-implications'])) {
       await Promise.allSettled([
         this.loadDailyMarketBrief(),
         this.loadMarketImplications(),
@@ -2881,7 +2882,8 @@ export class DataLoaderManager implements AppModule {
   }
 
   async loadDailyMarketBrief(force = false): Promise<void> {
-    if (!hasPremiumAccess()) return;
+    if (!hasPanelDataAccess('daily-market-brief')) return;
+    if (isPlanetSlamSourcePanel('daily-market-brief') && !this.ctx.panels['daily-market-brief']) return;
     if (this.ctx.isDestroyed || this.ctx.inFlight.has('dailyMarketBrief')) return;
 
     this.dailyBriefGeneration++;

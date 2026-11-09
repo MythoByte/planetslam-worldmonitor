@@ -13,7 +13,7 @@ afterEach(() => document.body.replaceChildren());
 describe('Cyber native map adapters', () => {
   it('projects SVG markers from real geographic coordinates and dispatches safe keyboard selection', () => {
     const svg = d3.select(document.body).append('svg');
-    const map = Object.assign(Object.create(MapComponent.prototype), { dynamicLayerGroup: svg.append('g'), cyberMap: snapshot });
+    const map = Object.assign(Object.create(MapComponent.prototype), { dynamicLayerGroup: svg.append('g'), cyberMap: snapshot, state: { zoom: 1 } });
     const projection = d3.geoEquirectangular().translate([400, 200]).scale(100);
     const picked = vi.fn(); window.addEventListener('planetslam:cyber-marker', picked, { once: true });
     map.renderCyberMap(projection);
@@ -47,8 +47,10 @@ describe('Cyber native map adapters', () => {
   it('keeps globe marker latitude/longitude and escapes the point label', () => {
     const globe: Record<string, ReturnType<typeof vi.fn>> = {};
     for (const key of ['pointsData', 'pointLat', 'pointLng', 'pointColor', 'pointRadius', 'pointAltitude', 'pointLabel', 'pointsTransitionDuration', 'onPointClick']) globe[key] = vi.fn(() => globe);
-    const map = Object.assign(Object.create(GlobeMap.prototype), { globe, initialized: true, destroyed: false, webglLost: false, layers: {}, spaceOverlay: { aurora: [], launches: [] }, spaceOrbits: null });
+    const map = Object.assign(Object.create(GlobeMap.prototype), { globe, initialized: true, destroyed: false, webglLost: false, layers: {}, spaceOverlay: { aurora: [], launches: [] }, spaceOrbits: null, flushMarkers: vi.fn() });
     map.setCyberMap(snapshot);
+    expect(map.flushMarkers).toHaveBeenCalledOnce();
+    map.paintSpaceOverlay();
     expect(globe.pointLat).toHaveBeenCalledWith('latitude'); expect(globe.pointLng).toHaveBeenCalledWith('longitude');
     const points = globe.pointsData!.mock.calls[0]![0];
     expect(points[0]).toMatchObject({ latitude: 40, longitude: -100, cyberKind: 'incident' });
