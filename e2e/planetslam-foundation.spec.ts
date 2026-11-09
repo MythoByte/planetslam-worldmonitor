@@ -9,7 +9,7 @@ for (const width of [1440, 768, 390]) {
     await seedAnonymousDashboard(page, 'full', {
       initializeOnce: { sessionKey: 'ps-profile', clearStorage: true, localStorage: {
         'worldmonitor-theme': 'dark', 'mobile-map-collapsed': 'false',
-        'worldmonitor-panels': JSON.stringify({ politics: { name: 'World News', enabled: true, priority: 0 }, 'stock-analysis': { name: 'Stock Analysis', enabled: true, priority: 1 }, 'latest-brief': { name: 'Latest Brief', enabled: true, priority: 1 } }),
+        'worldmonitor-panels': JSON.stringify({ politics: { name: 'World News', enabled: true, priority: 0 }, 'stock-analysis': { name: 'Stock Analysis', enabled: false, priority: 1, premium: 'locked' }, 'latest-brief': { name: 'Latest Brief', enabled: true, priority: 1 } }),
       } },
     });
     // Exercise the brand policy with no remembered dismissal.
@@ -33,7 +33,9 @@ for (const width of [1440, 768, 390]) {
       await expect(page.locator('.site-footer-copy')).toHaveText(`© ${await page.evaluate(() => new Date().getFullYear())} PlanetSlam`);
       await expect(page.locator('#footerDownloadMount')).toHaveCount(0);
       await expect(page.locator('.pro-banner')).toHaveCount(0);
-      await expect(page.locator('#panelsGrid [data-panel="stock-analysis"], #panelsGrid [data-panel="latest-brief"]')).toHaveCount(0);
+      await expect(page.locator('#panelsGrid [data-panel="latest-brief"]')).toHaveCount(0);
+      await expect(page.locator('#panelsGrid [data-panel="stock-analysis"]')).toBeAttached();
+      await expect(page.locator('#panelsGrid [data-panel="stock-analysis"] .panel-pro-badge')).toHaveCount(0);
       await expect(page.locator('.mobile-panel-nav-chip-pro')).toHaveCount(0);
       await expect(page.locator('.ai-widget-block-pro')).toBeHidden();
       await expect(page.locator('html')).not.toHaveClass(/wm-pro-banner-reserved/);
@@ -60,7 +62,9 @@ for (const width of [1440, 768, 390]) {
     if (branded) {
       await expect(page.locator('.upgrade-pro-section')).toHaveCount(0);
       await page.locator('#us-tab-panels').click();
-      await expect(page.locator('#usPanelToggles [data-panel="stock-analysis"], #usPanelToggles [data-panel="latest-brief"]')).toHaveCount(0);
+      await expect(page.locator('#usPanelToggles [data-panel="latest-brief"]')).toHaveCount(0);
+      await expect(page.locator('#usPanelToggles [data-panel="stock-analysis"]')).toHaveCount(1);
+      await expect(page.locator('#usPanelToggles [data-panel="stock-analysis"] .panel-toggle-pro-badge')).toHaveCount(0);
       await page.screenshot({ path: `docs/planetslam/evidence/planetslam-${width}-panels.png` });
       await page.locator('#us-tab-settings').click();
     }

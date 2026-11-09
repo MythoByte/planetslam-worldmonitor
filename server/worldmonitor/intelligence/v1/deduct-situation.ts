@@ -1,3 +1,4 @@
+import { isDockerLocalAnalysisSession } from '../../../_shared/docker-local-analysis';
 import type {
     ServerContext,
     DeductSituationRequest,
@@ -112,7 +113,7 @@ export async function deductSituation(
 
     const query = typeof req.query === 'string' ? req.query.slice(0, MAX_QUERY_LEN).trim() : '';
     const geoContext = typeof req.geoContext === 'string' ? req.geoContext.slice(0, MAX_GEO_LEN).trim() : '';
-    const isPremium = await isCallerPremium(ctx.request);
+    const isPremium = await isCallerPremium(ctx.request) || await isDockerLocalAnalysisSession(ctx.request);
     const framework = isPremium && typeof req.framework === 'string' ? req.framework.slice(0, MAX_FRAMEWORK_LEN) : '';
 
     if (!query) {

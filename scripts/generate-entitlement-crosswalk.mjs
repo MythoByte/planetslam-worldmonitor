@@ -72,7 +72,7 @@ for (const f of ['src/config/panels.ts','convex/constants.ts','src/services/gate
 
 
 // ------------------------------------------------------- code-site gates
-const PAT = "features\\.tier\\s*[<>=]|tier\\s*[<>]=?\\s*1|!hasPremiumAccess\\(\\)|features\\.apiAccess|features\\.mcpAccess|features\\.dataExport|requiresPremium|isCallerPremium\\(|has(Account)?EmbedAccess\\(|hasDesktopKeyAccess\\(|admitsDesktopKeyPrincipal\\(|resolvePremiumCallerIdentity\\(|!isProUser\\(\\)";
+const PAT = "features\\.tier\\s*[<>=]|tier\\s*[<>]=?\\s*1|!hasPremiumAccess\\(\\)|!hasPanelDataAccess\\(|features\\.apiAccess|features\\.mcpAccess|features\\.dataExport|requiresPremium|isCallerPremium\\(|has(Account)?EmbedAccess\\(|hasDesktopKeyAccess\\(|admitsDesktopKeyPrincipal\\(|resolvePremiumCallerIdentity\\(|!isProUser\\(\\)";
 const out = execSync(`grep -rnE "${PAT}" --include="*.ts" --include="*.js" src api convex server 2>/dev/null || true`, { encoding: 'utf8', maxBuffer: 1 << 26 });
 const sites = [];
 for (const ln of out.split('\n')) {
@@ -96,6 +96,7 @@ for (const ln of out.split('\n')) {
     : /isCallerPremium\(/.test(t)    ? 'isCallerPremium'
     : /resolvePremiumCallerIdentity\(/.test(t) ? 'resolvePremiumCallerIdentity'
     : /hasPremiumAccess\(\)/.test(t)  ? 'hasPremiumAccess'
+    : /hasPanelDataAccess\(/.test(t) ? 'hasPanelDataAccess'
     : /isProUser\(\)/.test(t)         ? 'isProUser'
     : /features\.tier|tier\s*[<>]=?\s*1/.test(t) ? 'tier'
     : 'other';
@@ -276,6 +277,7 @@ const SITE_MAP = [
   [/widget-store/,                            { cap: 'widgets.custom' }], // NOTE: matches no current gate
   [/^api\/v2\/shipping\/webhooks\//, { exclude: 'consumer of shipping premium gate — preserves billing verification denial', preds: ['resolvePremiumCallerIdentity'] }],
   [/entitlements|entitlement-check|premium-check|pro-entitlement|billing|payments\//, { exclude: 'entitlement plumbing — resolves/propagates state, gates nothing itself' , preds: ['apiAccess','isCallerPremium','resolvePremiumCallerIdentity','tier'] }],
+  [/^src\/app\/data-loader\.ts$/, { cap: 'markets.brief', note: 'panel-scoped access: configured PlanetSlam sources or hosted premium', preds: ['hasPanelDataAccess'] }],
   [/UnifiedSettings|data-loader|http\.ts|apiPlanLimitUsage|mcpProTokens|gateway\.ts|shipping/, { exclude: 'consumer of a gate mapped elsewhere — renders or forwards, does not define' , preds: ['apiAccess','hasPremiumAccess','isCallerPremium','isProUser','mcpAccess','tier'] }],
 ];
 
@@ -384,7 +386,8 @@ const SITE_BASELINE = {
   "server/worldmonitor/trade/v1/get-tariff-trends.ts::isCallerPremium": 1,
   "server/worldmonitor/trade/v1/get-us-import-duty.ts::isCallerPremium": 1,
   "server/worldmonitor/trade/v1/list-comtrade-flows.ts::isCallerPremium": 1,
-  "src/app/data-loader.ts::hasPremiumAccess": 13,
+  "src/app/data-loader.ts::hasPanelDataAccess": 1,
+  "src/app/data-loader.ts::hasPremiumAccess": 12,
   "src/app/event-handlers.ts::isProUser": 2,
   "src/app/panel-layout.ts::hasPremiumAccess": 1,
   "src/components/RegionalIntelligenceBoard.ts::hasPremiumAccess": 1,

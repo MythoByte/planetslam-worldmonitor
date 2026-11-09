@@ -8,7 +8,7 @@ import DOMPurify from 'dompurify';
 import type { NewsItem, DeductContextDetail } from '@/types';
 import { buildNewsContext } from '@/utils/news-context';
 import { getActiveFrameworkForPanel } from '@/services/analysis-framework-store';
-import { hasPremiumAccess } from '@/services/panel-gating';
+import { hasPanelDataAccess } from '@/services/panel-gating';
 import { FrameworkSelector } from './FrameworkSelector';
 import { extractDeductionProbability } from './deduction-probability';
 import { IntelligenceServiceClient } from '@/services/generated-rpc-clients';
@@ -122,7 +122,7 @@ export class DeductionPanel extends Panel {
         }) as EventListener;
         document.addEventListener('wm:deduct-context', this.contextHandler);
 
-        this.fwSelector = new FrameworkSelector({ panelId: 'deduction', isPremium: hasPremiumAccess(), panel: this });
+        this.fwSelector = new FrameworkSelector({ panelId: 'deduction', isPremium: hasPanelDataAccess('deduction'), panel: this });
         this.header.appendChild(this.fwSelector.el);
     }
 

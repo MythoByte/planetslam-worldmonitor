@@ -1,3 +1,5 @@
+import { isDockerLocalAnalysisSession } from '../server/_shared/docker-local-analysis';
+import { PLANETSLAM_LOCAL_ANALYSIS_ROUTES } from '../src/shared/planetslam-local-panels';
 import assert from 'node:assert/strict';
 import { afterEach, describe, it } from 'node:test';
 
@@ -13,6 +15,9 @@ const SESSION_SECRET = 'docker-country-brief-session-secret-32';
 const originalFetch = globalThis.fetch;
 const originalEnv = {
   LOCAL_API_MODE: process.env.LOCAL_API_MODE,
+  PLANETSLAM_LOCAL_ANALYSIS: process.env.PLANETSLAM_LOCAL_ANALYSIS,
+  OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
+  OLLAMA_API_URL: process.env.OLLAMA_API_URL,
   UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
   UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
   WM_SESSION_SECRET: process.env.WM_SESSION_SECRET,
@@ -36,6 +41,9 @@ function configureGatewayEnv(mode: 'docker' | 'cloud'): void {
   process.env.UPSTASH_REDIS_REST_TOKEN = 'redis-test-token';
   process.env.WM_SESSION_SECRET = SESSION_SECRET;
   delete process.env.WORLDMONITOR_VALID_KEYS;
+  delete process.env.PLANETSLAM_LOCAL_ANALYSIS;
+  delete process.env.OPENROUTER_API_KEY;
+  delete process.env.OLLAMA_API_URL;
 }
 
 function installRedisPipelineMock(options: { initialDirectLlmCount?: number } = {}) {
@@ -117,6 +125,13 @@ function makeGateway(handlerCalls: Record<string, number>) {
       },
     },
   ];
+  for (const [path, method] of Object.entries(PLANETSLAM_LOCAL_ANALYSIS_ROUTES)) {
+    if (path === OTHER_PREMIUM_PATH) continue;
+    routes.push({ method, path, handler: async () => {
+      handlerCalls.other += 1;
+      return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
+    } });
+  }
   return createDomainGateway(routes);
 }
 
@@ -297,4 +312,51 @@ describe('Docker country-intel gateway auth (#5415)', () => {
     assert.ok(directKeys.every((key) => key.includes(`docker:${hashKeySync(CLIENT_IP)}`)));
     assert.notEqual(firstToken, secondToken);
   });
+});
+
+
+describe('operator-enabled PlanetSlam source-backed panels', () => {
+  for (const [path, method] of Object.entries(PLANETSLAM_LOCAL_ANALYSIS_ROUTES)) {
+    it(`allows a signed Docker session for ${method} ${path} only after opt-in`, async () => {
+      configureGatewayEnv('docker');
+      installRedisPipelineMock();
+      const token = (await issueSessionToken()).token;
+      const calls = { country: 0, other: 0 };
+      const gateway = makeGateway(calls);
+      const opts = { method: method as 'GET' | 'POST' };
+      assert.equal((await gateway(request(path, token, opts))).status, 401);
+      process.env.PLANETSLAM_LOCAL_ANALYSIS = 'true';
+      assert.equal((await gateway(request(path, token, opts))).status, 401, 'provider must be configured');
+      process.env.OPENROUTER_API_KEY = 'synthetic-provider-key';
+      assert.equal((await gateway(request(path, 'wms_invalid', opts))).status, 401);
+      assert.equal((await gateway(request(path, token, opts))).status, 200);
+      assert.equal(calls.other, 1);
+      process.env.LOCAL_API_MODE = 'cloud';
+      assert.equal((await gateway(request(path, token, opts))).status, 401, 'cloud entitlement stays enforced');
+    });
+  }
+  it('retains per-IP LLM spend limits for source-backed stock analysis', async () => {
+    configureGatewayEnv('docker');
+    process.env.PLANETSLAM_LOCAL_ANALYSIS = 'true';
+    process.env.OPENROUTER_API_KEY = 'synthetic-provider-key';
+    installRedisPipelineMock({ initialDirectLlmCount: 50 });
+    const calls = { country: 0, other: 0 };
+    const response = await makeGateway(calls)(request(OTHER_PREMIUM_PATH, (await issueSessionToken()).token));
+    assert.equal(response.status, 429);
+    assert.equal(calls.other, 0);
+  });
+});
+
+
+it('local analysis handlers independently require the signed self-hosted session', async () => {
+  configureGatewayEnv('docker');
+  process.env.PLANETSLAM_LOCAL_ANALYSIS = 'true';
+  process.env.OPENROUTER_API_KEY = 'synthetic-provider-key';
+  const path = '/api/news/v1/summarize-article';
+  const token = (await issueSessionToken()).token;
+  assert.equal(await isDockerLocalAnalysisSession(request(path, token, { method: 'POST' })), true);
+  assert.equal(await isDockerLocalAnalysisSession(request(path, 'wms_invalid', { method: 'POST' })), false);
+  assert.equal(await isDockerLocalAnalysisSession(request('/api/latest-brief', token)), false);
+  process.env.LOCAL_API_MODE = 'cloud';
+  assert.equal(await isDockerLocalAnalysisSession(request(path, token, { method: 'POST' })), false);
 });

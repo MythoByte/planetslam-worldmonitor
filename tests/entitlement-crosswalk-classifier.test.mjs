@@ -95,7 +95,7 @@ describe('entitlement crosswalk classifier', () => {
 
   it('a preds allow-list never contains an unknown predicate kind', () => {
     const KNOWN = new Set([
-      'tier', 'hasPremiumAccess', 'isProUser', 'apiAccess',
+      'tier', 'hasPremiumAccess', 'hasPanelDataAccess', 'isProUser', 'apiAccess',
       'mcpAccess', 'dataExport', 'embedAccess', 'isCallerPremium', 'resolvePremiumCallerIdentity',
       'requiresPremium', 'other',
       // Plan 2026-10-25-001 (U1 added the kind to the generator; U4 classified its sites).
@@ -156,4 +156,11 @@ describe('entitlement crosswalk gate-count baseline', () => {
       );
     }
   });
+});
+
+
+it('classifies the source-backed brief guard without claiming other predicates or files', () => {
+  assert.equal(classify(site('src/app/data-loader.ts', 'hasPanelDataAccess'))?.cap, 'markets.brief');
+  assert.equal(classify(site('src/App.ts', 'hasPanelDataAccess')), null);
+  assert.equal(classify(site('src/services/unknown.ts', 'hasPanelDataAccess')), null);
 });

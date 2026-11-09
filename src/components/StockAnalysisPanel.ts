@@ -1,3 +1,4 @@
+import { isPlanetSlamSourcePanel } from '@/config/planetslam-panels';
 import { Panel } from './Panel';
 import { t } from '@/services/i18n';
 import type { StockAnalysisResult } from '@/services/stock-analysis';
@@ -96,7 +97,7 @@ export class StockAnalysisPanel extends Panel {
   public renderAnalyses(items: StockAnalysisResult[], historyBySymbol: StockAnalysisHistory = {}, source: 'live' | 'cached' = 'live'): void {
     if (items.length === 0) {
       this.setDataBadge('unavailable');
-      this.showRetrying('No premium stock analyses available yet.');
+      this.showRetrying(isPlanetSlamSourcePanel('stock-analysis') ? 'No stock analyses available yet.' : 'No premium stock analyses available yet.');
       return;
     }
 

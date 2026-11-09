@@ -1,3 +1,4 @@
+import { isPlanetSlamSourcePanel, PLANETSLAM_SOURCE_PANEL_NAMES } from '@/config/planetslam-panels';
 import { IS_PLANETSLAM } from '@/config/brand';
 import { hasNoWorkingPanelSource, setPanelSourceUnavailable } from '@/services/panel-source-availability';
 import { isDesktopRuntime } from '../services/runtime';
@@ -245,6 +246,9 @@ export class Panel {
   private destroyed = false;
 
   constructor(options: PanelOptions) {
+    if (isPlanetSlamSourcePanel(options.id)) {
+      options = { ...options, title: PLANETSLAM_SOURCE_PANEL_NAMES[options.id]!, premium: undefined };
+    }
     this.panelId = options.id;
     this.element = document.createElement('div');
     this.element.className = `panel ${options.className || ''}`;
