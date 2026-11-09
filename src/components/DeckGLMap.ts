@@ -1,3 +1,6 @@
+import { withLayerIcons } from './deck-layer-icons';
+import { layerMenuIcon } from './map-layer-icons';
+import './map-layer-icons.css';
 import { fetchWeatherRadarFrame, getCachedWeatherRadarFrame, WEATHER_RADAR_MAX_AGE_MS, type WeatherRadarFrame } from '@/services/weather-radar';
 import './weather-radar.css';
 import { type EarthMapSnapshot, type EarthMapMarker, earthMarkerLabel } from '@/types/earth-map';
@@ -2667,7 +2670,7 @@ export class DeckGLMap {
       layers.push(...this.createNewsLocationsLayer());
     }
 
-    const result = layers.filter(Boolean) as LayersList;
+    const result = layers.filter((layer): layer is Layer => Boolean(layer)).map(withLayerIcons) as LayersList;
     const elapsed = performance.now() - startTime;
     if (import.meta.env.DEV && elapsed > 16) {
       console.warn(`[DeckGLMap] buildLayers took ${elapsed.toFixed(2)}ms (>16ms budget), ${result.length} layers`);
@@ -6208,7 +6211,7 @@ export class DeckGLMap {
           <div class="layer-toggle-row" data-layer="${key}">
             <label class="layer-toggle${isLocked ? ' layer-toggle-locked' : ''}" data-layer="${key}">
               <input type="checkbox" ${this.state.layers[key as keyof MapLayers] ? 'checked' : ''}${isLocked ? ' disabled' : ''}>
-              <span class="toggle-icon">${icon}</span>
+              <span class="toggle-icon">${layerMenuIcon(icon)}</span>
               <span class="toggle-label">${label}${isLocked ? ' \uD83D\uDD12' : ''}${isEnhanced ? ' <span class="layer-pro-badge">PRO</span>' : ''}</span>
             </label>
             <button type="button" class="layer-explain-btn${hasExplanation ? ' has-layer-explanation' : ''}" data-layer="${key}" aria-label="${explainLabel}">i</button>
