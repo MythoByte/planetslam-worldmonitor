@@ -1,3 +1,4 @@
+import { IS_PLANETSLAM } from '@/config/brand';
 import { withLayerIcons } from './deck-layer-icons';
 import { layerMenuIcon } from './map-layer-icons';
 import './map-layer-icons.css';
@@ -2155,13 +2156,13 @@ export class DeckGLMap {
     layers.push(...createEarthMapLayers(this.earthMap));
     layers.push(...createCyberMapLayers(this.cyberMap));
     // Native geographic layers follow MapLibre pan/zoom; never screen-positioned dots.
-    if (this.spaceOverlay.aurora.length) layers.push(new ScatterplotLayer<SpaceAuroraPoint>({
+    if (mapLayers.aurora && this.spaceOverlay.aurora.length) layers.push(new ScatterplotLayer<SpaceAuroraPoint>({
       id: 'space-aurora-forecast', data: this.spaceOverlay.aurora,
       getPosition: point => [point.longitude, point.latitude], getRadius: 42_000,
       getFillColor: point => [65, 235, 140, Math.round(35 + point.probability * 1.5)],
       radiusMinPixels: 1, pickable: true,
     }));
-    if (this.spaceOverlay.launches.length) layers.push(new ScatterplotLayer<SpaceLaunchMarker>({
+    if (mapLayers.spaceports && this.spaceOverlay.launches.length) layers.push(new ScatterplotLayer<SpaceLaunchMarker>({
       id: 'space-upcoming-launches', data: this.spaceOverlay.launches,
       getPosition: launch => [launch.longitude, launch.latitude], getRadius: 15_000,
       getFillColor: [255, 188, 80, 235], getLineColor: [255, 240, 190, 255],
@@ -6183,7 +6184,7 @@ export class DeckGLMap {
 
   private createLayerToggles(): void {
     const toggles = document.createElement('div');
-    toggles.className = 'layer-toggles deckgl-layer-toggles';
+    toggles.className = `layer-toggles deckgl-layer-toggles${IS_PLANETSLAM ? ' planetslam-layer-picker' : ''}`;
 
     const layerDefs = getLayersForVariant((SITE_VARIANT || 'full') as MapVariant, 'deck');
     const premiumUnlocked = hasPremiumAccess(getAuthState());

@@ -1161,7 +1161,8 @@
         "canadaRoads": "Carreteras de Canadá",
         "canadaAlerts": "Alertas de Canadá",
         "notamAirspace": "Restricciones de espacio aéreo NOTAM",
-        "no2Activity": "Actividad industrial"
+        "no2Activity": "Actividad industrial",
+        "aurora": "Aurora forecast"
       },
       "layersTitle": "capas",
       "layerSearch": "Buscar capas...",

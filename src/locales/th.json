@@ -1324,7 +1324,8 @@
         "canadaRoads": "ถนนในแคนาดา",
         "canadaAlerts": "การแจ้งเตือนแคนาดา",
         "notamAirspace": "ข้อจำกัดเขตอากาศ NOTAM",
-        "no2Activity": "กิจกรรมอุตสาหกรรม"
+        "no2Activity": "กิจกรรมอุตสาหกรรม",
+        "aurora": "Aurora forecast"
       },
       "tooltip": {
         "earthquake": "แผ่นดินไหว",

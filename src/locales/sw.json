@@ -1469,7 +1469,8 @@
         "canadaRoads": "Barabara za Kanada",
         "canadaAlerts": "Tahadhari za Kanada",
         "notamAirspace": "Vikwazo vya Anga la NOTAM",
-        "no2Activity": "Shughuli za viwanda"
+        "no2Activity": "Shughuli za viwanda",
+        "aurora": "Aurora forecast"
       },
       "tooltip": {
         "earthquake": "Tetemeko la ardhi",

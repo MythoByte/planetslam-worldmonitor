@@ -1477,7 +1477,8 @@
         "canadaRoads": "Дороги Canada",
         "canadaAlerts": "Сповіщення Канади",
         "notamAirspace": "Обмеження повітряного простору NOTAM",
-        "no2Activity": "Промислова активність"
+        "no2Activity": "Промислова активність",
+        "aurora": "Aurora forecast"
       },
       "tooltip": {
         "earthquake": "Землетрус",

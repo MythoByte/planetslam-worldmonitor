@@ -278,7 +278,7 @@ export class MapComponent {
     const group = this.dynamicLayerGroup?.append('g').attr('class', 'space-forecast-overlay');
     if (!group) return;
     // Sample the model grid on the lightweight renderer to bound mobile SVG work.
-    const aurora = this.spaceOverlay.aurora.filter(point => Math.round(point.longitude) % 2 === 0 && Math.round(point.latitude) % 2 === 0);
+    const aurora = (this.state.layers.aurora ? this.spaceOverlay.aurora : []).filter(point => Math.round(point.longitude) % 2 === 0 && Math.round(point.latitude) % 2 === 0);
     for (const point of aurora) {
       const position = projection([point.longitude, point.latitude]);
       if (!position) continue;
@@ -286,7 +286,7 @@ export class MapComponent {
         .attr('r', 2.2).attr('fill', '#41eb8c').attr('fill-opacity', 0.15 + point.probability / 150)
         .append('title').text(`Aurora forecast: model intensity ${point.probability} / 100. Not a local visibility guarantee.`);
     }
-    for (const launch of this.spaceOverlay.launches) {
+    for (const launch of this.state.layers.spaceports ? this.spaceOverlay.launches : []) {
       const position = projection([launch.longitude, launch.latitude]);
       if (!position) continue;
       group.append(IS_PLANETSLAM ? 'image' : 'circle')
@@ -738,11 +738,12 @@ export class MapComponent {
 
   private createLayerToggles(): HTMLElement {
     const toggles = document.createElement('div');
-    toggles.className = 'layer-toggles';
+    toggles.className = `layer-toggles${IS_PLANETSLAM ? ' planetslam-layer-picker' : ''}${IS_PLANETSLAM && (SITE_VARIANT === 'full' || SITE_VARIANT === 'space') ? ' global-space-layers' : ''}`;
     toggles.id = 'layerToggles';
 
     // Variant-aware layer buttons
     const fullLayers: (keyof MapLayers)[] = [
+      ...(IS_PLANETSLAM ? ['satellites', 'spaceports', 'aurora', 'webcams'] as (keyof MapLayers)[] : []),
       'iranAttacks',                                      // Iran conflict
       'conflicts', 'hotspots', 'sanctions', 'protests',  // geopolitical
       'bases', 'nuclear', 'irradiators',                 // military/strategic
@@ -810,7 +811,7 @@ export class MapComponent {
     ];
     // Filter sunset and renderer-incompatible layers so the SVG/mobile picker
     // cannot expose a toggle whose layer has no SVG paint path.
-    const layers = (SITE_VARIANT === 'earth' ? ['dayNight'] as (keyof MapLayers)[] : SITE_VARIANT === 'cyber' ? [] : SITE_VARIANT === 'space' ? ['satellites', 'spaceports', 'webcams'] as (keyof MapLayers)[]
+    const layers = (SITE_VARIANT === 'earth' ? ['dayNight'] as (keyof MapLayers)[] : SITE_VARIANT === 'cyber' ? [] : SITE_VARIANT === 'space' ? ['satellites', 'spaceports', 'aurora', 'webcams'] as (keyof MapLayers)[]
                  : SITE_VARIANT === 'tech' ? techLayers
                  : SITE_VARIANT === 'finance' ? financeLayers
                  : SITE_VARIANT === 'happy' ? happyLayers

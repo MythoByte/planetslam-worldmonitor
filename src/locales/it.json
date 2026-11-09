@@ -1161,7 +1161,8 @@
         "canadaRoads": "Strade del Canada",
         "canadaAlerts": "Allerte Canada",
         "notamAirspace": "Restrizioni Spazio Aereo NOTAM",
-        "no2Activity": "Attività industriale"
+        "no2Activity": "Attività industriale",
+        "aurora": "Aurora forecast"
       },
       "layersTitle": "Livelli",
       "layerSearch": "Cerca livelli...",

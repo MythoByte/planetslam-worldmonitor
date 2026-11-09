@@ -47,11 +47,11 @@ for (const width of [1440, 390]) {
     await expect(panel('news').getByText('Telescope science acceptance headline')).toHaveCount(0);
     await expect(panel('neo')).toContainText('not an impact prediction');
     await page.locator('#mapContainer').scrollIntoViewIfNeeded();
-    await expect(page.locator('[data-testid="space-map-controls"]')).toBeVisible();
-    await page.locator('[data-testid="space-map-controls"] summary').click();
-    await expect(page.locator('[data-testid="space-map-controls"]')).toContainText('Aurora: fresh');
-    await page.getByLabel('Aurora forecast', { exact: true }).uncheck();
-    expect(await page.evaluate(() => localStorage.getItem('planetslam-space-map-overlays-v1'))).toContain('"aurora":false');
+    const aurora = page.locator('.layer-toggle[data-layer="aurora"]');
+    await expect(aurora).toBeVisible();
+    await aurora.click();
+    await expect(page).toHaveURL(url => url.searchParams.has('layers') && !url.searchParams.get('layers')!.split(',').includes('aurora'));
+    expect(await page.evaluate(() => localStorage.getItem('worldmonitor-layers'))).toContain('"aurora":false');
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
     await page.screenshot({ path: testInfo.outputPath(`space-${width}.png`), fullPage: true });
     await testInfo.attach('Space dashboard with synthetic responses', { path: testInfo.outputPath(`space-${width}.png`), contentType: 'image/png' });
@@ -62,7 +62,7 @@ for (const width of [1440, 390]) {
       await panel('cameras').scrollIntoViewIfNeeded();
       await expect(panel('cameras').locator('[data-camera-favorite="starbase"]')).toHaveAttribute('aria-pressed', 'true');
     }).toPass({ timeout: 15_000 });
-    await expect(page.locator('[data-testid="space-map-controls"] input').first()).not.toBeChecked();
+    await expect(aurora).not.toHaveClass(/active/);
   });
 }
 

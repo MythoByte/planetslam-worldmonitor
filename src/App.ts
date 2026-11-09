@@ -1,3 +1,4 @@
+import { GLOBAL_SPACE_PANELS } from '@/config/variants/space';
 import { TECH_CYBER_PANELS } from '@/config/variants/cyber';
 import { DEFAULT_MAP_TIME_RANGE } from '@/config/map-defaults';
 import { restorePlanetSlamSourcePanels } from '@/config/panels';
@@ -1027,6 +1028,9 @@ export class App {
     // Use mobile-specific defaults on first load (no saved layers)
     const defaultLayers = isMobile ? MOBILE_DEFAULT_MAP_LAYERS : DEFAULT_MAP_LAYERS;
 
+    // Read before loadFromStorage merges newly introduced defaults and before
+    // other migrations persist that merged object.
+    const savedAuroraPreference = loadFromStorage<Partial<MapLayers>>(STORAGE_KEYS.mapLayers, {}).aurora;
     let mapLayers: MapLayers;
     let panelSettings: Record<string, PanelConfig>;
 
@@ -1335,6 +1339,20 @@ export class App {
       }
     }
 
+    // Add the newly native Global blocks once; later user toggles remain authoritative.
+    if (IS_PLANETSLAM && currentVariant === 'full') {
+      const migration = 'planetslam-global-space-panels-v1';
+      if (!storageAvailable || !safeStorageGet(migration)) {
+        for (const [key, config] of Object.entries(GLOBAL_SPACE_PANELS)) {
+          panelSettings[key] = { ...config, ...panelSettings[key], enabled: true };
+        }
+        if (storageAvailable) {
+          saveToStorage(STORAGE_KEYS.panels, panelSettings);
+          safeStorageSet(migration, 'done');
+        }
+      }
+    }
+
     if (IS_PLANETSLAM && currentVariant === 'tech') {
       const migration = 'planetslam-tech-cyber-panels-v1';
       if (!storageAvailable || !safeStorageGet(migration)) {
@@ -1347,6 +1365,12 @@ export class App {
         }
       }
       if (panelSettings['cyber-news']) panelSettings['cyber-news'].enabled = false;
+    }
+
+    // Carry the old overlay preference into the native layer state once.
+    if ((currentVariant === 'space' || (IS_PLANETSLAM && currentVariant === 'full')) && typeof savedAuroraPreference !== 'boolean') {
+      mapLayers.aurora = loadFromStorage('planetslam-space-map-overlays-v1', { aurora: true }).aurora === true;
+      if (storageAvailable) saveToStorage(STORAGE_KEYS.mapLayers, mapLayers);
     }
 
     const initialUrlState: ParsedMapUrlState | null = parseMapUrlState(window.location.search, mapLayers);

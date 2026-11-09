@@ -683,6 +683,8 @@ export interface PanelConfig {
 }
 
 export interface MapLayers {
+  /** NOAA aurora forecast, controlled by the normal layer selector. */
+  aurora?: boolean;
   conflicts: boolean;
   bases: boolean;
   cables: boolean;

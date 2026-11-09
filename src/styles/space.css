@@ -103,3 +103,5 @@
 .space-brief-coverage small { color: var(--text-dim); font-size: 10px; line-height: 1.6; }
 .space-panel [data-brief-detail] > summary { cursor: pointer; padding: 12px 0; }
 .space-brief-citations a:focus-visible, .space-panel [data-brief-detail] > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.space-panel-icon { flex-shrink: 0; margin-right: 5px; }

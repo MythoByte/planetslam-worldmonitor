@@ -1327,7 +1327,8 @@
         "canadaRoads": "Οδικό δίκτυο Καναδά",
         "canadaAlerts": "Ειδοποιήσεις Καναδά",
         "notamAirspace": "Περιορισμοί Εναέριου Χώρου NOTAM",
-        "no2Activity": "Βιομηχανική δραστηριότητα"
+        "no2Activity": "Βιομηχανική δραστηριότητα",
+        "aurora": "Aurora forecast"
       },
       "tooltip": {
         "earthquake": "Σεισμός",

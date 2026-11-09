@@ -1324,7 +1324,8 @@
         "canadaRoads": "Đường bộ Canada",
         "canadaAlerts": "Cảnh báo Canada",
         "notamAirspace": "Hạn chế không phận NOTAM",
-        "no2Activity": "Hoạt động công nghiệp"
+        "no2Activity": "Hoạt động công nghiệp",
+        "aurora": "Aurora forecast"
       },
       "tooltip": {
         "earthquake": "Động đất",

@@ -1333,7 +1333,8 @@
         "canadaRoads": "Canada Roads",
         "canadaAlerts": "Canada Alerts",
         "notamAirspace": "Ограничения воздушного пространства NOTAM",
-        "no2Activity": "Промышленная активность"
+        "no2Activity": "Промышленная активность",
+        "aurora": "Aurora forecast"
       },
       "tooltip": {
         "earthquake": "Землетрясение",

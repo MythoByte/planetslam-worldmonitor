@@ -38,3 +38,25 @@
 }
 
 .planetslam-menu-icon { display: inline-block; vertical-align: middle; object-fit: contain; }
+
+/* Match the base layer: layered !important rules outrank unlayered ones. */
+@layer base {
+@media (max-width: 768px) {
+  .layer-toggles.global-space-layers {
+    display: flex !important;
+    max-width: calc(100% - 20px);
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  .global-space-layers > .layer-toggle-row:not([data-layer="satellites"]):not([data-layer="spaceports"]):not([data-layer="webcams"]):not([data-layer="aurora"]),
+  .global-space-layers > .layer-help-btn { display: none; }
+}
+}
+
+/* Slightly wider labels, while still fitting narrow map panels. */
+.planetslam-layer-picker.deckgl-layer-toggles {
+  width: min(290px, calc(100% - 20px));
+  max-width: calc(100% - 20px);
+}
+.planetslam-layer-picker .layer-toggle { white-space: nowrap; }
+.planetslam-layer-picker:not(.deckgl-layer-toggles) { max-width: min(340px, calc(100% - 20px)); }

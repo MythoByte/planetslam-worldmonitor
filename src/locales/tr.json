@@ -1327,7 +1327,8 @@
         "canadaRoads": "Kanada Yolları",
         "canadaAlerts": "Kanada Uyarıları",
         "notamAirspace": "NOTAM Hava Sahasına İlişkin Kısıtlamalar",
-        "no2Activity": "Sanayi faaliyeti"
+        "no2Activity": "Sanayi faaliyeti",
+        "aurora": "Aurora forecast"
       },
       "tooltip": {
         "earthquake": "Deprem",
