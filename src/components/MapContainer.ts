@@ -1,3 +1,4 @@
+import { IS_PLANETSLAM } from '@/config/brand';
 import type { EarthMapSnapshot } from '@/types/earth-map';
 import type { CyberMapSnapshot } from '@/types/cyber-map';
 import type { SpaceOrbitSnapshot } from '@/types/space-orbits';
@@ -387,7 +388,7 @@ export class MapContainer {
         if (!this.destroyed) this.earthMapController = new EarthMapOverlay(this.container, snapshot => this.setEarthMap(snapshot), (lat, lon) => this.setCenter(lat, lon, 4));
       });
     }
-    if (SITE_VARIANT === 'cyber') {
+    if (SITE_VARIANT === 'cyber' || (IS_PLANETSLAM && SITE_VARIANT === 'tech')) {
       void import('./CyberMapOverlay').then(({ CyberMapOverlay }) => {
         if (!this.destroyed) this.cyberMapController = new CyberMapOverlay(this.container, snapshot => this.setCyberMap(snapshot), (lat, lon) => this.setCenter(lat, lon, 3));
       });

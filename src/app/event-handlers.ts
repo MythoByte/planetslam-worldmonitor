@@ -1,3 +1,4 @@
+import { DEFAULT_MAP_TIME_RANGE } from '@/config/map-defaults';
 import type {
   AppContext,
   AppModule,
@@ -1443,7 +1444,7 @@ export class EventHandlerManager implements AppModule {
       presetId: loadStoredMissionPreset()?.id ?? null,
       mapView: (mapState?.view ?? 'global') as MapView,
       mapZoom: mapState?.zoom ?? 2,
-      timeRange: mapState?.timeRange ?? '7d',
+      timeRange: mapState?.timeRange ?? DEFAULT_MAP_TIME_RANGE,
     };
   }
 

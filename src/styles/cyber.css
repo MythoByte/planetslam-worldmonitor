@@ -1,4 +1,4 @@
-/* Cyber panels keep shared theme tokens and remain isolated from other editions. */
+/* Cybersecurity tools share Tech and keep the common theme tokens. */
 .cyber-panel { --cyber-accent: var(--semantic-info, #63c9d8); }
 .cyber-panel .panel-content { overflow-y: auto; }
 .cyber-body { padding: 4px; font-size: 13px; line-height: 1.55; overflow-wrap: anywhere; }
@@ -29,11 +29,6 @@
 .cyber-empty { padding: 20px 8px; color: var(--text-dim); }
 .cyber-more { margin: 15px 0; }
 
-@media (min-width: 900px) {
-  html[data-brand="planetslam"][data-variant="cyber"] .main-content.map-hidden .panels-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
 .cyber-explore-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin: 10px 0; }
 .cyber-explore-filters label { display: flex; flex-direction: column; gap: 4px; font-size: 11px; max-width: 100%; }
 .cyber-explore-filters select, .cyber-explore-filters input { max-width: 220px; min-width: 0; }
@@ -48,19 +43,16 @@
 .cyber-map-detail { border-top: 1px solid var(--border); padding-top: 10px; overflow-wrap: anywhere; }
 .cyber-map-marker { cursor: pointer; }
 .cyber-map-marker:focus { stroke: var(--accent); stroke-width: 2px; }
-html[data-brand="planetslam"][data-variant="cyber"] .map-legend,
-html[data-brand="planetslam"][data-variant="cyber"] .deckgl-legend { display: none; }
-html[data-brand="planetslam"][data-variant="cyber"] .time-slider { display: none; }
 .cyber-map-inspect { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
 
-html[data-brand="planetslam"][data-variant="cyber"] .cyber-priority-filters { display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:10px; margin:12px 0; }
-html[data-brand="planetslam"][data-variant="cyber"] .cyber-priority-filters label { display:flex; flex-direction:column; gap:5px; min-width:0; }
-html[data-brand="planetslam"][data-variant="cyber"] .cyber-priority-filters input, html[data-brand="planetslam"][data-variant="cyber"] .cyber-priority-filters select { width:100%; min-width:0; }
-html[data-brand="planetslam"][data-variant="cyber"] .cyber-card details p { overflow-wrap:anywhere; }
-html[data-brand="planetslam"][data-variant="cyber"] .cyber-methodology { margin:8px 0; }
-html[data-brand="planetslam"][data-variant="cyber"] .cyber-methodology summary { cursor:pointer; color:var(--accent); overflow-wrap:anywhere; }
-html[data-brand="planetslam"][data-variant="cyber"] .cyber-brief-heading { display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; }
-html[data-brand="planetslam"][data-variant="cyber"] .cyber-brief-section > h3 { margin:20px 0 8px; color:var(--accent); }
+html[data-brand="planetslam"][data-variant="tech"] .cyber-priority-filters { display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:10px; margin:12px 0; }
+html[data-brand="planetslam"][data-variant="tech"] .cyber-priority-filters label { display:flex; flex-direction:column; gap:5px; min-width:0; }
+html[data-brand="planetslam"][data-variant="tech"] .cyber-priority-filters input, html[data-brand="planetslam"][data-variant="tech"] .cyber-priority-filters select { width:100%; min-width:0; }
+html[data-brand="planetslam"][data-variant="tech"] .cyber-card details p { overflow-wrap:anywhere; }
+html[data-brand="planetslam"][data-variant="tech"] .cyber-methodology { margin:8px 0; }
+html[data-brand="planetslam"][data-variant="tech"] .cyber-methodology summary { cursor:pointer; color:var(--accent); overflow-wrap:anywhere; }
+html[data-brand="planetslam"][data-variant="tech"] .cyber-brief-heading { display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; }
+html[data-brand="planetslam"][data-variant="tech"] .cyber-brief-section > h3 { margin:20px 0 8px; color:var(--accent); }
 
 .cyber-research-chart { margin: 14px 0; }
 .cyber-research-bar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(50px, 1fr) 30px; gap: 8px; align-items: center; font-size: 11px; margin: 5px 0; }

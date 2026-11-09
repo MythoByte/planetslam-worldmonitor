@@ -24,7 +24,7 @@ it('a permission response cannot re-enable delivery after monitoring was disable
 it('service-worker delivery uses opaque metadata and an uncertain failure is not replayed',async()=>{
  await enable();await api.enableCyberBrowserNotifications();await vi.waitFor(()=>expect(api.getCyberAlertState().checking).toBe(false));
  ids.push('CVE-2026-88888');f.show.mockRejectedValueOnce(Error('Synthetic delivery failure'));await api.checkCyberAlerts(true);
- expect(f.show).toHaveBeenCalledOnce();const [title,options]=f.show.mock.calls[0]!;expect(title).toBe('PlanetSlam Cyber');expect(JSON.stringify(options)).not.toMatch(/docker|CVE-/i);expect(options.data.url).toBe('/dashboard?variant=cyber');expect(api.getCyberAlertState().store.events).toHaveLength(1);
+ expect(f.show).toHaveBeenCalledOnce();const [title,options]=f.show.mock.calls[0]!;expect(title).toBe('PlanetSlam Tech');expect(JSON.stringify(options)).not.toMatch(/docker|CVE-/i);expect(options.data.url).toBe('/dashboard?variant=tech');expect(api.getCyberAlertState().store.events).toHaveLength(1);
  await api.checkCyberAlerts(true);expect(f.show).toHaveBeenCalledOnce();expect(f.construct).not.toHaveBeenCalled();
 });
 it('a failed persistence step sends nothing and retry preserves the baseline until storage recovers',async()=>{

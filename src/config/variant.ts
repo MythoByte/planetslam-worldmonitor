@@ -3,7 +3,9 @@ import { IS_PLANETSLAM } from '@/config/brand';
 
 /**
  * Every variant a user can switch to. One desktop binary ships and switches
- * between all of these in-app (#5908), so this list is also the set
+ * between these IDs in-app (#5908). Retired PlanetSlam Cyber links resolve
+ * to Tech; the legacy ID remains valid for stored links and service contracts.
+ * This list is also the set
  * `/api/download` accepts — `tests/desktop-one-binary-model.test.mjs` fails if
  * the two drift apart.
  */
@@ -41,7 +43,7 @@ export const SITE_VARIANT: string = (() => {
   // this read then ignored (#5912).
   if (isDesktopRuntime()) {
     const stored = loadStoredVariant();
-    if (isSiteVariant(stored)) return stored;
+    if (isSiteVariant(stored)) return IS_PLANETSLAM && stored === 'cyber' ? 'tech' : stored;
     return buildVariant;
   }
 
@@ -49,6 +51,12 @@ export const SITE_VARIANT: string = (() => {
   // links and browser history work independently of a visitor's stored choice.
   if (IS_PLANETSLAM) {
     const selected = new URLSearchParams(window.location?.search).get('variant');
+    if (selected === 'cyber') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('variant', 'tech');
+      window.history.replaceState(window.history.state, '', url);
+      return 'tech';
+    }
     return isSiteVariant(selected) ? selected : 'full';
   }
 
@@ -64,7 +72,7 @@ export const SITE_VARIANT: string = (() => {
 
   if (h === 'localhost' || h === '127.0.0.1') {
     const stored = loadStoredVariant();
-    if (isSiteVariant(stored)) return stored;
+    if (isSiteVariant(stored)) return IS_PLANETSLAM && stored === 'cyber' ? 'tech' : stored;
     return buildVariant;
   }
 

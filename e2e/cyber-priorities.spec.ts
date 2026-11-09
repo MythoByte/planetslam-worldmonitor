@@ -4,7 +4,7 @@ import {installCyberFixtures} from './cyber-dashboard-fixtures';
 test.skip(process.env.VITE_BRAND!=='planetslam','Cyber is a PlanetSlam edition');
 async function boot(page: import('@playwright/test').Page) {
  await seedAnonymousDashboard(page,'full',{initializeOnce:{sessionKey:'priority-acceptance',clearStorage:true,localStorage:{'worldmonitor-theme':'dark'}}});
- await page.goto('/dashboard?variant=cyber');
+ await page.goto('/dashboard?variant=tech');
  await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready','true');
  await expect(page.locator('html')).toHaveAttribute('data-wm-initial-data-ready','true');
  const panel=page.locator('[data-panel="cyber-attention"]');
@@ -34,7 +34,7 @@ for(const width of [1440,390]) test(`Attention Queue sources, filters and live w
 });
 test('missing enrichment keeps KEV usable; refresh recovers scores',async({page},info)=>{
  await installCyberFixtures(page,{epss:{status:'unavailable',data:null},cvss:{status:'unavailable',data:null}});
- await seedAnonymousDashboard(page,'full',{initializeOnce:{sessionKey:'priority-outage',clearStorage:true}});await page.goto('/dashboard?variant=cyber');
+ await seedAnonymousDashboard(page,'full',{initializeOnce:{sessionKey:'priority-outage',clearStorage:true}});await page.goto('/dashboard?variant=tech');
  const panel=page.locator('[data-panel="cyber-attention"]');await expect(async()=>{await panel.scrollIntoViewIfNeeded();await expect(panel).toContainText('EPSS unavailable');}).toPass({timeout:30000});
  await expect(panel.locator('[data-priority-cve]')).toHaveCount(1);await expect(panel).toContainText('Technical severity: Unknown');await expect(panel).not.toContainText('EPSS likelihood: 0.00%');
  await page.screenshot({path:info.outputPath('cyber-priority-outage.png')});

@@ -2108,6 +2108,10 @@ export const BROWSER_NEWS_CATALOG: BrowserCatalog = {
         {
           "name": "Schneier",
           "url": "https://www.schneier.com/feed/"
+        },
+        {
+          "name": "BleepingComputer",
+          "url": "https://www.bleepingcomputer.com/feed/"
         }
       ],
       "policy": [

@@ -17,3 +17,8 @@ export const DEFAULT_PANELS: Record<string, PanelConfig> = {
 // The dedicated Cyber overlay controls its two independently filtered layers.
 export const DEFAULT_MAP_LAYERS = Object.fromEntries(Object.keys(SPACE_LAYERS).map(key => [key, false])) as unknown as MapLayers;
 export const MOBILE_DEFAULT_MAP_LAYERS: MapLayers = { ...DEFAULT_MAP_LAYERS };
+
+/** Cyber news joins Tech's existing security panel; its map uses Tech's map. */
+export const TECH_CYBER_PANELS = Object.fromEntries(
+  Object.entries(DEFAULT_PANELS).filter(([key]) => key !== 'map' && key !== 'cyber-news'),
+);

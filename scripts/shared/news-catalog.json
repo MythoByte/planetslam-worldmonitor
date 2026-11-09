@@ -9769,6 +9769,18 @@
           "serverOrder": 31
         }
       ]
+    },
+    {
+      "name": "BleepingComputer",
+      "url": "https://www.bleepingcomputer.com/feed/",
+      "placements": [
+        {
+          "edition": "tech",
+          "category": "security",
+          "browserOrder": 4,
+          "serverOrder": 4
+        }
+      ]
     }
   ]
 }

@@ -1,3 +1,4 @@
+import { IS_PLANETSLAM } from '@/config/brand';
 import { isPlanetSlamSourcePanel } from '@/config/planetslam-panels';
 import type { AppContext, AppModule } from '@/app/app-context';
 import { fetchUkmtoIncidents } from '@/services/ukmto-incidents';
@@ -2217,8 +2218,8 @@ export class DataLoaderManager implements AppModule {
         digestPromise,
         fallbackDigest: fallbackSelection,
         digestGraceMs: this.digestFirstPaintGraceMs,
-        loadCategory: ({ key, feeds, isCustom }, selection, options) => (
-          this.loadNewsCategory(
+        loadCategory: async ({ key, feeds, isCustom }, selection, options) => {
+          const items = await this.loadNewsCategory(
             key,
             feeds,
             selection,
@@ -2226,8 +2227,23 @@ export class DataLoaderManager implements AppModule {
             options,
             generation,
             servedStale => categoryServedStale.set(key, servedStale),
-          )
-        ),
+          );
+          if (IS_PLANETSLAM && SITE_VARIANT === 'tech' && key === 'security') {
+            try {
+              const [{ fetchCyberDataset }, { mergeTechCyberNews }] = await Promise.all([
+                import('@/services/cyber-dashboard'), import('@/services/tech-cyber-news'),
+              ]);
+              const news = await fetchCyberDataset<import('@/types/cyber-dashboard').CyberNewsData>('news');
+              const merged = mergeTechCyberNews(items, news.data, disabledAtLoadStart);
+              if (this.isCurrentNewsLoad(generation)) {
+                this.renderNewsForCategory(key, merged);
+                if (news.status !== 'fresh') this.setNewsRefreshDegraded(key, true);
+              }
+              return merged;
+            } catch { /* Existing Tech headlines remain usable during a Cyber source outage. */ }
+          }
+          return items;
+        },
         loadIntel: loadsIntel
           ? (selection, options) => (
             this.loadIntelNews(

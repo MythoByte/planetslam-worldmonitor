@@ -73,10 +73,10 @@ export async function enableCyberBrowserNotifications(): Promise<void> {
 }
 async function notify(event: CyberAlert): Promise<void> {
   const options: NotificationOptions = { body: event.kind === 'digest' ? 'Your Cyber alert digest is ready. Open the dashboard for details.' : 'A new Cyber alert is waiting. Open the dashboard for details.',
-    tag: cyberAlertNotificationTag(event.id), icon: '/branding/planetslam/mark.svg', data: { url: '/dashboard?variant=cyber' } };
+    tag: cyberAlertNotificationTag(event.id), icon: '/branding/planetslam/mark.svg', data: { url: '/dashboard?variant=tech' } };
   const registration = navigator.serviceWorker ? await navigator.serviceWorker.getRegistration() : null;
-  if (registration?.active && registration.showNotification) { await registration.showNotification('PlanetSlam Cyber', options); return; }
-  const n = new Notification('PlanetSlam Cyber', options);
+  if (registration?.active && registration.showNotification) { await registration.showNotification('PlanetSlam Tech', options); return; }
+  const n = new Notification('PlanetSlam Tech', options);
   n.onclick = () => { window.focus(); n.close(); };
 }
 export async function checkCyberAlerts(force = false): Promise<void> {
