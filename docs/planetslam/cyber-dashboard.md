@@ -1,16 +1,31 @@
-# PlanetSlam Cyber dashboard — Phases 1–7
+# PlanetSlam Tech — Cybersecurity tools
 
-Open `/dashboard?variant=cyber` or choose **Cyber** in the PlanetSlam edition
-switcher. The edition uses the shared layout/settings/theme and movable,
-resizable panels. New profiles enable the Cyber map. Existing saved map choices
-are preserved; **Show Cyber map** or an incident's **Locate on map** explicitly
-enables and reveals it. Global attack statistics and automatic installed-version discovery are not provided; Phase 7 uses declared inventory.
+The Cyber tools now live in **Tech** at `/dashboard?variant=tech`. The separate
+Cyber edition has been removed from desktop and mobile navigation; old Cyber
+links open Tech while retaining explicit map state. Tech keeps its existing map
+and cybersecurity news panel. Additional Cyber headlines join that panel, with
+matching article URLs (ignoring tracking parameters) shown once. Existing source
+disables are respected, and BleepingComputer is available in Tech's source settings.
 
-- **Cyber News:** source-linked headlines and short excerpts from BleepingComputer,
-  Krebs on Security, and The Hacker News. Seven-day coverage, latest first, with
-  topic and watchlist-only filters. Topics are keyword classifications, not
-  independently verified incident labels. Matching URLs (ignoring tracking tags)
-  are deduplicated; separate publishers' reporting stays separately attributed.
+The nine unique tools are My Environment, Cyber Research Workbench, Cyber Alerts &
+Digests, Cyber Daily Brief, Vulnerability Attention Queue, Reported Cyber Incidents,
+Exploited Vulnerabilities, My Technology Watchlist, and Cyber Data Status. Existing
+Tech profiles enable these once; later panel disables persist. Existing local
+watchlists, research, environment records, and alert settings keep their original
+storage. The map retains incident/infrastructure controls and locate actions.
+
+PlanetSlam defaults to a **24-hour** time range across dashboards and map renderers.
+Explicit URL ranges and selections still take precedence. The Cyber incident
+reported/observed-period filters continue to apply independently of the shared
+news/map time range, so monthly research records remain available.
+
+Global attack statistics and automatic installed-version discovery are not provided; Phase 7 uses declared inventory.
+
+- **Cybersecurity (shared Tech news):** source-linked Tech reporting plus Cyber's
+  BleepingComputer, Krebs on Security, and The Hacker News headlines, newest first.
+  Matching article URLs (ignoring tracking tags) appear once. Separate publishers
+  keep their attribution. The shared 24-hour range applies by default; the
+  technology watchlist also retains its matching news view.
 - **Exploited Vulnerabilities:** the full CISA KEV catalog, newest additions first,
   with CVE/vendor/product search, watchlist filter, required actions, reference
   links, and ransomware-use field. Unknown use remains unknown. Federal due
@@ -61,8 +76,8 @@ both consumers, including recovery from a partially unavailable source.
 - SVG/mobile, DeckGL, and globe consume the same bounded geographic snapshot.
   Renderer switches rehydrate it. Filters clear a selected detail if its marker
   leaves the visible dataset. There are no simulated attack arcs or global attack
-  totals. The inherited global time slider and unrelated severity legend are
-  hidden for Cyber; its own reported/observed period applies to these layers.
+  totals. Tech retains its shared time slider and layer legend; the Cyber tools use
+  their own reported/observed period for these two overlays.
 
 ## Phase 3: Vulnerability Attention Queue
 

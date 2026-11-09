@@ -594,7 +594,7 @@ export class GlobeMap {
       const original = this.earthMap?.markers.find(m => m.id === marker.id && m.kind === marker.earthKind);
       if (original) selectEarthMarker(original);
     });
-    if (SITE_VARIANT === 'cyber') this.globe.onPointClick((point: object) => {
+    if (SITE_VARIANT === 'cyber' || (IS_PLANETSLAM && SITE_VARIANT === 'tech')) this.globe.onPointClick((point: object) => {
       const marker = point as { id?: string; cyberKind?: string };
       const original = this.cyberMap?.markers.find(m => m.id === marker.id && m.kind === marker.cyberKind);
       if (original) selectCyberMarker(original);

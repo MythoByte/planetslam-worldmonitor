@@ -1,3 +1,5 @@
+import { TECH_CYBER_PANELS } from '@/config/variants/cyber';
+import { DEFAULT_MAP_TIME_RANGE } from '@/config/map-defaults';
 import { restorePlanetSlamSourcePanels } from '@/config/panels';
 import { hasPanelDataAccess } from '@/services/panel-gating';
 import type { Monitor, PanelConfig, MapLayers } from '@/types';
@@ -1333,6 +1335,20 @@ export class App {
       }
     }
 
+    if (IS_PLANETSLAM && currentVariant === 'tech') {
+      const migration = 'planetslam-tech-cyber-panels-v1';
+      if (!storageAvailable || !safeStorageGet(migration)) {
+        for (const [key, config] of Object.entries(TECH_CYBER_PANELS)) {
+          panelSettings[key] = { ...config, ...panelSettings[key], enabled: true };
+        }
+        if (storageAvailable) {
+          saveToStorage(STORAGE_KEYS.panels, panelSettings);
+          safeStorageSet(migration, 'done');
+        }
+      }
+      if (panelSettings['cyber-news']) panelSettings['cyber-news'].enabled = false;
+    }
+
     const initialUrlState: ParsedMapUrlState | null = parseMapUrlState(window.location.search, mapLayers);
     if (initialUrlState.layers) {
       mapLayers = normalizeExclusiveChoropleths(
@@ -1571,7 +1587,7 @@ export class App {
       intelligenceCache: {},
       cyberThreatsCache: null,
       disabledSources,
-      currentTimeRange: '7d',
+      currentTimeRange: DEFAULT_MAP_TIME_RANGE,
       inFlight: new Set(),
       seenGeoAlerts: new Set(),
       monitors,
@@ -2464,10 +2480,10 @@ export class App {
     // the accessible <h1> are baked in English before the app boots; once i18n
     // is ready we swap them to the user's locale.
     const spaceEdition = IS_PLANETSLAM && SITE_VARIANT === 'space';
-    const cyberEdition = IS_PLANETSLAM && SITE_VARIANT === 'cyber';
+    const techEdition = IS_PLANETSLAM && SITE_VARIANT === 'tech';
     const earthEdition = IS_PLANETSLAM && SITE_VARIANT === 'earth';
-    const documentTitle = earthEdition ? 'PlanetSlam Earth — Weather & Natural Hazards' : cyberEdition ? 'PlanetSlam Cyber — Cyber Security Dashboard' : spaceEdition ? 'PlanetSlam Space — Live Space Dashboard' : t('shell.documentTitle');
-    const description = earthEdition ? 'Weather, earthquakes, floods, wildfires, storms, volcanoes, official alerts, Earth news, and webcams.' : cyberEdition ? 'Cyber security news, known exploited vulnerabilities, and your technology watchlist.' : spaceEdition
+    const documentTitle = earthEdition ? 'PlanetSlam Earth — Weather & Natural Hazards' : techEdition ? 'PlanetSlam Tech — Technology & Cybersecurity' : spaceEdition ? 'PlanetSlam Space — Live Space Dashboard' : t('shell.documentTitle');
+    const description = earthEdition ? 'Weather, earthquakes, floods, wildfires, storms, volcanoes, official alerts, Earth news, and webcams.' : techEdition ? 'Technology, AI, startups, cybersecurity news, exploited vulnerabilities, incidents, and your security workbench.' : spaceEdition
       ? 'Space cameras, launches, NASA imagery, space weather, satellites, and near-Earth objects.'
       : t('shell.metaDescription');
     document.title = documentTitle;

@@ -5,7 +5,7 @@ import type {CyberBriefData} from '../src/types/cyber-dashboard';
 test.skip(process.env.VITE_BRAND!=='planetslam','Cyber is a PlanetSlam edition');
 async function boot(page:import('@playwright/test').Page){
  await seedAnonymousDashboard(page,'full',{initializeOnce:{sessionKey:'cyber-brief-test',clearStorage:true,localStorage:{'worldmonitor-theme':'dark'}}});
- await page.goto('/dashboard?variant=cyber');await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready','true');
+ await page.goto('/dashboard?variant=tech');await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready','true');
  const panel=page.locator('[data-panel="cyber-brief"]');await expect(async()=>{await panel.scrollIntoViewIfNeeded();await expect(panel.locator('.cyber-body')).toBeVisible();}).toPass({timeout:30000});return panel;
 }
 for(const width of [1440,390])test(`Cyber daily brief sources, dated context and local watchlist at ${width}px`,async({page},info)=>{

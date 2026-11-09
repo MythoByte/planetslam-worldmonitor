@@ -14,7 +14,7 @@ const DAY = 86400000;
 export const ALERT_RETENTION_MS = 30 * DAY;
 const feedNames = ['brief', 'kev', 'epss', 'cvss', 'incidents', 'infrastructure', 'bleeping', 'krebs', 'hackernews'];
 const kinds = ['vulnerability', 'incident', 'source', 'digest'];
-export function validAlertUrl(value: string): boolean { if (value === '/dashboard?variant=cyber') return true; try { const u = new URL(value); return u.protocol === 'https:' && !u.username && !u.password; } catch { return false; } }
+export function validAlertUrl(value: string): boolean { if (value === '/dashboard?variant=tech' || value === '/dashboard?variant=cyber') return true; try { const u = new URL(value); return u.protocol === 'https:' && !u.username && !u.password; } catch { return false; } }
 export function freshCyberAlertStore(): CyberAlertStore { return { version: 1, rules: { ...DEFAULT_CYBER_ALERT_RULES }, signature: '', kev: null, incidents: null, health: null, pending: [], events: [], seen: [], nextDigestAt: null, digestSince: null, lastDigestDay: null, lastCheckAt: null }; }
 export function normalizeCyberAlertRules(value: unknown): CyberAlertRules {
   const r = value && typeof value === 'object' ? value as Partial<CyberAlertRules> : {};
@@ -104,7 +104,7 @@ export function evaluateCyberAlerts(previous: CyberAlertStore, inputs: CyberAler
   if (now >= s.nextDigestAt && s.lastDigestDay === today) s.nextDigestAt = nextDigest(now,r.digestHour);
   if (now >= s.nextDigestAt && s.lastDigestDay !== today) {
     const events = s.events.filter(e => e.kind !== 'digest' && e.at > s.digestSince! && e.at <= now);
-    add(`digest:${today}`, 'digest', 'Cyber alert daily digest', `${events.length} alerts retained since ${new Date(s.digestSince).toISOString().slice(0,16)} UTC: ${events.filter(e=>e.kind==='vulnerability').length} vulnerabilities, ${events.filter(e=>e.kind==='incident').length} research updates, ${events.filter(e=>e.kind==='source').length} source changes. Only activity observed while monitoring ran is covered; no recorded alerts is not proof of safety.`, '/dashboard?variant=cyber');
+    add(`digest:${today}`, 'digest', 'Cyber alert daily digest', `${events.length} alerts retained since ${new Date(s.digestSince).toISOString().slice(0,16)} UTC: ${events.filter(e=>e.kind==='vulnerability').length} vulnerabilities, ${events.filter(e=>e.kind==='incident').length} research updates, ${events.filter(e=>e.kind==='source').length} source changes. Only activity observed while monitoring ran is covered; no recorded alerts is not proof of safety.`, '/dashboard?variant=tech');
     s.digestSince = now; s.lastDigestDay = today; s.nextDigestAt = nextDigest(now,r.digestHour);
   }
   s.lastCheckAt = now; s.events = s.events.slice(0,200); s.seen = [...seen].slice(-1000);

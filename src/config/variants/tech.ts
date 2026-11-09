@@ -1,3 +1,5 @@
+import { IS_PLANETSLAM } from '../brand';
+import { TECH_CYBER_PANELS } from './cyber';
 // Tech/AI variant - tech.worldmonitor.app
 import type { PanelConfig, MapLayers } from '@/types';
 import type { VariantConfig } from './base';
@@ -35,6 +37,7 @@ export const DEFAULT_PANELS: Record<string, PanelConfig> = {
   unicorns: { name: 'Unicorn Tracker', enabled: true, priority: 1 },
   accelerators: { name: 'Accelerators & Demo Days', enabled: true, priority: 1 },
   security: { name: 'Cybersecurity', enabled: true, priority: 1 },
+  ...(IS_PLANETSLAM ? TECH_CYBER_PANELS : {}),
   policy: { name: 'AI Policy & Regulation', enabled: true, priority: 1 },
   layoffs: { name: 'Layoffs Tracker', enabled: true, priority: 1 },
   markets: { name: 'Tech Stocks', enabled: true, priority: 2 },

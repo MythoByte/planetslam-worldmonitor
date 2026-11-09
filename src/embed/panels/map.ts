@@ -1,3 +1,4 @@
+import { DEFAULT_MAP_TIME_RANGE } from '@/config/map-defaults';
 import { MapContainer, type MapContainerState } from '@/components/MapContainer';
 import { EmbedDataLoader } from '@/embed/embed-data-loader';
 import { mintEmbedGrant } from '@/embed/embed-fetch';
@@ -38,7 +39,7 @@ export async function mountEmbedMapPanel(
     pan: { x: 0, y: 0 },
     view: 'global',
     layers: params.layers,
-    timeRange: '7d',
+    timeRange: DEFAULT_MAP_TIME_RANGE,
   };
   const map = new MapContainer(mapMount, initialState, false, { chrome: false });
 

@@ -19,19 +19,23 @@ async function select(url: string) {
 }
 
 describe('PlanetSlam same-origin editions', () => {
-  it('seeds Cyber with the reported-incident map and free panels', async () => {
-    const { SITE_VARIANT } = await select('https://planetslam.com/dashboard?variant=cyber');
-    expect(SITE_VARIANT).toBe('cyber');
+  it('redirects retired Cyber links to Tech and seeds each unique tool once', async () => {
+    const { SITE_VARIANT } = await select('https://planetslam.com/dashboard?variant=cyber&timeRange=48h');
+    expect(SITE_VARIANT).toBe('tech');
+    expect(window.location.search).toBe('?variant=tech&timeRange=48h');
     const panels = await import('@/config/panels');
-    const settings = panels.getInitialPanelSettingsForVariant('cyber');
-    expect(Object.entries(settings).filter(([, value]) => value.enabled).map(([key]) => key).sort())
-      .toEqual(['cyber-alerts', 'cyber-attention', 'cyber-brief', 'cyber-environment', 'cyber-health', 'cyber-incidents', 'cyber-kev', 'cyber-news', 'cyber-research', 'cyber-watchlist', 'map']);
-    expect(settings.map?.enabled).toBe(true);
-    expect(Object.values(panels.DEFAULT_MAP_LAYERS).every(value => value === false)).toBe(true);
-    for (const key of ['cyber-health', 'cyber-kev', 'cyber-news', 'cyber-watchlist']) {
-      expect(panels.isPanelNativeToVariant(key, 'cyber')).toBe(true);
-      expect(panels.isPanelEntitled(key, settings[key]!, false)).toBe(true);
+    const settings = panels.getInitialPanelSettingsForVariant('tech');
+    const tools = ['cyber-alerts', 'cyber-attention', 'cyber-brief', 'cyber-environment', 'cyber-health', 'cyber-incidents', 'cyber-kev', 'cyber-research', 'cyber-watchlist'];
+    for (const key of tools) {
+      expect(settings[key]?.enabled).toBe(true);
+      expect(panels.isPanelNativeToVariant(key, 'tech')).toBe(true);
+      expect(panels.isFreePanelCapCounted(key)).toBe(false);
     }
+    expect(settings.security?.enabled).toBe(true);
+    expect(settings['cyber-news']?.enabled).toBe(false);
+    expect(panels.isPanelHiddenForBrand('cyber-news', 'tech')).toBe(true);
+    expect(settings.map?.enabled).toBe(true);
+    expect(panels.DEFAULT_MAP_LAYERS.datacenters).toBe(true);
   });
 
   it('seeds the Space dashboard with free panels and focused map layers', async () => {
@@ -63,7 +67,7 @@ describe('PlanetSlam same-origin editions', () => {
   it('opens all eight edition deep links on the LAN host', async () => {
     for (const edition of ['full', 'tech', 'finance', 'commodity', 'energy', 'happy', 'space', 'cyber']) {
       const { SITE_VARIANT } = await select(`https://10.10.10.50:18003/dashboard?variant=${edition}`);
-      expect(SITE_VARIANT).toBe(edition);
+      expect(SITE_VARIANT).toBe(edition === 'cyber' ? 'tech' : edition);
     }
   });
 
@@ -79,7 +83,7 @@ describe('PlanetSlam same-origin editions', () => {
     await select('https://planetslam.com/dashboard?variant=happy');
     const { variantSwitcherHref } = await import('@/app/panel-layout');
     for (const edition of ['full', 'tech', 'finance', 'commodity', 'energy', 'happy', 'space', 'cyber'] as const) {
-      expect(variantSwitcherHref(edition, 'happy', false)).toBe(`/dashboard?variant=${edition}`);
+      expect(variantSwitcherHref(edition, 'happy', false)).toBe(`/dashboard?variant=${edition === 'cyber' ? 'tech' : edition}`);
     }
   });
 

@@ -1,3 +1,4 @@
+import { DEFAULT_MAP_TIME_RANGE } from '@/config/map-defaults';
 import { isPlanetSlamSourcePanel } from '@/config/planetslam-panels';
 import { isPanelHiddenForBrand } from '@/config/panels';
 import { BRAND, IS_PLANETSLAM } from '@/config/brand';
@@ -251,7 +252,7 @@ export const VARIANT_SWITCHER_DASHBOARD_URLS = {
   energy: 'https://energy.worldmonitor.app/dashboard',
   happy: 'https://happy.worldmonitor.app/dashboard',
   space: 'https://planetslam.com/dashboard?variant=space',
-  cyber: 'https://planetslam.com/dashboard?variant=cyber',
+  cyber: 'https://planetslam.com/dashboard?variant=tech',
   earth: 'https://planetslam.com/dashboard?variant=earth',
 } as const;
 
@@ -260,7 +261,7 @@ export function variantSwitcherHref(
   currentVariant: string,
   isLocal: boolean,
 ): string {
-  if (IS_PLANETSLAM) return `/dashboard?variant=${targetVariant}`;
+  if (IS_PLANETSLAM) return `/dashboard?variant=${targetVariant === 'cyber' ? 'tech' : targetVariant}`;
   return isLocal || currentVariant === targetVariant ? '#' : VARIANT_SWITCHER_DASHBOARD_URLS[targetVariant];
 }
 
@@ -521,7 +522,7 @@ export class PanelLayoutManager implements AppModule {
   private readonly passkeyOfferController: PasskeyOfferBoot;
   private readonly checkoutReturnFocusController = new AbortController();
   private readonly onCyberShowMap = (): void => {
-    if (SITE_VARIANT !== 'cyber') return;
+    if (!(IS_PLANETSLAM && SITE_VARIANT === 'tech')) return;
     const config = this.ctx.panelSettings.map;
     if (config) { config.enabled = true; saveToStorage(STORAGE_KEYS.panels, this.ctx.panelSettings); this.applyPanelSettings(); }
     this.revealMobileMap();
@@ -753,7 +754,7 @@ export class PanelLayoutManager implements AppModule {
   }
 
   async init(): Promise<void> {
-    if (SITE_VARIANT === 'cyber') window.addEventListener('planetslam:cyber-show-map', this.onCyberShowMap);
+    if (IS_PLANETSLAM && SITE_VARIANT === 'tech') window.addEventListener('planetslam:cyber-show-map', this.onCyberShowMap);
     await this.renderLayout();
     if (this.ctx.isDestroyed) return;
     void this.reconcileCheckoutReturnFocus();
@@ -1181,10 +1182,7 @@ export class PanelLayoutManager implements AppModule {
               <span class="variant-icon">🚀</span>
               <span class="variant-label">Space</span>
             </a><span class="variant-divider"></span>
-            <a href="${vHref('earth')}" class="variant-option ${SITE_VARIANT === 'earth' ? 'active' : ''}" data-variant="earth" title="Earth — Weather & Natural Hazards"><span class="variant-icon">🌋</span><span class="variant-label">Earth</span></a>
-            <a href="${vHref('cyber')}" class="variant-option ${SITE_VARIANT === 'cyber' ? 'active' : ''}" data-variant="cyber" title="Cyber Security">
-              <span class="variant-icon">🛡️</span><span class="variant-label">Cyber</span>
-            </a>` : ''}`;
+            <a href="${vHref('earth')}" class="variant-option ${SITE_VARIANT === 'earth' ? 'active' : ''}" data-variant="earth" title="Earth — Weather & Natural Hazards"><span class="variant-icon">🌋</span><span class="variant-label">Earth</span></a>` : ''}`;
       })()}</div>
           <span class="logo">${BRAND.wordmark}</span><span class="logo-mobile">${BRAND.name}</span><span class="version">v${__APP_VERSION__}</span>${BETA_MODE ? '<span class="beta-badge">BETA</span>' : ''}
           <a href="${creditUrl}" target="_blank" rel="noopener" class="credit-link">
@@ -1252,7 +1250,7 @@ export class PanelLayoutManager implements AppModule {
           { key: 'commodity', icon: '⛏️', label: t('header.commodity') },
           { key: 'energy', icon: '⚡', label: t('header.energy') },
           { key: 'happy', icon: '☀️', label: 'Good News' },
-          ...(IS_PLANETSLAM ? [{ key: 'space', icon: '🚀', label: 'Space' }, { key: 'cyber', icon: '🛡️', label: 'Cyber' }, { key: 'earth', icon: '🌋', label: 'Earth' }] : []),
+          ...(IS_PLANETSLAM ? [{ key: 'space', icon: '🚀', label: 'Space' }, { key: 'earth', icon: '🌋', label: 'Earth' }] : []),
         ];
         return variants.map(v =>
           `<button class="mobile-menu-item mobile-menu-variant ${v.key === SITE_VARIANT ? 'active' : ''}" data-variant="${v.key}">
@@ -2788,7 +2786,7 @@ export class PanelLayoutManager implements AppModule {
     // fetch instead of serialized behind it. This is the restructure the prior canary
     // comment called for: panel setup is map-tolerant: callback uses are `?.`-guarded,
     // and the one eager bridge (SupplyChainPanel -> MapContainer) is replayed below.
-    // ctx.currentTimeRange already defaults to '7d' (App.ts:899). The map's direct
+    // ctx.currentTimeRange already uses the brand's default range. The map's direct
     // uses — construction, the supply-chain bridge replay, the resilienceScore tweak,
     // initEscalationGetters/getTimeRange and onTimeRangeChanged — are grouped together
     // after the registration block (just before the onTimeRangeChanged wiring).
@@ -3620,7 +3618,7 @@ export class PanelLayoutManager implements AppModule {
       pan: { x: 0, y: 0 },
       view: this.ctx.isMobile ? this.ctx.resolvedLocation : 'global',
       layers: this.ctx.mapLayers,
-      timeRange: '7d',
+      timeRange: DEFAULT_MAP_TIME_RANGE,
     }, preferGlobe, {
       isFreeTierFallbackActive: this.callbacks.isFreeTierFallbackActive,
     });

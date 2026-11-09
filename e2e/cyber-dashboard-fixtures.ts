@@ -1,3 +1,4 @@
+import newsCatalog from '../shared/news-catalog.json' with { type: 'json' };
 import type { Page } from '@playwright/test';
 import type { CyberDataset, CyberEnvelope } from '../src/types/cyber-dashboard';
 
@@ -36,6 +37,12 @@ export function cyberFixture(dataset: CyberDataset): CyberEnvelope<unknown> {
   return { ...base, data: dataset === 'news' ? news : kev };
 }
 export async function installCyberFixtures(page: Page, overrides: Partial<Record<CyberDataset, Partial<CyberEnvelope<unknown>>>> = {}) {
+  // The tools now share Tech with ordinary news; keep unrelated publisher reads out of this fixture suite.
+  await page.route('**/api/news/v1/list-feed-digest?*', route => {
+    if (new URL(route.request().url()).searchParams.get('variant') !== 'tech') return route.fallback();
+    return route.fulfill({ json: { categories: Object.fromEntries(newsCatalog.layout.browser.tech.map(key => [key, { items: [] }])),
+      feedStatuses: {}, generatedAt: new Date().toISOString() } });
+  });
   await page.route('**/api/cyber-dashboard?*', route => {
     const dataset = new URL(route.request().url()).searchParams.get('dataset') as CyberDataset;
     return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ ...cyberFixture(dataset), ...overrides[dataset] }) });

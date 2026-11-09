@@ -1,6 +1,6 @@
 import { isPlanetSlamSourcePanel, PLANETSLAM_SOURCE_PANEL_NAMES } from './planetslam-panels';
 import { DEFAULT_PANELS as EARTH_PANELS, DEFAULT_MAP_LAYERS as EARTH_MAP_LAYERS, MOBILE_DEFAULT_MAP_LAYERS as EARTH_MOBILE_MAP_LAYERS } from './variants/earth';
-import { DEFAULT_PANELS as CYBER_PANELS, DEFAULT_MAP_LAYERS as CYBER_MAP_LAYERS } from './variants/cyber';
+import { DEFAULT_PANELS as CYBER_PANELS, TECH_CYBER_PANELS, DEFAULT_MAP_LAYERS as CYBER_MAP_LAYERS } from './variants/cyber';
 import type { PanelConfig, MapLayers, DataSourceId } from '@/types';
 import { SITE_VARIANT } from './variant';
 import { IS_PLANETSLAM } from './brand';
@@ -301,6 +301,7 @@ const TECH_PANELS: Record<string, PanelConfig> = {
   unicorns: { name: 'Unicorn Tracker', enabled: true, priority: 1 },
   accelerators: { name: 'Accelerators & Demo Days', enabled: true, priority: 1 },
   security: { name: 'Cybersecurity', enabled: true, priority: 1 },
+  ...(IS_PLANETSLAM ? TECH_CYBER_PANELS : {}),
   policy: { name: 'AI Policy & Regulation', enabled: true, priority: 1 },
   layoffs: { name: 'Layoffs Tracker', enabled: true, priority: 1 },
   markets: { name: 'Tech Stocks', enabled: true, priority: 2 },
@@ -1282,7 +1283,7 @@ export function restorePlanetSlamSourcePanels(settings: Record<string, PanelConf
 
 /** PlanetSlam does not advertise panels requiring an unavailable upstream service. */
 export function isPanelHiddenForBrand(key: string, variant = SITE_VARIANT): boolean {
-  return IS_PLANETSLAM && getEffectivePanelConfig(key, variant).premium === 'locked';
+  return IS_PLANETSLAM && ((variant === 'tech' && key === 'cyber-news') || getEffectivePanelConfig(key, variant).premium === 'locked');
 }
 
 /**
@@ -1322,7 +1323,7 @@ export const FREE_MAX_PANELS = 40;
 export const FREE_MAX_SOURCES = 80;
 
 export function isFreePanelCapCounted(key: string): boolean {
-  return key !== 'map' && !key.startsWith('cw-') && !isPlanetSlamSourcePanel(key);
+  return key !== 'map' && !key.startsWith('cw-') && !isPlanetSlamSourcePanel(key) && !(IS_PLANETSLAM && key in TECH_CYBER_PANELS);
 }
 
 export function countFreePanelCapUsage(panelSettings: Record<string, PanelConfig>): number {
@@ -1559,7 +1560,7 @@ export const LAYER_TO_SOURCE: Partial<Record<keyof MapLayers, DataSourceId[]>> =
 // matching panel in the user's active panel settings are shown.
 export const PANEL_CATEGORY_MAP: Record<string, { labelKey: string; panelKeys: string[]; variants?: string[] }> = {
   earth: { labelKey: 'header.panelCatEarth', panelKeys: Object.keys(EARTH_PANELS).filter(key => key !== 'map'), variants: ['earth'] },
-  cyber: { labelKey: 'header.panelCatCyber', panelKeys: Object.keys(CYBER_PANELS).filter(key => key !== 'map'), variants: ['cyber'] },
+  cyber: { labelKey: 'header.panelCatCyber', panelKeys: Object.keys(CYBER_PANELS).filter(key => key !== 'map'), variants: IS_PLANETSLAM ? ['tech'] : ['cyber'] },
   // All variants — essential panels
   core: {
     labelKey: 'header.panelCatCore',

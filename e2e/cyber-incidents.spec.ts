@@ -5,7 +5,7 @@ test.skip(process.env.VITE_BRAND !== 'planetslam', 'Cyber is a PlanetSlam editio
 async function boot(page: Page) {
   await seedAnonymousDashboard(page, 'full', { initializeOnce: { sessionKey: 'cyber-phase2-acceptance', clearStorage: true,
     localStorage: { 'worldmonitor-theme': 'dark', 'mobile-map-collapsed': 'false' } } });
-  await page.goto('/dashboard?variant=cyber');
+  await page.goto('/dashboard?variant=tech');
   await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready', 'true');
   await expect(page.locator('html')).toHaveAttribute('data-wm-initial-data-ready', 'true');
 }
@@ -34,7 +34,8 @@ for (const width of [1440, 390]) {
     await page.screenshot({ path: info.outputPath(`cyber-map-${width}.png`) });
     const controls = page.locator('[data-testid="cyber-map-controls"]');
     if (await controls.getAttribute('open') !== null) await controls.locator('summary').click();
-    await map.locator('[data-cyber-marker="synthetic-us"]').click();
+    // Tech overlays can share a country point; native markers support keyboard selection.
+    await map.locator('[data-cyber-marker="synthetic-us"]').press('Enter');
     await expect(controls.locator('[data-testid="cyber-map-detail"]')).toContainText('Synthetic Hospital');
     await expect(controls.getByRole('link', { name: 'Original reporting' })).toHaveAttribute('href', 'https://example.com/report/us');
     await controls.getByRole('combobox', { name: 'Country', exact: true }).selectOption('DE');
@@ -51,7 +52,7 @@ for (const width of [1440, 390]) {
     await controls.locator('summary').click();
     await controls.getByRole('combobox', { name: 'Inspect map marker' }).selectOption('infrastructure:synthetic-url');
     await controls.locator('summary').click();
-    await map.locator('[data-cyber-marker="synthetic-url"]').click();
+    await map.locator('[data-cyber-marker="synthetic-url"]').press('Enter');
     await expect(controls.locator('[data-testid="cyber-map-detail"]')).toContainText('malware[.]example[.]test');
     await expect(controls.locator('a[href*="malware.example.test"]')).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);

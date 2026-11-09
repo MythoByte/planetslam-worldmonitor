@@ -11946,7 +11946,7 @@
     {
       "host": "www.bleepingcomputer.com",
       "provider": "www.bleepingcomputer.com",
-      "kind": "structured",
+      "kind": "feed+structured",
       "observed": true,
       "license": "Publisher RSS content; public feed access does not establish rights to republish full articles or images. Publisher-specific terms remain applicable.",
       "attribution": "Credit BleepingComputer on every item; display headline metadata and short feed-provided excerpts with the original article link. Do not copy full articles or publisher images.",
@@ -11954,6 +11954,9 @@
       "references": [
         {
           "path": "api/_cyber-data.js"
+        },
+        {
+          "path": "shared/news-catalog.json"
         }
       ]
     },
