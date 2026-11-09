@@ -472,7 +472,7 @@ class DataFreshnessTracker {
       .map(([sourceId]) => sourceId as DataSourceId)) {
       sourceIds.add(sourceId);
     }
-    return [...sourceIds];
+    return [...sourceIds].filter(id => !IS_PLANETSLAM || id !== 'pizzint');
   }
 
   /**
