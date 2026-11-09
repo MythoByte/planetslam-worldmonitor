@@ -4,6 +4,7 @@
  * showing misleading "all clear" when we actually have no data.
  */
 
+import { IS_PLANETSLAM } from '@/config/brand';
 import { getCSSColor } from '@/utils/theme-colors';
 import { isHealthMappedSource } from '@/services/health-freshness-map';
 import type { DataSourceId } from '@/types';
@@ -171,6 +172,7 @@ class DataFreshnessTracker {
   constructor() {
     // Initialize all sources
     for (const [id, meta] of Object.entries(SOURCE_METADATA)) {
+      if (IS_PLANETSLAM && id === 'pizzint') continue;
       this.sources.set(id as DataSourceId, {
         id: id as DataSourceId,
         name: meta.name,

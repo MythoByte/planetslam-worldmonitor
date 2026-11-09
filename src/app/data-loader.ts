@@ -1135,7 +1135,7 @@ export class DataLoaderManager implements AppModule {
         tasks.push({ name: 'simulation-outcome', task: () => runGuarded('simulation-outcome', () => this.loadSimulationOutcome()) });
       }
       // The PizzINT header indicator belongs to no panel; its refresh is scheduled.
-      if (SITE_VARIANT === 'full' && (this.viewportHydration.claim('pizzint') || !viewportOnly)) tasks.push({ name: 'pizzint', task: () => runGuarded('pizzint', () => this.loadPizzInt()) });
+      if (!IS_PLANETSLAM && SITE_VARIANT === 'full' && (this.viewportHydration.claim('pizzint') || !viewportOnly)) tasks.push({ name: 'pizzint', task: () => runGuarded('pizzint', () => this.loadPizzInt()) });
       if (shouldLoad('economic')) {
         tasks.push({ name: 'fred', task: () => runGuarded('fred', () => this.loadFredData()) });
         tasks.push({ name: 'spending', task: () => runGuarded('spending', () => this.loadGovernmentSpending()) });
@@ -4886,6 +4886,7 @@ export class DataLoaderManager implements AppModule {
   }
 
   async loadPizzInt(): Promise<void> {
+    if (IS_PLANETSLAM) return;
     try {
       const [status, tensions] = await Promise.all([
         fetchPizzIntStatus(),

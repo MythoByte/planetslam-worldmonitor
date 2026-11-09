@@ -1,3 +1,4 @@
+import { IS_PLANETSLAM } from '@/config/brand';
 import { SITE_VARIANT } from '@/config';
 import { h } from '@/utils/dom-utils'; // kept for Panel base class compat
 
@@ -39,7 +40,7 @@ const WORLD_FEEDS = new Set([
 ]);
 const WORLD_APIS = new Set([
   'RSS2JSON', 'Finnhub', 'CoinGecko', 'Polymarket', 'USGS', 'FRED',
-  'AISStream', 'GDELT Doc', 'EIA', 'USASpending', 'PizzINT', 'FIRMS',
+  'AISStream', 'GDELT Doc', 'EIA', 'USASpending', ...(!IS_PLANETSLAM ? ['PizzINT'] : []), 'FIRMS',
   'Global Procurement',
   'Cyber Threats API', 'BIS', 'WTO', 'SupplyChain', 'OFAC', 'Signal Aggregator'
 ]);

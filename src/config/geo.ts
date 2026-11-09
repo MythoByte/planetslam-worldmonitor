@@ -1,3 +1,4 @@
+import { IS_PLANETSLAM } from './brand';
 import type { Hotspot, ConflictZone, StrategicWaterway } from '@/types';
 import {
   CONFLICT_ZONES as SHARED_CONFLICT_ZONES,
@@ -12,7 +13,11 @@ import {
 // Hotspot levels are NOT hardcoded - they are dynamically calculated based on news activity
 // All hotspots start at 'low' and rise to 'elevated' or 'high' based on matching news items
 // Escalation scores: 1=stable, 2=watchlist, 3=elevated, 4=high tension, 5=critical/active conflict
-export const INTEL_HOTSPOTS: Hotspot[] = SHARED_INTEL_HOTSPOTS;
+export const INTEL_HOTSPOTS: Hotspot[] = IS_PLANETSLAM
+  ? SHARED_INTEL_HOTSPOTS.map(hotspot => hotspot.id === 'dc'
+    ? { ...hotspot, subtext: 'US government and military' }
+    : hotspot)
+  : SHARED_INTEL_HOTSPOTS;
 
 export const STRATEGIC_WATERWAYS: StrategicWaterway[] = SHARED_STRATEGIC_WATERWAYS;
 
