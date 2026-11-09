@@ -39,6 +39,14 @@ for (const width of [1440, 390]) {
       await toggle.click();
       await expect(toggle).toHaveClass(/active/);
     }
+    if (width < 768) {
+      const sizes = await page.locator('.global-space-layers .layer-toggle-row').evaluateAll(rows => rows
+        .filter(row => getComputedStyle(row).display !== 'none')
+        .map(row => { const button = row.querySelector('button')!; return { rowFits: row.scrollWidth <= row.clientWidth + 1, labelFits: button.scrollWidth <= button.clientWidth + 1 }; }));
+      expect(sizes).toHaveLength(4);
+      expect(sizes.every(size => size.rowFits && size.labelFits)).toBe(true);
+      await page.locator('.layer-toggle[data-layer="aurora"]').scrollIntoViewIfNeeded();
+    }
     await page.locator('#mapContainer').screenshot({ path: info.outputPath(`global-space-map-${width}.png`) });
     const apod = page.locator('#panelsGrid [data-panel="space-apod"]');
     await expect(async () => { await apod.scrollIntoViewIfNeeded(); await expect(apod).toContainText('Synthetic nebula acceptance image'); }).toPass();
