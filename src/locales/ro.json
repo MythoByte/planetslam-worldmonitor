@@ -1330,7 +1330,8 @@
         "canadaRoads": "Drumuri Canada",
         "canadaAlerts": "Alerte Canada",
         "notamAirspace": "Restricții de spațiu aerian NOTAM",
-        "no2Activity": "Activitate industrială"
+        "no2Activity": "Activitate industrială",
+        "aurora": "Aurora forecast"
       },
       "tooltip": {
         "earthquake": "Cutremur",

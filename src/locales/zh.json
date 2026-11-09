@@ -1324,7 +1324,8 @@
         "canadaRoads": "Canada 道路",
         "canadaAlerts": "加拿大警报",
         "notamAirspace": "NOTAM 空域限制",
-        "no2Activity": "工业活动"
+        "no2Activity": "工业活动",
+        "aurora": "Aurora forecast"
       },
       "tooltip": {
         "earthquake": "地震",

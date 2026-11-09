@@ -1469,7 +1469,8 @@
         "canadaRoads": "جاده‌های کانادا",
         "canadaAlerts": "هشدارهای کانادا",
         "notamAirspace": "محدودیت‌های فضای هوایی NOTAM",
-        "no2Activity": "فعالیت صنعتی"
+        "no2Activity": "فعالیت صنعتی",
+        "aurora": "Aurora forecast"
       },
       "tooltip": {
         "earthquake": "زمین‌لرزه",

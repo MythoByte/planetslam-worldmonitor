@@ -1,3 +1,4 @@
+import { IS_PLANETSLAM } from './brand';
 import type { MapLayers } from '@/types';
 // boundary-ignore: isDesktopRuntime is a pure env probe with no service dependencies
 import { isDesktopRuntime } from '@/services/runtime';
@@ -57,6 +58,7 @@ const def = (
 });
 
 export const LAYER_REGISTRY: Record<keyof MapLayers, LayerDefinition> = {
+  aurora: def('aurora', '&#127756;', 'aurora', 'Aurora forecast'),
   iranAttacks:              def('iranAttacks',              '&#127919;', 'iranAttacks',              'Middle East Strikes', ['svg', 'deck', 'globe'], _desktop ? 'locked' : undefined),
   hotspots:                 def('hotspots',                 '&#127919;', 'intelHotspots',            'Intel Hotspots'),
   conflicts:                def('conflicts',                '&#9876;',   'conflictZones',            'Conflict Zones'),
@@ -170,8 +172,9 @@ export const LAYER_EXPLANATIONS: Partial<Record<keyof MapLayers, LayerExplanatio
 const VARIANT_LAYER_ORDER: Record<MapVariant, Array<keyof MapLayers>> = {
   earth: ['weather', 'dayNight'],
   cyber: [],
-  space: ['satellites', 'spaceports', 'dayNight', 'webcams'],
+  space: ['satellites', 'spaceports', 'aurora', 'dayNight', 'webcams'],
   full: [
+    'aurora',
     'iranAttacks', 'hotspots', 'conflicts',
     'bases', 'nuclear', 'irradiators', 'radiationWatch', 'spaceports',
     'cables', 'pipelines', 'storageFacilities', 'fuelShortages', 'datacenters', 'military',
@@ -232,7 +235,7 @@ export function isSunsetLayer(key: keyof MapLayers): boolean {
 
 export function getOrderedLayerKeys(variant: MapVariant): Array<keyof MapLayers> {
   return (VARIANT_LAYER_ORDER[variant] ?? VARIANT_LAYER_ORDER.full)
-    .filter(k => !isSunsetLayer(k));
+    .filter(k => !isSunsetLayer(k) && (k !== 'aurora' || variant !== 'full' || IS_PLANETSLAM));
 }
 
 export function getCompleteLayerCatalogKeys(variant: MapVariant): Array<keyof MapLayers> {

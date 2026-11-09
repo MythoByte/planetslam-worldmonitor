@@ -19,8 +19,8 @@ There is no separate upstream Space hostname.
 - Launch Countdown: next launches, NET times, launch windows, provider status,
   vehicle, payload, pad, webcast link, and native map markers.
 - Space Weather: NOAA G/R/S scales, Kp, solar wind/Bz, recent trends and bulletins.
-- Aurora: native geographic forecast overlay with persistent toggle and source
-  timestamps on DeckGL, SVG and Globe. A forecast does not guarantee visibility.
+- Aurora: cached NOAA geographic forecast with a persistent toggle in the main
+  layer selector on DeckGL, SVG and Globe. A forecast does not guarantee visibility.
 - Sun Now: three NASA SDO wavelength images, file update times and required credit.
   HTTP Last-Modified is a file update proxy, not a guaranteed instrument timestamp.
 - Solar events: seven days of NASA DONKI flare/CME history and source links.
@@ -269,4 +269,6 @@ verification skill supports isolated manual drives and screenshots.
 
 ## Global dashboard
 
-PlanetSlam Global includes the shared Space blocks and the Aurora forecast and upcoming launch overlays. Existing satellite, spaceport, day/night, and webcam layers retain their single registry entries. The lightweight map also exposes its supported satellite, spaceport, and webcam controls. Each Space block and overlay control has a distinct icon. Overlay choices persist across reloads and renderer switches; blocks use the normal panel settings controls. A one-time Global layout migration adds the Space blocks for returning visitors, after which intentional panel disables persist. The dedicated Space view continues to use the same components and cache.
+PlanetSlam Global includes the shared Space blocks and the Aurora forecast and upcoming launch overlays. Existing satellite, spaceport, day/night, and webcam layers retain their single registry entries. The lightweight map also exposes its supported satellite, spaceport, Aurora, and webcam controls. Each Space block and overlay control has a distinct icon. Overlay choices persist across reloads and renderer switches; blocks use the normal panel settings controls. A one-time Global layout migration adds the Space blocks for returning visitors, after which intentional panel disables persist. The dedicated Space view continues to use the same components and cache.
+
+Aurora forecast is now a native entry in the main Layers selector, sharing its URL state and saved visibility with other layers. Spaceports controls both the static spaceport catalog and upcoming-launch markers on all renderers. The former separate Space overlays menu is removed. Existing Aurora preferences migrate into native map-layer settings.

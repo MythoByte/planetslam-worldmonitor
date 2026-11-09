@@ -1477,7 +1477,8 @@
         "canadaRoads": "Ceste Kanada",
         "canadaAlerts": "Upozorenja Kanada",
         "notamAirspace": "NOTAM ograničenja zračnog prostora",
-        "no2Activity": "Industrijska aktivnost"
+        "no2Activity": "Industrijska aktivnost",
+        "aurora": "Aurora forecast"
       },
       "tooltip": {
         "earthquake": "Zemljotres",

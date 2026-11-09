@@ -1124,7 +1124,8 @@
         "canadaRoads": "Drogi w Kanadzie",
         "canadaAlerts": "Alerty z Kanady",
         "notamAirspace": "Ograniczenia przestrzeni powietrznej NOTAM",
-        "no2Activity": "Aktywność przemysłowa"
+        "no2Activity": "Aktywność przemysłowa",
+        "aurora": "Aurora forecast"
       },
       "layersTitle": "Warstwy",
       "layerSearch": "Szukaj warstw...",

@@ -1469,7 +1469,8 @@
         "canadaRoads": "Kanadai utak",
         "canadaAlerts": "Kanadai riasztások",
         "notamAirspace": "NOTAM légtéri korlátozások",
-        "no2Activity": "Ipari aktivitás"
+        "no2Activity": "Ipari aktivitás",
+        "aurora": "Aurora forecast"
       },
       "tooltip": {
         "earthquake": "Földrengés",

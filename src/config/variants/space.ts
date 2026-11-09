@@ -30,6 +30,7 @@ export const SPACE_PANEL_ICONS: Record<string, string> = Object.fromEntries(
 );
 
 export const DEFAULT_MAP_LAYERS: MapLayers = {
+  aurora: true,
   aircraftEmergencies: false,
   iranAttacks: false,
   gpsJamming: false,

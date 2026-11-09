@@ -607,7 +607,8 @@
         "canadaRoads": "Canadese wegen",
         "canadaAlerts": "Canadese waarschuwingen",
         "notamAirspace": "NOTAM-luchtruimbeperkingen",
-        "no2Activity": "Industriële activiteit"
+        "no2Activity": "Industriële activiteit",
+        "aurora": "Aurora forecast"
       },
       "layersTitle": "Lagen",
       "layerSearch": "Lagen zoeken...",

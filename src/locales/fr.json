@@ -1278,7 +1278,8 @@
         "canadaRoads": "Routes du Canada",
         "canadaAlerts": "Alertes Canada",
         "notamAirspace": "Restrictions d'espace aérien NOTAM",
-        "no2Activity": "Activité industrielle"
+        "no2Activity": "Activité industrielle",
+        "aurora": "Aurora forecast"
       },
       "tooltip": {
         "earthquake": "Tremblement de terre",

@@ -1287,7 +1287,8 @@
         "canadaRoads": "طرق كندا",
         "canadaAlerts": "تنبيهات كندا",
         "notamAirspace": "قيود المجال الجوي NOTAM",
-        "no2Activity": "النشاط الصناعي"
+        "no2Activity": "النشاط الصناعي",
+        "aurora": "Aurora forecast"
       },
       "tooltip": {
         "earthquake": "زلزال",

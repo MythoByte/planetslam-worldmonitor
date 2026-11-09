@@ -399,7 +399,7 @@ export class MapContainer {
         if (!this.destroyed) this.setSpaceOrbitSnapshot(getPublishedSpaceOrbitSnapshot());
       });
       void import('./SpaceMapOverlay').then(({ SpaceMapOverlay }) => {
-        if (!this.destroyed) this.spaceOverlayController = new SpaceMapOverlay(this.container, snapshot => this.setSpaceOverlay(snapshot));
+        if (!this.destroyed) this.spaceOverlayController = new SpaceMapOverlay(snapshot => this.setSpaceOverlay(snapshot));
       });
     }
   }

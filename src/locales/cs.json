@@ -1321,7 +1321,8 @@
         "canadaRoads": "Silnice Kanada",
         "canadaAlerts": "Výstrahy Kanada",
         "notamAirspace": "Omezení vzdušného prostoru NOTAM",
-        "no2Activity": "Průmyslová aktivita"
+        "no2Activity": "Průmyslová aktivita",
+        "aurora": "Aurora forecast"
       },
       "tooltip": {
         "earthquake": "Zemětřesení",

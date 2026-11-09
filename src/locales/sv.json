@@ -607,7 +607,8 @@
         "canadaRoads": "Kanadensiska vägar",
         "canadaAlerts": "Kanadensiska varningar",
         "notamAirspace": "NOTAM-luftrumsbegränsningar",
-        "no2Activity": "Industriell aktivitet"
+        "no2Activity": "Industriell aktivitet",
+        "aurora": "Aurora forecast"
       },
       "layersTitle": "Lager",
       "layerSearch": "Sök lager...",

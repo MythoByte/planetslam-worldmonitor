@@ -1028,6 +1028,9 @@ export class App {
     // Use mobile-specific defaults on first load (no saved layers)
     const defaultLayers = isMobile ? MOBILE_DEFAULT_MAP_LAYERS : DEFAULT_MAP_LAYERS;
 
+    // Read before loadFromStorage merges newly introduced defaults and before
+    // other migrations persist that merged object.
+    const savedAuroraPreference = loadFromStorage<Partial<MapLayers>>(STORAGE_KEYS.mapLayers, {}).aurora;
     let mapLayers: MapLayers;
     let panelSettings: Record<string, PanelConfig>;
 
@@ -1362,6 +1365,12 @@ export class App {
         }
       }
       if (panelSettings['cyber-news']) panelSettings['cyber-news'].enabled = false;
+    }
+
+    // Carry the old overlay preference into the native layer state once.
+    if ((currentVariant === 'space' || (IS_PLANETSLAM && currentVariant === 'full')) && typeof savedAuroraPreference !== 'boolean') {
+      mapLayers.aurora = loadFromStorage('planetslam-space-map-overlays-v1', { aurora: true }).aurora === true;
+      if (storageAvailable) saveToStorage(STORAGE_KEYS.mapLayers, mapLayers);
     }
 
     const initialUrlState: ParsedMapUrlState | null = parseMapUrlState(window.location.search, mapLayers);
