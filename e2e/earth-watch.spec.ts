@@ -8,7 +8,7 @@ const watch = (page: Page) => page.locator('[data-panel="earth-watch"]');
 async function boot(page: Page) {
   await seedAnonymousDashboard(page, 'full', { initializeOnce: { sessionKey: 'earth-watch-acceptance', clearStorage: true,
     localStorage: { 'worldmonitor-theme': 'dark', 'mobile-map-collapsed': 'false' } } });
-  await page.goto('/dashboard?variant=earth');
+  await page.goto('/dashboard?variant=earth&layers=natural,weather,webcams');
   await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready', 'true');
   await expect(async () => { await watch(page).scrollIntoViewIfNeeded(); await expect(watch(page).getByLabel('Location name', { exact: true })).toBeVisible(); }).toPass({ timeout: 20000 });
 }

@@ -1,3 +1,4 @@
+import { EARTH_PANEL_ICONS } from '@/config/variants/earth';
 import { SPACE_PANEL_ICONS } from '@/config/variants/space';
 import { isPlanetSlamSourcePanel, PLANETSLAM_SOURCE_PANEL_NAMES } from '@/config/planetslam-panels';
 import { IS_PLANETSLAM } from '@/config/brand';
@@ -264,14 +265,15 @@ export class Panel {
     const title = document.createElement('span');
     title.className = 'panel-title';
     title.id = `${options.id}Title`;
-    if (IS_PLANETSLAM && SPACE_PANEL_ICONS[options.id]) {
+    const panelIcon = SPACE_PANEL_ICONS[options.id] || (EARTH_PANEL_ICONS[options.id] ? `/branding/planetslam/layer-icons/${EARTH_PANEL_ICONS[options.id]}.svg` : undefined);
+    if (IS_PLANETSLAM && panelIcon) {
       const icon = document.createElement('img');
-      icon.className = 'space-panel-icon';
+      icon.className = options.id.startsWith('earth-') ? 'earth-panel-icon' : 'space-panel-icon';
       icon.alt = '';
       icon.width = 16;
       icon.height = 16;
       icon.setAttribute('aria-hidden', 'true');
-      icon.src = SPACE_PANEL_ICONS[options.id]!;
+      icon.src = panelIcon;
       headerLeft.appendChild(icon);
     }
     title.textContent = options.title;

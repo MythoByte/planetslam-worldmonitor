@@ -1174,15 +1174,7 @@ export class PanelLayoutManager implements AppModule {
                title="Good News${SITE_VARIANT === 'happy' ? ` ${t('common.currentVariant')}` : ''}">
               <span class="variant-icon">☀️</span>
               <span class="variant-label">Good News</span>
-            </a>${IS_PLANETSLAM ? `
-            <span class="variant-divider"></span>
-            <a href="${vHref('space')}"
-               class="variant-option ${SITE_VARIANT === 'space' ? 'active' : ''}"
-               data-variant="space" title="Space${SITE_VARIANT === 'space' ? ` ${t('common.currentVariant')}` : ''}">
-              <span class="variant-icon">🚀</span>
-              <span class="variant-label">Space</span>
-            </a><span class="variant-divider"></span>
-            <a href="${vHref('earth')}" class="variant-option ${SITE_VARIANT === 'earth' ? 'active' : ''}" data-variant="earth" title="Earth — Weather & Natural Hazards"><span class="variant-icon">🌋</span><span class="variant-label">Earth</span></a>` : ''}`;
+            </a>`;
       })()}</div>
           <span class="logo">${BRAND.wordmark}</span><span class="logo-mobile">${BRAND.name}</span><span class="version">v${__APP_VERSION__}</span>${BETA_MODE ? '<span class="beta-badge">BETA</span>' : ''}
           <a href="${creditUrl}" target="_blank" rel="noopener" class="credit-link">
@@ -1250,7 +1242,6 @@ export class PanelLayoutManager implements AppModule {
           { key: 'commodity', icon: '⛏️', label: t('header.commodity') },
           { key: 'energy', icon: '⚡', label: t('header.energy') },
           { key: 'happy', icon: '☀️', label: 'Good News' },
-          ...(IS_PLANETSLAM ? [{ key: 'space', icon: '🚀', label: 'Space' }, { key: 'earth', icon: '🌋', label: 'Earth' }] : []),
         ];
         return variants.map(v =>
           `<button class="mobile-menu-item mobile-menu-variant ${v.key === SITE_VARIANT ? 'active' : ''}" data-variant="${v.key}">

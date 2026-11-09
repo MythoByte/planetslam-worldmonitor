@@ -7,7 +7,7 @@ test.skip(process.env.VITE_BRAND !== 'planetslam', 'PlanetSlam Space feature');
 async function boot(page: Page) {
   await seedAnonymousDashboard(page, 'full', { initializeOnce: { sessionKey: 'brief-acceptance', clearStorage: true,
     localStorage: { 'worldmonitor-theme': 'dark', 'mobile-map-collapsed': 'false' } } });
-  await page.goto('/dashboard?variant=space');
+  await page.goto('/dashboard?variant=space&layers=satellites,spaceports,aurora,webcams');
   await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready', 'true');
   await expect(page.locator('html')).toHaveAttribute('data-wm-initial-data-ready', 'true');
 }

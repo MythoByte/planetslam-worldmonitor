@@ -1,13 +1,12 @@
 # PlanetSlam Earth — phases 1–6
 
-Earth is the PlanetSlam edition for weather, natural hazards, official alerts,
-Earth news and webcams. Open `/dashboard?variant=earth` or choose **Earth** in
-the desktop or mobile edition switcher. Existing editions and saved layouts use
-the existing variant ownership rules.
+Earth's nine blocks, curated camera tools, additional event locations, and recorded history are included in **Global**. Space and Earth no longer appear in desktop or mobile edition menus; old `/dashboard?variant=earth` and `?variant=space` links open Global and preserve the other URL parameters.
+
+Existing Global map layers are reused. Matching provider IDs and event permalinks retain their existing map representation; only unmatched Earth locations are added. Natural Events, Weather Alerts, Fires, and Live Webcams control their corresponding additional locations. Hazard filters in Earth details refine additional Earth locations. Recorded Earth playback does not rewind Global's shared live layers. A one-time layout migration adds the Earth blocks; later panel disables persist. Saved Earth places, camera favorites, and alert preferences keep their existing storage keys.
 
 ## What is included
 
-- A dedicated Earth map and independent hazard/webcam toggles. Event locations
+- The Global map with shared layer controls and additional Earth location filters. Event locations
   render on the SVG, deck.gl and globe maps. Records without coordinates remain
   available in the event lists. An accessible location selector offers the same
   selection action as a map marker.

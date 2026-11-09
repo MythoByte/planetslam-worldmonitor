@@ -5,7 +5,7 @@ import { installSpaceFixtures, spaceFixture } from './space-dashboard-fixtures';
 test.skip(process.env.VITE_BRAND !== 'planetslam', 'PlanetSlam Space feature');
 async function boot(page: import('@playwright/test').Page) {
   await seedAnonymousDashboard(page, 'full', { initializeOnce: { sessionKey: 'orbit-acceptance', clearStorage: true, localStorage: { 'worldmonitor-theme': 'dark', 'mobile-map-collapsed': 'false' } } });
-  await page.goto('/dashboard?variant=space');
+  await page.goto('/dashboard?variant=space&layers=satellites,spaceports,aurora,webcams');
   await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready', 'true');
   await expect(page.locator('html')).toHaveAttribute('data-wm-initial-data-ready', 'true');
 }
@@ -53,7 +53,7 @@ test('existing Space layouts gain the tracker while explicit hidden panels stay 
     'worldmonitor-panel-layout-variant': 'space',
     'worldmonitor-panels': JSON.stringify({ 'space-news': { name: 'Space News', enabled: false, priority: 1 }, 'space-cameras': { name: 'Space Live', enabled: true, priority: 1 } }),
   } } });
-  await page.goto('/dashboard?variant=space');
+  await page.goto('/dashboard?variant=space&layers=satellites,spaceports,aurora,webcams');
   await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready', 'true');
   const panel = page.locator('[data-panel="space-satellites"]');
   await expect(async () => { await panel.scrollIntoViewIfNeeded(); await expect(panel.locator('[data-orbit-selected]')).toContainText('25544'); }).toPass({ timeout: 20000 });

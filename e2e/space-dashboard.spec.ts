@@ -7,10 +7,10 @@ test.skip(process.env.VITE_BRAND !== 'planetslam', 'Space is a PlanetSlam editio
 async function boot(page: import('@playwright/test').Page) {
   await seedAnonymousDashboard(page, 'full', { initializeOnce: { sessionKey: 'space-acceptance', clearStorage: true,
     localStorage: { 'worldmonitor-theme': 'dark', 'mobile-map-collapsed': 'false' } } });
-  await page.goto('/dashboard?variant=space');
+  await page.goto('/dashboard?variant=space&layers=satellites,spaceports,aurora,webcams');
   await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready', 'true');
   await expect(page.locator('html')).toHaveAttribute('data-wm-initial-data-ready', 'true');
-  await expect(page).toHaveTitle(/PlanetSlam Space/);
+  await expect(page).toHaveURL(/variant=full/);
 }
 
 for (const width of [1440, 390]) {

@@ -13,6 +13,15 @@ export const DEFAULT_PANELS: Record<string, PanelConfig> = {
   'earth-airquality': { name: 'Air Quality & Smoke', enabled: true, priority: 2 },
   'earth-health': { name: 'Earth Data Status', enabled: true, priority: 2 },
 };
+export const GLOBAL_EARTH_PANELS = Object.fromEntries(
+  Object.entries(DEFAULT_PANELS).filter(([key]) => key !== 'map'),
+);
+export const EARTH_PANEL_ICONS: Record<string, string> = {
+  'earth-watch': '1f30e', 'earth-events': '1f30b', 'earth-alerts': '1f4e2',
+  'earth-weather': '26c8', 'earth-news': '1f4f0', 'earth-cameras': '1f4f7',
+  'earth-rivers': '2693', 'earth-airquality': '1f32b', 'earth-health': '1f49a',
+};
+
 // Dedicated Earth controls own hazard and camera layers. The shared weather
 // toggle enables radar on the desktop flat map; other renderers show events.
 export const DEFAULT_MAP_LAYERS = {

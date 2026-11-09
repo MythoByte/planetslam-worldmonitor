@@ -1,3 +1,4 @@
+import { GLOBAL_EARTH_PANELS } from '@/config/variants/earth';
 import { GLOBAL_SPACE_PANELS } from '@/config/variants/space';
 import { TECH_CYBER_PANELS } from '@/config/variants/cyber';
 import { DEFAULT_MAP_TIME_RANGE } from '@/config/map-defaults';
@@ -1336,6 +1337,19 @@ export class App {
           priority: panelSettings['runtime-config']?.priority ?? 2,
         };
         saveToStorage(STORAGE_KEYS.panels, panelSettings);
+      }
+    }
+
+    if (IS_PLANETSLAM && currentVariant === 'full') {
+      const migration = 'planetslam-global-earth-panels-v1';
+      if (!storageAvailable || !safeStorageGet(migration)) {
+        for (const [key, config] of Object.entries(GLOBAL_EARTH_PANELS)) {
+          panelSettings[key] = { ...config, ...panelSettings[key], enabled: true };
+        }
+        if (storageAvailable) {
+          saveToStorage(STORAGE_KEYS.panels, panelSettings);
+          safeStorageSet(migration, 'done');
+        }
       }
     }
 

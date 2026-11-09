@@ -24,3 +24,7 @@ html[data-brand="planetslam"][data-variant="earth"] .time-slider { display:none;
 .earth-history-records { padding-left:16px; overflow-wrap:anywhere; }
 .earth-history-records li { margin:10px 0; }
 .earth-history-records a { color:var(--accent); }
+
+html[data-variant="full"] .earth-map-controls { left:auto; bottom:auto; right:10px; top:48px; width:min(300px, calc(50% - 20px)); z-index:110; max-height:calc(100% - 70px); }
+.earth-panel-icon { flex-shrink:0; margin-right:5px; }
+@media(max-width:1100px) { html[data-variant="full"] .earth-map-controls { right:10px; top:auto; bottom:80px; width:250px; max-height:40%; } }

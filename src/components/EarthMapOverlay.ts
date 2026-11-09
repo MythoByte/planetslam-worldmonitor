@@ -30,7 +30,7 @@ export class EarthMapOverlay {
   private playback: ReturnType<typeof setInterval> | null = null;
 
   constructor(private container: HTMLElement, private paint: (snapshot: EarthMapSnapshot) => void,
-    private center: (latitude: number, longitude: number) => void) {
+    private center: (latitude: number, longitude: number) => void, private readonly global = false) {
     const saved = loadFromStorage<string[]>(PREFS_KEY, [...EARTH_HAZARDS, 'camera']);
     this.enabled = new Set(Array.isArray(saved) ? saved.filter(v => [...EARTH_HAZARDS, 'camera'].includes(v as typeof EARTH_HAZARDS[number])) : [...EARTH_HAZARDS, 'camera']);
     if (!loadFromStorage<boolean>('planetslam-earth-map-extended-v1', false)) {
@@ -109,7 +109,7 @@ export class EarthMapOverlay {
     }).filter((marker): marker is EarthMapMarker => marker !== null);
     if (this.historical) return events;
     const cameras: EarthMapMarker[] = EARTH_CAMERAS.map(camera => ({ id: camera.id, kind: 'camera', title: camera.title,
-      latitude: camera.latitude, longitude: camera.longitude, hazard: 'camera', mode: 'context', severity: 'unknown' }));
+      latitude: camera.latitude, longitude: camera.longitude, sourceUrl: camera.sourceUrl, hazard: 'camera', mode: 'context', severity: 'unknown' }));
     return [...events, ...cameras];
   }
   private snapshot(): EarthMapSnapshot {
@@ -178,11 +178,13 @@ export class EarthMapOverlay {
       ${frame ? safeHtml`<details><summary>Recorded events (${frame.eventKeys.length})</summary><ul class="earth-history-records">${joinSafeHtml(this.events().map(item => safeHtml`<li><a href="${safeUrlAttr(item.url)}" target="_blank" rel="noopener noreferrer">${item.title}</a><small>${item.mode} · ${item.kind} · ${item.provider} · source event ${new Date(item.observedAt).toLocaleString()}${item.latitude === null || item.longitude === null ? ' · no map coordinates' : ''}</small></li>`))}</ul></details>` : ''}
       <button type="button" data-earth-current>Return to current events</button></section>` : '';
     const selection = this.selected ? safeHtml`<section class="earth-map-selection" aria-label="Selected map location"><strong>${this.selected.title}</strong><p>${this.historical ? 'Historical record · ' : ''}${event ? `${event.mode} · ${event.kind} · ${event.severity} · ${event.provider}` : 'Webcam location · playback checked when connected'}</p>${event ? safeHtml`<p>${event.summary}</p><small>Source event time: ${new Date(event.observedAt).toLocaleString()}${event.expiresAt ? ` · original expiry: ${new Date(event.expiresAt).toLocaleString()}` : ''}</small>` : ''}<a href="${safeUrlAttr(event?.url || camera?.sourceUrl || '')}" target="_blank" rel="noopener noreferrer">Open original source ↗</a></section>` : '';
-    setTrustedHtml(this.controls, trustedHtml(safeHtml`<summary>Earth layers${this.historical ? ' · HISTORY' : ''} · ${snapshot.markers.length} locations</summary>
+    setTrustedHtml(this.controls, trustedHtml(safeHtml`<summary>${this.global ? 'Earth details & history' : 'Earth layers'}${this.historical ? ' · HISTORY' : ''} · ${snapshot.markers.length} locations</summary>
       <p>Amber: observed · red: warning · violet: forecast · teal: webcam</p>
       <button type="button" data-earth-history ${this.historyLoading ? safeHtml`disabled` : ''}>${this.historyLoading ? 'Loading history…' : this.historical ? 'Reload recorded history' : 'Explore event history'}</button>
       ${this.historyError ? safeHtml`<p role="alert">${this.historyError}</p>` : ''}${timeline}
-      <details class="earth-map-layer-options" ${layersOpen ? safeHtml`open` : ''}><summary>Hazard layers</summary><div class="earth-map-toggles">${joinSafeHtml([...EARTH_HAZARDS, 'camera'].map(hazard => safeHtml`<label><input type="checkbox" data-earth-layer value="${hazard}" ${this.enabled.has(hazard) ? safeHtml`checked` : ''}>${hazard === 'camera' ? 'Webcams' : EARTH_HAZARD_LABELS[hazard as keyof typeof EARTH_HAZARD_LABELS]}</label>`))}</div></details>
+      ${this.global ? safeHtml`<p>Main Layers controls show or hide all Natural Events, Weather Alerts, Fires, and Live Webcams. The filters below refine additional Earth locations. Shared Global layers remain current during recorded Earth playback.</p>` : ''}
+      <details class="earth-map-layer-options" ${layersOpen ? safeHtml`open` : ''}><summary>${this.global ? 'Additional Earth location filters' : 'Hazard layers'}</summary><div class="earth-map-toggles">${joinSafeHtml([...EARTH_HAZARDS, 'camera'].map(hazard => safeHtml`<label><input type="checkbox" data-earth-layer value="${hazard}" ${this.enabled.has(hazard) ? safeHtml`checked` : ''}>${hazard === 'camera' ? 'Webcams' : EARTH_HAZARD_LABELS[hazard as keyof typeof EARTH_HAZARD_LABELS]}</label>`))}</div></details>
+
       <label>Inspect Earth location<select aria-label="Inspect Earth location" data-earth-inspect><option value="">Choose an event${this.historical ? '' : ' or camera'}…</option>${joinSafeHtml(snapshot.markers.map(marker => safeHtml`<option value="${marker.kind}:${marker.id}" ${this.selected?.id === marker.id && this.selected.kind === marker.kind ? safeHtml`selected` : ''}>${marker.kind === 'camera' ? 'Camera' : marker.hazard}: ${marker.title}</option>`))}</select></label>
       ${selection}<p role="status">${this.historical ? `Historical archive: ${this.history ? ageEarthEnvelope(this.history).status : 'unavailable'}` : [...this.snapshots.entries()].map(([name, value]) => `${name}: ${ageEarthEnvelope(value).status}`).join(' · ') || 'Loading event sources…'}</p>
       <small>${missing} events without coordinates remain in the lists. Locations may be approximate. Precipitation radar is current and available on the 2D WebGL map. Globe/mobile show event locations; satellite cloud imagery is not supplied. Recorded playback does not rewind radar.</small><button type="button" data-earth-retry>Refresh current map data</button>`.toString(), 'Earth labels are escaped with safeHtml and links pass safeUrlAttr.'));

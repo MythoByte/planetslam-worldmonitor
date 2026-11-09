@@ -743,7 +743,7 @@ export class MapComponent {
 
     // Variant-aware layer buttons
     const fullLayers: (keyof MapLayers)[] = [
-      ...(IS_PLANETSLAM ? ['satellites', 'spaceports', 'aurora', 'webcams'] as (keyof MapLayers)[] : []),
+      ...(IS_PLANETSLAM ? ['satellites', 'spaceports', 'aurora', 'webcams', 'fires'] as (keyof MapLayers)[] : []),
       'iranAttacks',                                      // Iran conflict
       'conflicts', 'hotspots', 'sanctions', 'protests',  // geopolitical
       'bases', 'nuclear', 'irradiators',                 // military/strategic

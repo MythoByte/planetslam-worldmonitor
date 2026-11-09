@@ -17,7 +17,7 @@ async function boot(page: Page) {
     }
     Object.defineProperty(window, 'Notification', { configurable: true, value: SyntheticNotification });
   });
-  await page.goto('/dashboard?variant=space');
+  await page.goto('/dashboard?variant=space&layers=satellites,spaceports,aurora,webcams');
   await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready', 'true');
   await expect(page.locator('html')).toHaveAttribute('data-wm-initial-data-ready', 'true');
 }
