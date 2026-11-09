@@ -28,6 +28,7 @@ for (const width of [1440, 390]) {
     for (const key of ['satellites', 'spaceports', 'webcams']) {
       const toggle = page.locator(`.layer-toggle[data-layer="${key}"]`);
       await expect(toggle).toHaveCount(1);
+      await expect(toggle).toBeVisible({ timeout: 5000 });
       await toggle.click();
       await expect(toggle).not.toHaveClass(/active/);
       await toggle.click();
