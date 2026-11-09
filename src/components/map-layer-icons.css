@@ -38,3 +38,14 @@
 }
 
 .planetslam-menu-icon { display: inline-block; vertical-align: middle; object-fit: contain; }
+
+@media (max-width: 768px) {
+  .layer-toggles.global-space-layers {
+    display: flex !important;
+    max-width: calc(100% - 20px);
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  .global-space-layers > .layer-toggle-row:not([data-layer="satellites"]):not([data-layer="spaceports"]):not([data-layer="webcams"]),
+  .global-space-layers > .layer-help-btn { display: none; }
+}

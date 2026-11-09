@@ -738,11 +738,12 @@ export class MapComponent {
 
   private createLayerToggles(): HTMLElement {
     const toggles = document.createElement('div');
-    toggles.className = 'layer-toggles';
+    toggles.className = `layer-toggles${IS_PLANETSLAM && SITE_VARIANT === 'full' ? ' global-space-layers' : ''}`;
     toggles.id = 'layerToggles';
 
     // Variant-aware layer buttons
     const fullLayers: (keyof MapLayers)[] = [
+      ...(IS_PLANETSLAM ? ['satellites', 'spaceports', 'webcams'] as (keyof MapLayers)[] : []),
       'iranAttacks',                                      // Iran conflict
       'conflicts', 'hotspots', 'sanctions', 'protests',  // geopolitical
       'bases', 'nuclear', 'irradiators',                 // military/strategic

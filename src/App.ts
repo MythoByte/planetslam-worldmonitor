@@ -1,3 +1,4 @@
+import { GLOBAL_SPACE_PANELS } from '@/config/variants/space';
 import { TECH_CYBER_PANELS } from '@/config/variants/cyber';
 import { DEFAULT_MAP_TIME_RANGE } from '@/config/map-defaults';
 import { restorePlanetSlamSourcePanels } from '@/config/panels';
@@ -1332,6 +1333,20 @@ export class App {
           priority: panelSettings['runtime-config']?.priority ?? 2,
         };
         saveToStorage(STORAGE_KEYS.panels, panelSettings);
+      }
+    }
+
+    // Add the newly native Global blocks once; later user toggles remain authoritative.
+    if (IS_PLANETSLAM && currentVariant === 'full') {
+      const migration = 'planetslam-global-space-panels-v1';
+      if (!storageAvailable || !safeStorageGet(migration)) {
+        for (const [key, config] of Object.entries(GLOBAL_SPACE_PANELS)) {
+          panelSettings[key] = { ...config, ...panelSettings[key], enabled: true };
+        }
+        if (storageAvailable) {
+          saveToStorage(STORAGE_KEYS.panels, panelSettings);
+          safeStorageSet(migration, 'done');
+        }
       }
     }
 

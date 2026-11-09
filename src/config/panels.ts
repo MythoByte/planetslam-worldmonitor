@@ -4,7 +4,7 @@ import { DEFAULT_PANELS as CYBER_PANELS, TECH_CYBER_PANELS, DEFAULT_MAP_LAYERS a
 import type { PanelConfig, MapLayers, DataSourceId } from '@/types';
 import { SITE_VARIANT } from './variant';
 import { IS_PLANETSLAM } from './brand';
-import { DEFAULT_PANELS as SPACE_PANELS, DEFAULT_MAP_LAYERS as SPACE_MAP_LAYERS, MOBILE_DEFAULT_MAP_LAYERS as SPACE_MOBILE_MAP_LAYERS } from './variants/space';
+import { GLOBAL_SPACE_PANELS, DEFAULT_PANELS as SPACE_PANELS, DEFAULT_MAP_LAYERS as SPACE_MAP_LAYERS, MOBILE_DEFAULT_MAP_LAYERS as SPACE_MOBILE_MAP_LAYERS } from './variants/space';
 // boundary-ignore: isDesktopRuntime is a pure env probe with no service dependencies
 import { isDesktopRuntime } from '@/services/runtime';
 // boundary-ignore: getSecretState is a pure env/keychain probe with no service dependencies
@@ -1163,7 +1163,7 @@ const ENERGY_MOBILE_MAP_LAYERS: MapLayers = {
 type PanelVariant = 'full' | 'tech' | 'finance' | 'commodity' | 'energy' | 'happy' | 'space' | 'cyber' | 'earth';
 
 const VARIANT_PANEL_CONFIGS: Record<PanelVariant, Record<string, PanelConfig>> = {
-  full: FULL_PANELS,
+  full: IS_PLANETSLAM ? { ...FULL_PANELS, ...Object.fromEntries(Object.entries(GLOBAL_SPACE_PANELS).filter(([key]) => !(key in FULL_PANELS))) } : FULL_PANELS,
   tech: TECH_PANELS,
   finance: FINANCE_PANELS,
   commodity: COMMODITY_PANELS,
@@ -1323,7 +1323,7 @@ export const FREE_MAX_PANELS = 40;
 export const FREE_MAX_SOURCES = 80;
 
 export function isFreePanelCapCounted(key: string): boolean {
-  return key !== 'map' && !key.startsWith('cw-') && !isPlanetSlamSourcePanel(key) && !(IS_PLANETSLAM && key in TECH_CYBER_PANELS);
+  return key !== 'map' && !key.startsWith('cw-') && !isPlanetSlamSourcePanel(key) && !(IS_PLANETSLAM && (key in TECH_CYBER_PANELS || key in GLOBAL_SPACE_PANELS));
 }
 
 export function countFreePanelCapUsage(panelSettings: Record<string, PanelConfig>): number {
@@ -1570,7 +1570,7 @@ export const PANEL_CATEGORY_MAP: Record<string, { labelKey: string; panelKeys: s
   space: {
     labelKey: 'header.panelCatSpace',
     panelKeys: ['space-brief', 'space-satellites', 'space-observing', 'space-missions', 'space-cameras', 'space-launches', 'space-weather', 'space-apod', 'space-news', 'space-spacex', 'space-neo', 'space-solar', 'space-events', 'space-health'],
-    variants: ['space'],
+    variants: IS_PLANETSLAM ? ['full', 'space'] : ['space'],
   },
 
   // Full (geopolitical) variant — marketsFinance/topical/dataTracking are

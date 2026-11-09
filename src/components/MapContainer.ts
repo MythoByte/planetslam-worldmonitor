@@ -393,7 +393,7 @@ export class MapContainer {
         if (!this.destroyed) this.cyberMapController = new CyberMapOverlay(this.container, snapshot => this.setCyberMap(snapshot), (lat, lon) => this.setCenter(lat, lon, 3));
       });
     }
-    if (SITE_VARIANT === 'space') {
+    if (SITE_VARIANT === 'space' || (IS_PLANETSLAM && SITE_VARIANT === 'full')) {
       window.addEventListener('planetslam:space-orbits', this.onSpaceOrbitSnapshot);
       void import('@/services/space-orbits').then(({ getPublishedSpaceOrbitSnapshot }) => {
         if (!this.destroyed) this.setSpaceOrbitSnapshot(getPublishedSpaceOrbitSnapshot());

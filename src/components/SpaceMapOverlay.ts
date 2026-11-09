@@ -26,19 +26,27 @@ export class SpaceMapOverlay {
     summary.textContent = 'Space overlays';
     this.controls.append(summary);
     const prefs = loadFromStorage(PREFS_KEY, { aurora: true, launches: true });
-    const addToggle = (input: HTMLInputElement, title: string, checked: boolean) => {
+    const addToggle = (input: HTMLInputElement, title: string, icon: string, checked: boolean) => {
       const label = document.createElement('label');
       input.type = 'checkbox';
       input.checked = checked;
-      label.append(input, ` ${title}`);
+      input.setAttribute('aria-label', title);
+      const glyph = document.createElement('img');
+      glyph.alt = '';
+      glyph.width = 16;
+      glyph.height = 16;
+      glyph.className = 'space-layer-icon';
+      glyph.setAttribute('aria-hidden', 'true');
+      glyph.src = `/branding/planetslam/space-icons/${icon}.svg`;
+      label.append(input, ' ', glyph, ` ${title}`);
       this.controls.append(label);
       input.addEventListener('change', () => {
         saveToStorage(PREFS_KEY, { aurora: this.auroraCheckbox.checked, launches: this.launchesCheckbox.checked });
         this.refreshPaint();
       });
     };
-    addToggle(this.auroraCheckbox, 'Aurora forecast', prefs.aurora === true);
-    addToggle(this.launchesCheckbox, 'Upcoming launch sites', prefs.launches === true);
+    addToggle(this.auroraCheckbox, 'Aurora forecast', 'aurora', prefs.aurora === true);
+    addToggle(this.launchesCheckbox, 'Upcoming launch sites', 'launch-sites', prefs.launches === true);
     this.status.setAttribute('aria-live', 'polite');
     this.status.textContent = 'Loading forecast and launch data…';
     this.controls.append(this.status);

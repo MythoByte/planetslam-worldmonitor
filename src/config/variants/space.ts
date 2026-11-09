@@ -20,6 +20,15 @@ export const DEFAULT_PANELS: Record<string, PanelConfig> = {
   'space-health': { name: 'Space Data Status', enabled: true, priority: 3 },
 };
 
+// Shared Global catalog: keep the existing map and any existing panel IDs.
+export const GLOBAL_SPACE_PANELS = Object.fromEntries(
+  Object.entries(DEFAULT_PANELS).filter(([key]) => key !== 'map'),
+);
+
+export const SPACE_PANEL_ICONS: Record<string, string> = Object.fromEntries(
+  Object.keys(GLOBAL_SPACE_PANELS).map(key => [key, `/branding/planetslam/space-icons/${key.slice(6)}.svg`]),
+);
+
 export const DEFAULT_MAP_LAYERS: MapLayers = {
   aircraftEmergencies: false,
   iranAttacks: false,

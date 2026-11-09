@@ -266,3 +266,7 @@ verification skill supports isolated manual drives and screenshots.
 - [USNO approximate solar coordinates](https://aa.usno.navy.mil/faq/sun_approx)
 - [USNO altitude and azimuth](https://aa.usno.navy.mil/faq/alt_az)
 - [Author description of approximate lunar orbital calculations](https://stjarnhimlen.se/comp/ppcomp.html)
+
+## Global dashboard
+
+PlanetSlam Global includes the shared Space blocks and the Aurora forecast and upcoming launch overlays. Existing satellite, spaceport, day/night, and webcam layers retain their single registry entries. The lightweight map also exposes its supported satellite, spaceport, and webcam controls. Each Space block and overlay control has a distinct icon. Overlay choices persist across reloads and renderer switches; blocks use the normal panel settings controls. A one-time Global layout migration adds the Space blocks for returning visitors, after which intentional panel disables persist. The dedicated Space view continues to use the same components and cache.

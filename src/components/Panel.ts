@@ -1,3 +1,4 @@
+import { SPACE_PANEL_ICONS } from '@/config/variants/space';
 import { isPlanetSlamSourcePanel, PLANETSLAM_SOURCE_PANEL_NAMES } from '@/config/planetslam-panels';
 import { IS_PLANETSLAM } from '@/config/brand';
 import { hasNoWorkingPanelSource, setPanelSourceUnavailable } from '@/services/panel-source-availability';
@@ -263,6 +264,16 @@ export class Panel {
     const title = document.createElement('span');
     title.className = 'panel-title';
     title.id = `${options.id}Title`;
+    if (IS_PLANETSLAM && SPACE_PANEL_ICONS[options.id]) {
+      const icon = document.createElement('img');
+      icon.className = 'space-panel-icon';
+      icon.alt = '';
+      icon.width = 16;
+      icon.height = 16;
+      icon.setAttribute('aria-hidden', 'true');
+      icon.src = SPACE_PANEL_ICONS[options.id]!;
+      headerLeft.appendChild(icon);
+    }
     title.textContent = options.title;
     // Panels are the dashboard's sections, but a real <h2> would drag along
     // element styles; role/aria-level gives the outline with zero visual change.
