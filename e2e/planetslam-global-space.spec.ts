@@ -44,7 +44,10 @@ for (const width of [1440, 390]) {
     expect(new Set(await page.locator('.space-panel-icon').evaluateAll(nodes => nodes.map(node => node.getAttribute('src')))).size).toBe(ids.length);
     await apod.scrollIntoViewIfNeeded();
     await apod.screenshot({ path: info.outputPath(`global-space-block-${width}.png`) });
-    await page.locator('#unifiedSettingsBtn').click();
+    if (width < 768) {
+      await page.locator('[data-mobile-tab="more"]').click();
+      await page.locator('#mobileMenuSettings').click();
+    } else await page.locator('#unifiedSettingsBtn').click();
     await page.locator('#us-tab-panels').click();
     const row = page.locator('#usPanelToggles .panel-toggle-item[data-panel="space-apod"]');
     await expect(row).toHaveCount(1);
@@ -56,7 +59,10 @@ for (const width of [1440, 390]) {
     await expect(page.locator('html')).toHaveAttribute('data-wm-initial-data-ready', 'true');
     await expect(apod).not.toBeVisible();
     await expect(page.getByLabel('Upcoming launch sites', { exact: true })).not.toBeChecked();
-    await page.locator('#unifiedSettingsBtn').click();
+    if (width < 768) {
+      await page.locator('[data-mobile-tab="more"]').click();
+      await page.locator('#mobileMenuSettings').click();
+    } else await page.locator('#unifiedSettingsBtn').click();
     await page.locator('#us-tab-panels').click();
     await page.locator('#usPanelToggles .panel-toggle-item[data-panel="space-apod"]').click();
     await page.locator('.panels-save-layout').click();
