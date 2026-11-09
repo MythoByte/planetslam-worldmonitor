@@ -1,3 +1,6 @@
+import { IS_PLANETSLAM } from '@/config/brand';
+import { layerMarkerIcon, earthMarkerIcon, paintLayerMarker, layerMarkerUrl, SVG_MARKER_LAYERS } from './map-layer-icons';
+import './map-layer-icons.css';
 import { type EarthMapSnapshot, earthMarkerLabel } from '@/types/earth-map';
 import { selectEarthMarker } from './earth-map-interaction';
 import { type CyberMapSnapshot, cyberMarkerLabel } from '@/types/cyber-map';
@@ -194,10 +197,13 @@ export class MapComponent {
       const point = projection([marker.longitude, marker.latitude]);
       if (!point) continue;
       const select = () => selectEarthMarker(marker);
-      const circle = group.append('circle').attr('data-earth-marker', marker.id)
+      const circle = group.append(IS_PLANETSLAM ? 'image' : 'circle')
+        .attr('href', IS_PLANETSLAM ? layerMarkerUrl(earthMarkerIcon(marker)) : null).attr('data-earth-marker', marker.id)
+        .attr('x', point[0] - 11 / Math.max(1, this.state.zoom)).attr('y', point[1] - 11 / Math.max(1, this.state.zoom))
+        .attr('width', 22 / Math.max(1, this.state.zoom)).attr('height', 22 / Math.max(1, this.state.zoom))
         .attr('cx', point[0]).attr('cy', point[1]).attr('r', marker.kind === 'camera' ? 4 : 6)
         .attr('fill', marker.kind === 'camera' ? '#4ed5c8' : marker.mode === 'warning' ? '#ff6c6c' : marker.mode === 'forecast' ? '#bc97ff' : '#ffbd5b')
-        .attr('stroke', '#f5f5fa').attr('stroke-width', 1).attr('role', 'button')
+        .attr('stroke', IS_PLANETSLAM ? 'none' : '#f5f5fa').attr('stroke-width', 1).attr('role', 'button')
         .attr('tabindex', 0).attr('aria-label', earthMarkerLabel(marker)).style('cursor', 'pointer')
         .on('click', (event: Event) => { event.stopPropagation(); select(); })
         .on('keydown', (event: KeyboardEvent) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); select(); } });
@@ -213,10 +219,13 @@ export class MapComponent {
     for (const marker of this.cyberMap?.markers ?? []) {
       const point = projection([marker.longitude, marker.latitude]);
       if (!point) continue;
-      const circle = group.append('circle').attr('class', `cyber-map-marker cyber-map-${marker.kind}`)
+      const circle = group.append(IS_PLANETSLAM ? 'image' : 'circle')
+        .attr('href', IS_PLANETSLAM ? layerMarkerUrl(layerMarkerIcon('cyberThreats')) : null).attr('class', `cyber-map-marker cyber-map-${marker.kind}`)
+        .attr('x', point[0] - 11 / Math.max(1, this.state.zoom)).attr('y', point[1] - 11 / Math.max(1, this.state.zoom))
+        .attr('width', 22 / Math.max(1, this.state.zoom)).attr('height', 22 / Math.max(1, this.state.zoom))
         .attr('data-cyber-marker', marker.id).attr('cx', point[0]).attr('cy', point[1])
         .attr('r', marker.kind === 'incident' ? 5 : 3).attr('fill', marker.kind === 'incident' ? '#ffbc50' : '#bd91ff')
-        .attr('stroke', '#fff').attr('stroke-width', 0.7).attr('vector-effect', 'non-scaling-stroke')
+        .attr('stroke', IS_PLANETSLAM ? 'none' : '#fff').attr('stroke-width', 0.7).attr('vector-effect', 'non-scaling-stroke')
         .attr('role', 'button').attr('tabindex', 0).attr('aria-label', cyberMarkerLabel(marker))
         .on('click', event => { event.stopPropagation(); selectCyberMarker(marker); })
         .on('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectCyberMarker(marker); } });
@@ -246,7 +255,10 @@ export class MapComponent {
     for (const orbit of this.spaceOrbits.positions) {
       const point = projection([orbit.longitude, orbit.latitude]);
       if (!point) continue;
-      group.append('circle').attr('class', orbit.selected ? 'space-orbit-marker selected' : 'space-orbit-marker')
+      group.append(IS_PLANETSLAM ? 'image' : 'circle')
+        .attr('href', IS_PLANETSLAM ? layerMarkerUrl(layerMarkerIcon('satellites')) : null)
+        .attr('x', point[0] - 11 / Math.max(1, this.state.zoom)).attr('y', point[1] - 11 / Math.max(1, this.state.zoom))
+        .attr('width', 22 / Math.max(1, this.state.zoom)).attr('height', 22 / Math.max(1, this.state.zoom)).attr('class', orbit.selected ? 'space-orbit-marker selected' : 'space-orbit-marker')
         .attr('cx', point[0]).attr('cy', point[1]).attr('r', (orbit.selected ? 6 : 3) / Math.max(1, this.state.zoom))
         .attr('fill', orbit.selected ? '#4be1ff' : '#82a0d7')
         .attr('stroke', orbit.elementStatus === 'stale' ? '#ffbc50' : '#e1f5ff')
@@ -277,7 +289,11 @@ export class MapComponent {
     for (const launch of this.spaceOverlay.launches) {
       const position = projection([launch.longitude, launch.latitude]);
       if (!position) continue;
-      group.append('circle').attr('cx', position[0]).attr('cy', position[1])
+      group.append(IS_PLANETSLAM ? 'image' : 'circle')
+        .attr('href', IS_PLANETSLAM ? layerMarkerUrl(layerMarkerIcon('spaceports')) : null)
+        .attr('x', position[0] - 11 / Math.max(1, this.state.zoom)).attr('y', position[1] - 11 / Math.max(1, this.state.zoom))
+        .attr('width', 22 / Math.max(1, this.state.zoom)).attr('height', 22 / Math.max(1, this.state.zoom))
+        .attr('cx', position[0]).attr('cy', position[1])
         .attr('r', 5).attr('fill', '#ffbc50').attr('stroke', '#fff0be')
         .append('title').text(`${launch.name} · ${launch.pad} · ${new Date(launch.net).toUTCString()}`);
     }
@@ -836,6 +852,14 @@ export class MapComponent {
       btn.className = `layer-toggle ${this.state.layers[layer] ? 'active' : ''}`;
       btn.dataset.layer = layer;
       btn.textContent = layerLabel;
+      if (IS_PLANETSLAM) {
+        const icon = document.createElement('img');
+        icon.className = 'planetslam-menu-icon';
+        icon.src = layerMarkerUrl(layerMarkerIcon(layer));
+        icon.alt = '';
+        icon.width = icon.height = 14;
+        btn.prepend(icon, ' ');
+      }
       btn.addEventListener('click', () => {
         this.toggleLayer(layer);
         enforceLayerLimit();
@@ -1469,6 +1493,11 @@ export class MapComponent {
   }
 
   private appendOverlay(node: Node): void {
+    if (IS_PLANETSLAM && node instanceof HTMLElement) {
+      const key = Array.from(node.classList).map(name => SVG_MARKER_LAYERS[name]).find(Boolean);
+      if (key) paintLayerMarker(node, layerMarkerIcon(key));
+      else if (node.classList.contains('news-location-marker')) paintLayerMarker(node, '📰');
+    }
     (this.overlayAppendTarget ?? this.overlays).appendChild(node);
   }
 

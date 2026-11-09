@@ -1,3 +1,6 @@
+import { IS_PLANETSLAM } from '@/config/brand';
+import { layerMarkerIcon, earthMarkerIcon, paintLayerMarker, layerMenuIcon, GLOBE_MARKER_LAYERS } from './map-layer-icons';
+import './map-layer-icons.css';
 import { type EarthMapSnapshot, earthMarkerLabel } from '@/types/earth-map';
 import { selectEarthMarker } from './earth-map-interaction';
 import { type CyberMapSnapshot, cyberMarkerLabel } from '@/types/cyber-map';
@@ -487,7 +490,15 @@ interface GlobePolygon {
   mode?: string;
   previewUrl?: string;
 }
+interface EditionMarker extends BaseMarker {
+  _kind: 'edition';
+  icon: string;
+  title: string;
+  altitude: number;
+  select?: () => void;
+}
 type GlobeMarker =
+  | EditionMarker
   | UkmtoMarker
   | ConflictMarker | HotspotMarker | FlightMarker | VesselMarker | ClusterMarker
   | WeatherMarker | NaturalMarker | IranMarker | OutageMarker | TrafficAnomalyMarker | DdosHitMarker
@@ -519,17 +530,19 @@ interface GlobeControlsLike {
 const SET_CENTER_ROTATION_MS = 1200;
 
 export class GlobeMap {
+  private editionMarkers: EditionMarker[] = [];
+  private editionMarkerSources: unknown[] = [];
   private earthMap: EarthMapSnapshot | null = null;
-  public setEarthMap(snapshot: EarthMapSnapshot): void { this.earthMap = snapshot; this.paintSpaceOverlay(); }
+  public setEarthMap(snapshot: EarthMapSnapshot): void { this.earthMap = snapshot; this.flushMarkers(); }
 
   private cyberMap: CyberMapSnapshot | null = null;
-  public setCyberMap(snapshot: CyberMapSnapshot): void { this.cyberMap = snapshot; this.paintSpaceOverlay(); }
+  public setCyberMap(snapshot: CyberMapSnapshot): void { this.cyberMap = snapshot; this.flushMarkers(); }
 
   private spaceOrbits: SpaceOrbitSnapshot | null = null;
 
   public setSpaceOrbitSnapshot(snapshot: SpaceOrbitSnapshot): void {
     this.spaceOrbits = snapshot;
-    this.paintSpaceOverlay();
+    this.flushMarkers();
     this.flushPaths();
   }
 
@@ -537,7 +550,7 @@ export class GlobeMap {
 
   public setSpaceOverlay(snapshot: SpaceMapSnapshot): void {
     this.spaceOverlay = snapshot;
-    this.paintSpaceOverlay();
+    this.flushMarkers();
   }
 
   private paintSpaceOverlay(): void {
@@ -550,7 +563,29 @@ export class GlobeMap {
       ...this.spaceOverlay.launches.map(launch => ({ ...launch, kind: 'launch', name: `${launch.name} · ${launch.pad} · ${new Date(launch.net).toUTCString()}`, color: '#ffbc50', radius: 0.55 })),
       ...(this.layers.satellites ? this.spaceOrbits?.positions ?? [] : []).map(orbit => ({ ...orbit, kind: 'satellite', name: `${orbit.name} · calculated position · ${orbit.altitudeKm.toFixed(1)} km · elements ${orbit.elementStatus}`, color: orbit.elementStatus === 'stale' ? '#ffbc50' : orbit.selected ? '#4be1ff' : '#82a0d7', radius: orbit.selected ? 0.65 : 0.32 })),
     ];
-    this.globe.pointsData(points).pointLat('latitude').pointLng('longitude')
+    const sources = [this.earthMap, this.cyberMap, this.spaceOverlay, this.spaceOrbits, this.layers.satellites];
+    if (IS_PLANETSLAM && sources.some((source, index) => source !== this.editionMarkerSources[index])) {
+      this.editionMarkerSources = sources;
+      this.editionMarkers = points.filter(point => point.kind !== 'aurora').map(point => {
+        const marker = point as { kind: string; earthKind?: string; cyberKind?: string; hazard?: string; id?: string; altitudeKm?: number; latitude: number; longitude: number; name: string };
+        return {
+          _kind: 'edition', _lat: marker.latitude, _lng: marker.longitude,
+          icon: marker.kind === 'earth' ? earthMarkerIcon({ kind: marker.earthKind ?? 'event', hazard: marker.hazard })
+            : layerMarkerIcon(marker.kind === 'cyber' ? 'cyberThreats' : marker.kind === 'launch' ? 'spaceports' : 'satellites'),
+          title: marker.name, altitude: marker.kind === 'satellite' ? (marker.altitudeKm ?? 0) / 6371 : 0.003,
+          select: () => {
+            if (marker.kind === 'earth') {
+              const original = this.earthMap?.markers.find(m => m.id === marker.id && m.kind === marker.earthKind);
+              if (original) selectEarthMarker(original);
+            } else if (marker.kind === 'cyber') {
+              const original = this.cyberMap?.markers.find(m => m.id === marker.id && m.kind === marker.cyberKind);
+              if (original) selectCyberMarker(original);
+            }
+          },
+        };
+      });
+    }
+    this.globe.pointsData(IS_PLANETSLAM ? points.filter(point => point.kind === 'aurora') : points).pointLat('latitude').pointLng('longitude')
       .pointColor('color').pointRadius('radius').pointAltitude((point: object) => (point as { kind: string }).kind === 'satellite' ? (point as { altitudeKm: number }).altitudeKm / 6371 : 0.003)
       .pointLabel((point: object) => escapeHtml(String((point as { name: string }).name)))
       .pointsTransitionDuration(0);
@@ -930,6 +965,7 @@ export class GlobeMap {
       .htmlLat((d: object) => (d as GlobeMarker)._lat)
       .htmlLng((d: object) => (d as GlobeMarker)._lng)
       .htmlAltitude((d: object) => {
+        if ((d as GlobeMarker)._kind === 'edition') return (d as EditionMarker).altitude;
         const m = d as GlobeMarker;
         if (m._kind === 'satFootprint') return 0;
         if (m._kind === 'satellite') return (m as SatelliteMarker).alt / 6371;
@@ -1149,6 +1185,12 @@ export class GlobeMap {
     const el = document.createElement('div');
     el.style.cssText = 'pointer-events:auto;cursor:pointer;user-select:none;';
 
+    if (d._kind === 'edition') {
+      paintLayerMarker(el, d.icon);
+      el.title = d.title;
+      el.addEventListener('click', event => { event.stopPropagation(); d.select?.(); });
+      return el;
+    }
     if (d._kind === 'conflict') {
       const size = Math.min(12, 6 + (d.fatalities ?? 0) * 0.4);
       setTrustedHtml(el, trustedHtml(GlobeMap.wrapHit(`
@@ -1430,6 +1472,17 @@ export class GlobeMap {
             left:-22px;top:-22px;
             ${this.pulseStyle('0.7s')}"></div>
         </div>`, "legacy direct innerHTML migration"));
+    }
+
+    const key = GLOBE_MARKER_LAYERS[d._kind];
+    if (IS_PLANETSLAM && (key || d._kind === 'newsLocation')) {
+      paintLayerMarker(el, key ? layerMarkerIcon(key) : '📰');
+      if ('count' in d && typeof d.count === 'number' && d.count > 1) {
+        const count = document.createElement('span');
+        count.className = 'planetslam-marker-count';
+        count.textContent = String(d.count);
+        el.appendChild(count);
+      }
     }
 
     el.addEventListener('click', (e) => {
@@ -2104,7 +2157,7 @@ export class GlobeMap {
           <div class="layer-toggle-row" data-layer="${key}">
             <label class="layer-toggle" data-layer="${key}">
               <input type="checkbox" ${this.layers[key] ? 'checked' : ''}>
-              <span class="toggle-icon">${icon}</span>
+              <span class="toggle-icon">${layerMenuIcon(icon)}</span>
               <span class="toggle-label">${label}${presentation.enhanced ? ' <span class="layer-pro-badge">PRO</span>' : ''}</span>
             </label>
             <button type="button" class="layer-explain-btn${hasExplanation ? ' has-layer-explanation' : ''}" data-layer="${key}" aria-label="${explainLabel}" title="${explainLabel}">i</button>
@@ -2395,7 +2448,7 @@ export class GlobeMap {
     const budget = isMobileDevice() ? GLOBE_MARKER_BUDGET_MOBILE : GLOBE_MARKER_BUDGET_DESKTOP;
     const { markers, truncated } = selectGlobeMarkers(groups, budget);
     try {
-      this.globe.htmlElementsData(markers);
+      this.globe.htmlElementsData([...markers, ...this.editionMarkers]);
     } catch (err) {
       // The globe kept its previous markers, so leave the badges and the probe
       // describing what is actually on screen rather than what we intended.
