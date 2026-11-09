@@ -25,6 +25,11 @@ const buildVariant = (() => {
   }
 })();
 
+/** Keep retired edition links usable without leaving duplicate navigation destinations. */
+export function canonicalPlanetSlamVariant(value: SiteVariant): SiteVariant {
+  return value === 'cyber' ? 'tech' : value === 'space' || value === 'earth' ? 'full' : value;
+}
+
 function loadStoredVariant(): string | null {
   try {
     return localStorage.getItem('worldmonitor-variant');
@@ -43,7 +48,7 @@ export const SITE_VARIANT: string = (() => {
   // this read then ignored (#5912).
   if (isDesktopRuntime()) {
     const stored = loadStoredVariant();
-    if (isSiteVariant(stored)) return IS_PLANETSLAM && stored === 'cyber' ? 'tech' : stored;
+    if (isSiteVariant(stored)) return IS_PLANETSLAM ? canonicalPlanetSlamVariant(stored) : stored;
     return buildVariant;
   }
 
@@ -51,11 +56,14 @@ export const SITE_VARIANT: string = (() => {
   // links and browser history work independently of a visitor's stored choice.
   if (IS_PLANETSLAM) {
     const selected = new URLSearchParams(window.location?.search).get('variant');
-    if (selected === 'cyber') {
-      const url = new URL(window.location.href);
-      url.searchParams.set('variant', 'tech');
-      window.history.replaceState(window.history.state, '', url);
-      return 'tech';
+    if (isSiteVariant(selected)) {
+      const canonical = canonicalPlanetSlamVariant(selected);
+      if (canonical !== selected) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('variant', canonical);
+        window.history.replaceState(window.history.state, '', url);
+      }
+      return canonical;
     }
     return isSiteVariant(selected) ? selected : 'full';
   }
@@ -72,7 +80,7 @@ export const SITE_VARIANT: string = (() => {
 
   if (h === 'localhost' || h === '127.0.0.1') {
     const stored = loadStoredVariant();
-    if (isSiteVariant(stored)) return IS_PLANETSLAM && stored === 'cyber' ? 'tech' : stored;
+    if (isSiteVariant(stored)) return IS_PLANETSLAM ? canonicalPlanetSlamVariant(stored) : stored;
     return buildVariant;
   }
 

@@ -1,5 +1,5 @@
 import { isPlanetSlamSourcePanel, PLANETSLAM_SOURCE_PANEL_NAMES } from './planetslam-panels';
-import { DEFAULT_PANELS as EARTH_PANELS, DEFAULT_MAP_LAYERS as EARTH_MAP_LAYERS, MOBILE_DEFAULT_MAP_LAYERS as EARTH_MOBILE_MAP_LAYERS } from './variants/earth';
+import { GLOBAL_EARTH_PANELS, DEFAULT_PANELS as EARTH_PANELS, DEFAULT_MAP_LAYERS as EARTH_MAP_LAYERS, MOBILE_DEFAULT_MAP_LAYERS as EARTH_MOBILE_MAP_LAYERS } from './variants/earth';
 import { DEFAULT_PANELS as CYBER_PANELS, TECH_CYBER_PANELS, DEFAULT_MAP_LAYERS as CYBER_MAP_LAYERS } from './variants/cyber';
 import type { PanelConfig, MapLayers, DataSourceId } from '@/types';
 import { SITE_VARIANT } from './variant';
@@ -1165,7 +1165,7 @@ const ENERGY_MOBILE_MAP_LAYERS: MapLayers = {
 type PanelVariant = 'full' | 'tech' | 'finance' | 'commodity' | 'energy' | 'happy' | 'space' | 'cyber' | 'earth';
 
 const VARIANT_PANEL_CONFIGS: Record<PanelVariant, Record<string, PanelConfig>> = {
-  full: IS_PLANETSLAM ? { ...FULL_PANELS, ...Object.fromEntries(Object.entries(GLOBAL_SPACE_PANELS).filter(([key]) => !(key in FULL_PANELS))) } : FULL_PANELS,
+  full: IS_PLANETSLAM ? { ...FULL_PANELS, ...Object.fromEntries(Object.entries({ ...GLOBAL_SPACE_PANELS, ...GLOBAL_EARTH_PANELS }).filter(([key]) => !(key in FULL_PANELS))) } : FULL_PANELS,
   tech: TECH_PANELS,
   finance: FINANCE_PANELS,
   commodity: COMMODITY_PANELS,
@@ -1325,7 +1325,7 @@ export const FREE_MAX_PANELS = 40;
 export const FREE_MAX_SOURCES = 80;
 
 export function isFreePanelCapCounted(key: string): boolean {
-  return key !== 'map' && !key.startsWith('cw-') && !isPlanetSlamSourcePanel(key) && !(IS_PLANETSLAM && (key in TECH_CYBER_PANELS || key in GLOBAL_SPACE_PANELS));
+  return key !== 'map' && !key.startsWith('cw-') && !isPlanetSlamSourcePanel(key) && !(IS_PLANETSLAM && (key in TECH_CYBER_PANELS || key in GLOBAL_SPACE_PANELS || key in GLOBAL_EARTH_PANELS));
 }
 
 export function countFreePanelCapUsage(panelSettings: Record<string, PanelConfig>): number {
@@ -1561,7 +1561,7 @@ export const LAYER_TO_SOURCE: Partial<Record<keyof MapLayers, DataSourceId[]>> =
 // Maps category keys to panel keys. Only categories with at least one
 // matching panel in the user's active panel settings are shown.
 export const PANEL_CATEGORY_MAP: Record<string, { labelKey: string; panelKeys: string[]; variants?: string[] }> = {
-  earth: { labelKey: 'header.panelCatEarth', panelKeys: Object.keys(EARTH_PANELS).filter(key => key !== 'map'), variants: ['earth'] },
+  earth: { labelKey: 'header.panelCatEarth', panelKeys: Object.keys(EARTH_PANELS).filter(key => key !== 'map'), variants: IS_PLANETSLAM ? ['full', 'earth'] : ['earth'] },
   cyber: { labelKey: 'header.panelCatCyber', panelKeys: Object.keys(CYBER_PANELS).filter(key => key !== 'map'), variants: IS_PLANETSLAM ? ['tech'] : ['cyber'] },
   // All variants — essential panels
   core: {

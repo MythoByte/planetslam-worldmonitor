@@ -51,7 +51,7 @@
   .global-space-layers > .layer-toggle-row { flex: 0 0 auto; }
   .global-space-layers > .layer-toggle-row[data-layer="aurora"] { order: -2; }
   .global-space-layers > .layer-toggle-row[data-layer="spaceports"] { order: -1; }
-  .global-space-layers > .layer-toggle-row:not([data-layer="satellites"]):not([data-layer="spaceports"]):not([data-layer="webcams"]):not([data-layer="aurora"]),
+  .global-space-layers > .layer-toggle-row:not([data-layer="satellites"]):not([data-layer="spaceports"]):not([data-layer="webcams"]):not([data-layer="aurora"]):not([data-layer="natural"]):not([data-layer="weather"]):not([data-layer="fires"]),
   .global-space-layers > .layer-help-btn { display: none; }
 }
 }

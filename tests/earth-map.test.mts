@@ -7,7 +7,7 @@ const event: EarthEvent = { id: 'synthetic', sourceId: 'synthetic', title: 'Synt
   provider: 'Synthetic provider', summary: '', url: 'https://example.org/' };
 test('Earth map retains valid zero coordinates and unknown severity without inventing coordinates', () => {
   assert.deepEqual(earthEventMarker(event), { id: 'synthetic', kind: 'event', title: 'Synthetic event', hazard: 'earthquake',
-    mode: 'observed', severity: 'unknown', latitude: 0, longitude: 0 });
+    mode: 'observed', severity: 'unknown', sourceId: 'synthetic', sourceUrl: 'https://example.org/', latitude: 0, longitude: 0 });
   for (const [latitude, longitude] of [[null, 12], [10, null], [NaN, 12], [91, 12], [0, 181]]) {
     assert.equal(earthEventMarker({ ...event, latitude, longitude }), null);
   }

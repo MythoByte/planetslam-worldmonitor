@@ -1,7 +1,7 @@
 /* Space panels inherit the current dashboard theme and its centralized tokens. */
 .space-panel { min-width: 0; }
 .space-panel:not(.resized):not(.panel-collapsed),
-.panel-deferred-shell[data-panel^="space-"]:not(.resized):not(.panel-collapsed) { min-height: var(--dashboard-panel-row-max); }
+.panel-deferred-shell[data-panel^="space-"]:not(.resized):not(.panel-collapsed) { min-height: var(--dashboard-panel-row-min); }
 .space-body { padding: 12px; color: var(--text); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
 .space-body h3 { margin: 12px 0 8px; font-size: 15px; line-height: 1.35; }
 .space-body a { color: var(--accent); }

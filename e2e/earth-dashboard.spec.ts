@@ -7,10 +7,10 @@ const panel = (page: Page, name: string) => page.locator(`#panelsGrid [data-pane
 async function boot(page: Page) {
   await seedAnonymousDashboard(page, 'full', { initializeOnce: { sessionKey: 'earth-acceptance', clearStorage: true,
     localStorage: { 'worldmonitor-theme': 'dark', 'mobile-map-collapsed': 'false' } } });
-  await page.goto('/dashboard?variant=earth');
+  await page.goto('/dashboard?variant=earth&layers=natural,weather,webcams');
   await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready', 'true');
   await expect(page.locator('html')).toHaveAttribute('data-wm-initial-data-ready', 'true');
-  await expect(page).toHaveTitle(/PlanetSlam Earth/);
+  await expect(page).toHaveURL(/variant=full/);
 }
 async function mounted(page: Page, name: string, text: string) {
   await expect(async () => { await panel(page, name).scrollIntoViewIfNeeded(); await expect(panel(page, name)).toContainText(text); }).toPass({ timeout: 20000 });
@@ -30,7 +30,7 @@ for (const width of [1440, 390]) {
     await panel(page, 'events').getByRole('button', { name: 'Nearby webcams', exact: true }).click();
     await mounted(page, 'cameras', 'Cameras within 250 km');
     await expect(panel(page, 'cameras')).toContainText('Kīlauea');
-    await expect(panel(page, 'cameras').locator('iframe, img')).toHaveCount(0);
+    await expect(panel(page, 'cameras').locator('.panel-content iframe, .panel-content img')).toHaveCount(0);
     await panel(page, 'cameras').getByRole('button', { name: 'Show all cameras', exact: true }).click();
     await panel(page, 'cameras').getByLabel('Camera type', { exact: true }).selectOption('river');
     await expect(panel(page, 'cameras')).toContainText('Colorado River');
@@ -42,7 +42,7 @@ for (const width of [1440, 390]) {
     await expect(panel(page, 'cameras')).toContainText('Snapshot loaded');
     await page.screenshot({ path: info.outputPath(`earth-camera-${width}.png`) });
     await panel(page, 'cameras').getByRole('button', { name: 'Disconnect', exact: true }).click();
-    await expect(panel(page, 'cameras').locator('img')).toHaveCount(0);
+    await expect(panel(page, 'cameras').locator('.panel-content img')).toHaveCount(0);
     await mounted(page, 'news', 'Synthetic flood reporting');
     await panel(page, 'news').getByLabel('News source', { exact: true }).selectOption('official');
     await expect(panel(page, 'news')).not.toContainText('Synthetic flood reporting');
@@ -67,11 +67,7 @@ for (const width of [1440, 390]) {
     await page.screenshot({ path: info.outputPath(`earth-full-${width}.png`), fullPage: true });
     await page.reload(); await mounted(page, 'cameras', 'Earth');
     await expect(panel(page, 'cameras').locator('[data-earth-camera-favorite="paria-colorado"]')).toHaveAttribute('aria-pressed', 'true');
-    if (width >= 1000) {
-      await page.locator('[data-variant="space"]').first().click(); await expect(page).toHaveTitle(/PlanetSlam Space/);
-      await page.locator('[data-variant="earth"]').first().click(); await expect(page).toHaveTitle(/PlanetSlam Earth/);
-      await page.locator('[data-variant="cyber"]').first().click(); await expect(page).toHaveTitle(/PlanetSlam Cyber/);
-    }
+    await expect(page.locator('[data-variant="earth"], [data-variant="space"], [data-variant="cyber"]')).toHaveCount(0);
     expect(errors).toEqual([]);
   });
 }

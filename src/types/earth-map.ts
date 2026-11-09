@@ -10,6 +10,8 @@ export interface EarthMapMarker {
   latitude: number;
   longitude: number;
   recordedAt?: number;
+  sourceId?: string;
+  sourceUrl?: string;
 }
 export interface EarthMapSnapshot { markers: EarthMapMarker[] }
 export const EARTH_MARKER_EVENT = 'planetslam:earth-select';
@@ -23,5 +25,5 @@ export function isEarthPosition(latitude: unknown, longitude: unknown): boolean 
 export function earthEventMarker(event: EarthEvent): EarthMapMarker | null {
   if (!isEarthPosition(event.latitude, event.longitude)) return null;
   return { id: event.id, kind: 'event', title: event.title, hazard: event.kind, mode: event.mode,
-    severity: event.severity, latitude: event.latitude!, longitude: event.longitude! };
+    severity: event.severity, sourceId: event.sourceId, sourceUrl: event.url, latitude: event.latitude!, longitude: event.longitude! };
 }

@@ -1,3 +1,4 @@
+import { globalEarthMapSnapshot } from '@/services/earth-global-map';
 import { IS_PLANETSLAM } from '@/config/brand';
 import type { EarthMapSnapshot } from '@/types/earth-map';
 import type { CyberMapSnapshot } from '@/types/cyber-map';
@@ -201,6 +202,15 @@ export class MapContainer {
   private earthMapController: import('./EarthMapOverlay').EarthMapOverlay | null = null;
   public setEarthMap(snapshot: EarthMapSnapshot): void {
     this.cachedEarthMap = snapshot;
+    this.renderEarthMap();
+  }
+  private renderEarthMap(layers = this.getState().layers): void {
+    if (!this.cachedEarthMap) return;
+    const snapshot = IS_PLANETSLAM && SITE_VARIANT === 'full'
+      ? globalEarthMapSnapshot(this.cachedEarthMap, layers, [
+        ...(this.cachedEarthquakes ?? []), ...(this.cachedNaturalEvents ?? []), ...(this.cachedWeatherAlerts ?? []),
+        ...(this.cachedWebcams ?? []).filter(marker => 'webcamId' in marker),
+      ]) : this.cachedEarthMap;
     if (this.useGlobe) this.globeMap?.setEarthMap(snapshot);
     else if (this.useDeckGL) this.deckGLMap?.setEarthMap(snapshot);
     else this.svgMap?.setEarthMap(snapshot);
@@ -383,9 +393,9 @@ export class MapContainer {
     // init() attaches the resize observer synchronously (before its first await),
     // so the constructor does not need to start it separately.
     void this.init();
-    if (SITE_VARIANT === 'earth') {
+    if (SITE_VARIANT === 'earth' || (IS_PLANETSLAM && SITE_VARIANT === 'full')) {
       void import('./EarthMapOverlay').then(({ EarthMapOverlay }) => {
-        if (!this.destroyed) this.earthMapController = new EarthMapOverlay(this.container, snapshot => this.setEarthMap(snapshot), (lat, lon) => this.setCenter(lat, lon, 4));
+        if (!this.destroyed) this.earthMapController = new EarthMapOverlay(this.container, snapshot => this.setEarthMap(snapshot), (lat, lon) => this.setCenter(lat, lon, 4), IS_PLANETSLAM && SITE_VARIANT === 'full');
       });
     }
     if (SITE_VARIANT === 'cyber' || (IS_PLANETSLAM && SITE_VARIANT === 'tech')) {
@@ -1208,8 +1218,9 @@ export class MapContainer {
     this.renderUkmtoStatus(sanitized.ais);
     this.emergencyLayer.setEnabled(!this.useGlobe && sanitized.aircraftEmergencies === true);
     this.notamAirspaceLayer.setEnabled(this.useDeckGL && sanitized.flights === true);
-    if (this.useGlobe) { this.globeMap?.setLayers(sanitized); return; }
+    if (this.useGlobe) { this.globeMap?.setLayers(sanitized); this.renderEarthMap(sanitized); return; }
     if (this.useDeckGL) { this.deckGLMap?.setLayers(sanitized); } else { this.svgMap?.setLayers(sanitized); }
+    this.renderEarthMap(sanitized);
   }
 
   public getState(): MapContainerState {
@@ -1225,6 +1236,7 @@ export class MapContainer {
 
   public setEarthquakes(earthquakes: Earthquake[], options: { replaceEmpty?: boolean } = {}): void {
     this.cachedEarthquakes = earthquakes;
+    this.renderEarthMap();
     if (this.useGlobe) { this.globeMap?.setEarthquakes(earthquakes); return; }
     if (this.useDeckGL) { this.deckGLMap?.setEarthquakes(earthquakes); } else { this.svgMap?.setEarthquakes(earthquakes, options); }
   }
@@ -1244,6 +1256,7 @@ export class MapContainer {
 
   public setWebcams(markers: Array<WebcamEntry | WebcamCluster>): void {
     this.cachedWebcams = markers;
+    this.renderEarthMap();
     if (this.useGlobe) { this.globeMap?.setWebcams(markers); return; }
     if (this.useDeckGL) { this.deckGLMap?.setWebcams(markers); }
     else { this.svgMap?.setWebcams(markers); }
@@ -1251,6 +1264,7 @@ export class MapContainer {
 
   public setWeatherAlerts(alerts: WeatherAlert[]): void {
     this.cachedWeatherAlerts = alerts;
+    this.renderEarthMap();
     if (this.useGlobe) { this.globeMap?.setWeatherAlerts(alerts); return; }
     if (this.useDeckGL) { this.deckGLMap?.setWeatherAlerts(alerts); } else { this.svgMap?.setWeatherAlerts(alerts); }
   }
@@ -1390,6 +1404,7 @@ export class MapContainer {
 
   public setNaturalEvents(events: NaturalEvent[]): void {
     this.cachedNaturalEvents = events;
+    this.renderEarthMap();
     if (this.useGlobe) { this.globeMap?.setNaturalEvents(events); return; }
     if (this.useDeckGL) { this.deckGLMap?.setNaturalEvents(events); } else { this.svgMap?.setNaturalEvents(events); }
   }
@@ -1675,6 +1690,7 @@ export class MapContainer {
       if (layer === 'ais') this.renderUkmtoStatus(enabled);
       if (layer === 'aircraftEmergencies') this.emergencyLayer.setEnabled(!this.useGlobe && enabled);
       if (layer === 'flights') this.notamAirspaceLayer.setEnabled(this.useDeckGL && enabled);
+      this.renderEarthMap({ ...this.getState().layers, [layer]: enabled });
       callback(layer, enabled, source);
     };
     if (this.useGlobe) { this.globeMap?.setOnLayerChange(notify); return; }
