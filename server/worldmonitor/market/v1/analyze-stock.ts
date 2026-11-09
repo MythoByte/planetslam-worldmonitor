@@ -961,7 +961,9 @@ export async function fetchYahooHistoryOutcome(symbol: string): Promise<YahooHis
   let response: Response;
   try {
     response = await fetch(url, {
-      headers: { 'User-Agent': CHROME_UA },
+      // Yahoo's chart endpoint rejects the pinned Chrome 131 agent on Bespin.
+      // Use its supported minimal browser agent; keep the existing request budget.
+      headers: { 'User-Agent': 'Mozilla/5.0' },
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });
   } catch {
