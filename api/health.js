@@ -406,6 +406,7 @@ const BOOTSTRAP_KEYS = {
 // aggregate is cleanly absent. Include both fallback keys in the same health
 // sweep so the canadaAlerts probe grades the data clients actually receive.
 const STANDALONE_KEYS = {
+  gdeltAttackReports: 'gdelt:attack-reports:v1',
   ukmtoIncidents: 'maritime:ukmto-incidents:v1',
   sanctionsChanges: 'sanctions:changes:v1',
   predictionCountryMarkets: 'prediction:markets-country-index:v1',

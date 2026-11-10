@@ -270,7 +270,7 @@ async function fetchBoundedBuffer(fetchImpl, url, maxBytes, expectedStatus, extr
   return Buffer.concat(chunks, total);
 }
 
-export async function fetchGdeltBulkConflictEvents({ fetchImpl = globalThis.fetch } = {}) {
+export async function fetchGdeltBulkConflictEvents({ fetchImpl = globalThis.fetch, mapExport = mapGdeltExportToConflictEvents } = {}) {
   const manifestBytes = await fetchBoundedBuffer(
     fetchImpl,
     GDELT_MASTER_FILELIST_URL,
@@ -290,7 +290,7 @@ export async function fetchGdeltBulkConflictEvents({ fetchImpl = globalThis.fetc
       const actualMd5 = createHash('md5').update(zipBytes).digest('hex');
       if (actualMd5 !== descriptor.md5) throw new Error('checksum mismatch');
       return {
-        events: mapGdeltExportToConflictEvents(
+        events: mapExport(
           extractGdeltExportCsv(zipBytes, descriptor.exportTimestamp),
         ),
         exportTimestamp: descriptor.exportTimestamp,

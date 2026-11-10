@@ -610,7 +610,8 @@
         "notamAirspace": "Restrições de Espaço Aéreo NOTAM",
         "no2Activity": "Atividade industrial",
         "aurora": "Aurora forecast",
-        "commercialShipping": "Commercial Shipping"
+        "commercialShipping": "Commercial Shipping",
+        "attackReports": "Reported Air Attacks"
       },
       "layersTitle": "Camadas",
       "layerSearch": "Pesquisar camadas...",

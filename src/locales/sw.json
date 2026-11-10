@@ -1471,7 +1471,8 @@
         "notamAirspace": "Vikwazo vya Anga la NOTAM",
         "no2Activity": "Shughuli za viwanda",
         "aurora": "Aurora forecast",
-        "commercialShipping": "Commercial Shipping"
+        "commercialShipping": "Commercial Shipping",
+        "attackReports": "Reported Air Attacks"
       },
       "tooltip": {
         "earthquake": "Tetemeko la ardhi",

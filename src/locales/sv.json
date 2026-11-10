@@ -609,7 +609,8 @@
         "notamAirspace": "NOTAM-luftrumsbegränsningar",
         "no2Activity": "Industriell aktivitet",
         "aurora": "Aurora forecast",
-        "commercialShipping": "Commercial Shipping"
+        "commercialShipping": "Commercial Shipping",
+        "attackReports": "Reported Air Attacks"
       },
       "layersTitle": "Lager",
       "layerSearch": "Sök lager...",

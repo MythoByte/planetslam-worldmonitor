@@ -1471,7 +1471,8 @@
         "notamAirspace": "NOTAM हवाई क्षेत्र प्रतिबंध",
         "no2Activity": "औद्योगिक गतिविधि",
         "aurora": "Aurora forecast",
-        "commercialShipping": "Commercial Shipping"
+        "commercialShipping": "Commercial Shipping",
+        "attackReports": "Reported Air Attacks"
       },
       "tooltip": {
         "earthquake": "भूकंप",

@@ -1479,7 +1479,8 @@
         "notamAirspace": "Обмеження повітряного простору NOTAM",
         "no2Activity": "Промислова активність",
         "aurora": "Aurora forecast",
-        "commercialShipping": "Commercial Shipping"
+        "commercialShipping": "Commercial Shipping",
+        "attackReports": "Reported Air Attacks"
       },
       "tooltip": {
         "earthquake": "Землетрус",

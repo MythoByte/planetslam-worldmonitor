@@ -1163,7 +1163,8 @@
         "notamAirspace": "Restricciones de espacio aéreo NOTAM",
         "no2Activity": "Actividad industrial",
         "aurora": "Aurora forecast",
-        "commercialShipping": "Commercial Shipping"
+        "commercialShipping": "Commercial Shipping",
+        "attackReports": "Reported Air Attacks"
       },
       "layersTitle": "capas",
       "layerSearch": "Buscar capas...",

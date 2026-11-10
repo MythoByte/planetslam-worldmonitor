@@ -1280,7 +1280,8 @@
         "notamAirspace": "Restrictions d'espace aérien NOTAM",
         "no2Activity": "Activité industrielle",
         "aurora": "Aurora forecast",
-        "commercialShipping": "Commercial Shipping"
+        "commercialShipping": "Commercial Shipping",
+        "attackReports": "Reported Air Attacks"
       },
       "tooltip": {
         "earthquake": "Tremblement de terre",

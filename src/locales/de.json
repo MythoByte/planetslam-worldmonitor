@@ -1160,7 +1160,8 @@
         "notamAirspace": "NOTAM-Luftraumbeschränkungen",
         "no2Activity": "Industrielle Aktivität",
         "aurora": "Aurora forecast",
-        "commercialShipping": "Commercial Shipping"
+        "commercialShipping": "Commercial Shipping",
+        "attackReports": "Reported Air Attacks"
       },
       "layersTitle": "Ebenen",
       "layerSearch": "Ebenen suchen...",

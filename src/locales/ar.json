@@ -1289,7 +1289,8 @@
         "notamAirspace": "قيود المجال الجوي NOTAM",
         "no2Activity": "النشاط الصناعي",
         "aurora": "Aurora forecast",
-        "commercialShipping": "Commercial Shipping"
+        "commercialShipping": "Commercial Shipping",
+        "attackReports": "Reported Air Attacks"
       },
       "tooltip": {
         "earthquake": "زلزال",
