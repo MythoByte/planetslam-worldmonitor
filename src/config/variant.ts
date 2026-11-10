@@ -39,6 +39,7 @@ function loadStoredVariant(): string | null {
 }
 
 export const SITE_VARIANT: string = (() => {
+  if (IS_PLANETSLAM) return 'full';
   if (typeof window === 'undefined') return buildVariant;
 
   // Same detector the in-app variant switcher writes through
@@ -50,22 +51,6 @@ export const SITE_VARIANT: string = (() => {
     const stored = loadStoredVariant();
     if (isSiteVariant(stored)) return IS_PLANETSLAM ? canonicalPlanetSlamVariant(stored) : stored;
     return buildVariant;
-  }
-
-  // PlanetSlam editions share one origin. The URL is authoritative so copied
-  // links and browser history work independently of a visitor's stored choice.
-  if (IS_PLANETSLAM) {
-    const selected = new URLSearchParams(window.location?.search).get('variant');
-    if (isSiteVariant(selected)) {
-      const canonical = canonicalPlanetSlamVariant(selected);
-      if (canonical !== selected) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('variant', canonical);
-        window.history.replaceState(window.history.state, '', url);
-      }
-      return canonical;
-    }
-    return isSiteVariant(selected) ? selected : 'full';
   }
 
   // window.location, not bare `location`: node-based tests stub `window`

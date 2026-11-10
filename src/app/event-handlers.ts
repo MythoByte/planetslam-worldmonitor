@@ -1,3 +1,5 @@
+import { isPlanetSlamDashboardId } from '@/config/planetslam-dashboards';
+import type { PlanetSlamWorkspace } from '@/services/planetslam-dashboards';
 import { DEFAULT_MAP_TIME_RANGE } from '@/config/map-defaults';
 import type {
   AppContext,
@@ -62,7 +64,6 @@ import {
 import { resolveNewsCategories, enabledNewsCategoryKeys } from '@/config/feed-resolution';
 import { VARIANT_META } from '@/config/variant-meta';
 import { IS_PLANETSLAM } from '@/config/brand';
-import { isSiteVariant } from '@/config/variant';
 import { isDesktopRuntime } from '@/services/runtime';
 import {
   getMissionPresetsForVariant,
@@ -322,6 +323,8 @@ export interface EventHandlerCallbacks {
    * bookkeeping a panel needs to appear without a reload, and the map-zone
    * reconciliation the `map` key needs.
    */
+  applyDashboardPreset?: (id: string) => void;
+  onDashboardMapChanged?: () => void;
   applyPanelSettings: () => void;
   applySavedPanelOrder?: (panelOrder?: string[]) => void;
   stopLayerActivity?: (layer: keyof MapLayers) => void;
@@ -378,8 +381,9 @@ export class EventHandlerManager implements AppModule {
 
   private readonly idlePauseMs = IDLE_PAUSE_MS;
   private readonly writeUrlState = (): void => {
-    const shareUrl = this.getShareUrl();
+    const shareUrl = this.getShareUrl(false);
     if (!shareUrl) return;
+    if (IS_PLANETSLAM) this.callbacks.onDashboardMapChanged?.();
     // Preserve the shared mobile-overlay marker while syncing map URL state;
     // replacing it with null makes Android Back skip the open sheet.
     try { history.replaceState(history.state, '', withUrlFragment(shareUrl, window.location.hash)); } catch { }
@@ -864,7 +868,7 @@ export class EventHandlerManager implements AppModule {
     this.ctx.container.querySelectorAll<HTMLAnchorElement>('.variant-option').forEach(link => {
       link.addEventListener('click', (e) => {
         const variant = link.dataset.variant;
-        if (!variant || variant === SITE_VARIANT) return;
+        if (!variant || (!IS_PLANETSLAM && variant === SITE_VARIANT)) return;
         e.preventDefault();
         void this.navigateToVariant(variant, {
           href: link.href,
@@ -964,6 +968,7 @@ export class EventHandlerManager implements AppModule {
   }
 
   private setupMissionPresets(): void {
+    if (IS_PLANETSLAM) return;
     this.renderMissionPresetControl();
 
     const shouldPrompt =
@@ -1354,6 +1359,23 @@ export class EventHandlerManager implements AppModule {
     return enforceFreePanelLimit(panelSettings, false);
   }
 
+  /** Apply a saved World workspace through the normal layer guards and side effects. */
+  public applyPlanetSlamMap(state: PlanetSlamWorkspace): MapLayers {
+    const previous = { ...this.ctx.mapLayers };
+    const layers = this.filterMissionLayersForCurrentRenderer(state.layers);
+    this.ctx.mapLayers = layers;
+    this.ctx.currentTimeRange = state.timeRange;
+    saveToStorage(STORAGE_KEYS.mapLayers, layers);
+    this.ctx.map?.setLayers(layers);
+    this.applyMissionMapLayerTransitions(previous, layers);
+    this.ctx.map?.setView(state.view as MapView, state.zoom);
+    if (state.center) this.ctx.map?.setCenter(state.center.lat, state.center.lon, state.zoom);
+    this.ctx.map?.setTimeRange(state.timeRange);
+    this.callbacks.syncDataFreshnessWithLayers();
+    this.syncUrlState();
+    return layers;
+  }
+
   private applyMissionPreset(presetId: MissionPresetId, source: 'user' | 'agent' = 'user'): void {
     let applied: ReturnType<typeof applyMissionPresetToState>;
     try {
@@ -1652,7 +1674,7 @@ export class EventHandlerManager implements AppModule {
     }
   }
 
-  getShareUrl(): string | null {
+  getShareUrl(includeDashboardPreset = true): string | null {
     if (!this.ctx.map) return null;
     const state = this.ctx.map.getState();
     const center = this.ctx.map.getCenter();
@@ -1675,7 +1697,7 @@ export class EventHandlerManager implements AppModule {
       expanded: (isCountryVisible ? briefPage?.getIsMaximized?.() : pending?.expanded) ? true : undefined,
       chokepoint: !isCountryVisible && !pending ? (this.ctx.activeChokepoint ?? undefined) : undefined,
     }));
-    if (IS_PLANETSLAM) url.searchParams.set('variant', SITE_VARIANT);
+    if (IS_PLANETSLAM && includeDashboardPreset) url.searchParams.set('dashboard', this.ctx.dashboardFeedVariant || 'full');
     return url.toString();
   }
 
@@ -2037,15 +2059,14 @@ export class EventHandlerManager implements AppModule {
   private async navigateToVariant(
     variant: string,
     options: { href?: string; isLocalDev: boolean },
-  ): Promise<'reload' | 'assign' | 'blocked'> {
+  ): Promise<'reload' | 'assign' | 'in_place' | 'blocked'> {
     trackVariantSwitch(SITE_VARIANT, variant);
     await this.exitFullscreenForNavigation();
 
-    if (IS_PLANETSLAM && !this.ctx.isDesktopApp) {
-      if (!isSiteVariant(variant)) return 'blocked';
-      stageVariantSelection(SITE_VARIANT, variant, writeStorageValue);
-      window.location.href = new URL(`/dashboard?variant=${variant}`, window.location.origin).toString();
-      return 'assign';
+    if (IS_PLANETSLAM) {
+      if (!isPlanetSlamDashboardId(variant) || !this.callbacks.applyDashboardPreset) return 'blocked';
+      this.callbacks.applyDashboardPreset(variant);
+      return 'in_place';
     }
 
     if (this.ctx.isDesktopApp || options.isLocalDev) {
@@ -2070,8 +2091,8 @@ export class EventHandlerManager implements AppModule {
 
   public async navigateToVisibleVariant(
     variant: string,
-  ): Promise<'none' | 'reload' | 'assign' | 'blocked' | 'unavailable'> {
-    if (variant === SITE_VARIANT) return 'none';
+  ): Promise<'none' | 'reload' | 'assign' | 'in_place' | 'blocked' | 'unavailable'> {
+    if (!IS_PLANETSLAM && variant === SITE_VARIANT) return 'none';
     const link = this.ctx.container.querySelector<HTMLAnchorElement>(
       `.variant-option[data-variant="${variant}"]`,
     );

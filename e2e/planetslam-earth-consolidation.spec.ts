@@ -13,7 +13,7 @@ for (const width of [1440, 390]) {
     await installEarthFixtures(page);
     await page.goto('/dashboard?variant=earth&layers=natural,weather,webcams,fires&timeRange=48h');
     await expect(page.locator('html')).toHaveAttribute('data-wm-initial-data-ready', 'true');
-    await expect(page).toHaveURL(/variant=full/);
+    await expect(page).not.toHaveURL(/variant=/);
     await expect(page).toHaveURL(/timeRange=48h/);
     await expect(page.locator('[data-variant="earth"], [data-variant="space"], [data-variant="cyber"]')).toHaveCount(0);
     for (const id of earthIds) await expect(page.locator(`#panelsGrid [data-panel="earth-${id}"]`)).toHaveCount(1);
@@ -59,7 +59,7 @@ for (const width of [1440, 390]) {
     await page.reload(); await expect(page.locator('html')).toHaveAttribute('data-wm-initial-data-ready', 'true');
     await expect(page.locator('#panelsGrid [data-panel="earth-rivers"]')).not.toBeVisible();
     await page.goto('/dashboard?variant=space&layers=spaceports,aurora&timeRange=24h');
-    await expect(page).toHaveURL(/variant=full/);
+    await expect(page).not.toHaveURL(/variant=/);
     await expect(page.locator('html')).toHaveAttribute('data-wm-initial-data-ready', 'true');
     await expect(page.locator('[data-variant="earth"], [data-variant="space"]')).toHaveCount(0);
     expect(errors).toEqual([]);

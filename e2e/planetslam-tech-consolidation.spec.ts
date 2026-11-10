@@ -12,6 +12,8 @@ for (const width of [1440, 390]) {
       'worldmonitor-panels': JSON.stringify({ security: { name: 'Cybersecurity', enabled: true, priority: 1 }, 'cyber-kev': { name: 'Exploited Vulnerabilities', enabled: false, priority: 1 } }),
       'planetslam-cyber-watchlist-v1': '["docker"]',
     } } });
+    await page.route('**/api/**', route => route.fulfill({ json: {} }));
+    await page.route('**/api/bootstrap*', route => route.fulfill({ json: { missing: [], data: {} } }));
     await installCyberFixtures(page);
     await page.route('**/api/news/v1/list-feed-digest?*', route => route.fulfill({ json: {
       categories: { security: { items: [{ source: 'Krebs Security', title: 'Synthetic existing Tech report', link: 'https://example.com/docker', publishedAt: Date.now(), isAlert: false }] } },
@@ -19,7 +21,8 @@ for (const width of [1440, 390]) {
     } }));
     // A retired URL opens Tech, retaining all other explicit URL state.
     await page.goto('/dashboard?variant=cyber');
-    await expect(page).toHaveURL(/variant=tech/);
+    await expect(page).not.toHaveURL(/variant=/);
+    await expect(page.locator(width > 768 ? '.ps-dashboard-picker > summary' : '.ps-mobile-dashboard')).toContainText('Tech');
     await expect(page.locator('html')).toHaveAttribute('data-wm-initial-data-ready', 'true');
     await expect(page.locator('.time-btn.active').first()).toHaveAttribute('data-range', '24h');
     await expect(page.locator('[data-variant="cyber"]')).toHaveCount(0);

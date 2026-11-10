@@ -112,17 +112,10 @@ const COMMODITY_FEEDS: Record<string, Feed[]> = browserFeeds('commodity');
 const ENERGY_FEEDS: Record<string, Feed[]> = browserFeeds('energy');
 
 // Variant-aware exports
-export const FEEDS = SITE_VARIANT === 'tech'
-  ? TECH_FEEDS
-  : SITE_VARIANT === 'finance'
-    ? FINANCE_FEEDS
-    : SITE_VARIANT === 'happy'
-      ? HAPPY_FEEDS
-      : SITE_VARIANT === 'commodity'
-        ? COMMODITY_FEEDS
-        : SITE_VARIANT === 'energy'
-          ? ENERGY_FEEDS
-          : FULL_FEEDS;
+export function getFeedsForVariant(variant: string): Record<string, Feed[]> {
+  return ({ full: FULL_FEEDS, tech: TECH_FEEDS, finance: FINANCE_FEEDS, happy: HAPPY_FEEDS, commodity: COMMODITY_FEEDS, energy: ENERGY_FEEDS } as Record<string, Record<string, Feed[]>>)[variant] ?? FULL_FEEDS;
+}
+export const FEEDS = getFeedsForVariant(SITE_VARIANT);
 
 // Canonical category→feeds map: the union of every variant's feed set.
 // `FEEDS` (above) is just the active variant's PRESET; users freely customize

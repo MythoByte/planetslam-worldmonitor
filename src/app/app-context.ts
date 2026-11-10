@@ -81,6 +81,7 @@ export interface AppContext {
    */
   newsCategoryPanelKeys: Map<string, string>;
   panelSettings: Record<string, PanelConfig>;
+  dashboardFeedVariant: string;
 
   mapLayers: MapLayers;
 

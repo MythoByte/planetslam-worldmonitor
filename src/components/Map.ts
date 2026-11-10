@@ -811,7 +811,7 @@ export class MapComponent {
     ];
     // Filter sunset and renderer-incompatible layers so the SVG/mobile picker
     // cannot expose a toggle whose layer has no SVG paint path.
-    const layers = (SITE_VARIANT === 'earth' ? ['dayNight'] as (keyof MapLayers)[] : SITE_VARIANT === 'cyber' ? [] : SITE_VARIANT === 'space' ? ['satellites', 'spaceports', 'aurora', 'webcams'] as (keyof MapLayers)[]
+    const layers = (IS_PLANETSLAM ? [...new Set([...fullLayers, ...techLayers, ...financeLayers, ...happyLayers, ...energyLayers, ...commodityLayers])] : SITE_VARIANT === 'earth' ? ['dayNight'] as (keyof MapLayers)[] : SITE_VARIANT === 'cyber' ? [] : SITE_VARIANT === 'space' ? ['satellites', 'spaceports', 'aurora', 'webcams'] as (keyof MapLayers)[]
                  : SITE_VARIANT === 'tech' ? techLayers
                  : SITE_VARIANT === 'finance' ? financeLayers
                  : SITE_VARIANT === 'happy' ? happyLayers
@@ -2204,7 +2204,7 @@ export class MapComponent {
     // Variant hub overlays have no layer-toggle row, so a truncation here would
     // have nowhere to be disclosed — exempt like the globe's `news` group. Both
     // are bounded by the hub registry, not by an upstream feed.
-    if (SITE_VARIANT === 'tech') add('techHubs', this.techActivities, { exempt: true });
+    if (SITE_VARIANT === 'tech' || (IS_PLANETSLAM && (layers.startupHubs || layers.techEvents))) add('techHubs', this.techActivities, { exempt: true });
     if (SITE_VARIANT === 'full') add('geoHubs', this.geoActivities, { exempt: true });
 
     // Layers with no severity signal rank by nearness to the centre of the
@@ -3443,7 +3443,7 @@ export class MapComponent {
     }
 
     // Tech Hub Activity Markers (shows activity heatmap for tech hubs with news activity)
-    if (SITE_VARIANT === 'tech' && this.techActivities.length > 0) {
+    if ((SITE_VARIANT === 'tech' || (IS_PLANETSLAM && (this.state.layers.startupHubs || this.state.layers.techEvents))) && this.techActivities.length > 0) {
       this.techActivities.forEach((activity) => {
         const pos = projection([activity.lon, activity.lat]);
         if (!pos) return;

@@ -41,3 +41,23 @@ Preconditions:
 - `seedProfile` guards itself with a `sessionStorage` flag because `addInitScript` re-runs on every navigation; a reload inside the drive would otherwise wipe the very preference under test.
 - Use a different panel via `WM_VERIFY_PANEL=<key>`, but pick one that boots disabled in the seed, or the before-assertion fails for the wrong reason.
 - The save button is `.panels-save-layout`; closing the overlay without saving discards the toggle.
+
+## PlanetSlam dashboard presets
+
+PlanetSlam uses one World runtime. The dashboard picker applies World, Tech,
+Finance, Commodities, Energy or Good News in place, setting panel selection and
+order, default sizes, news sources, map layers, region and time range. Map and
+panel controls remain editable. The label adds `Custom` after an edit.
+
+`Main` and `+` are saved workspaces. On PlanetSlam, `+` copies the current
+workspace, including map and panel sizes; double-click a tab to rename it. The
+picker also lists saved workspaces and offers `Save current workspace`. The
+mobile bottom navigation stays in place; dashboard presets and saved workspaces
+are in More. The old separate Mission/Presets button is absent.
+
+Run `VITE_BRAND=planetslam npx playwright test e2e/planetslam-navigation.spec.ts
+--project=chromium`. The check switches all six presets without reloading, mixes
+Cyber panels into Energy, restores map/size preferences through tab changes, and
+checks persistence after reload at 1440, 900 and 390 pixels. API responses are
+fixtures. Old `?variant=` links select the matching preset once; routine map URL
+updates do not reapply presets on reload. Copied links use `?dashboard=`.

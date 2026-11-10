@@ -1,6 +1,7 @@
+import { invalidatePanelStorageCacheForKeys, PANEL_SPANS_KEY, PANEL_COL_SPANS_KEY } from '@/utils/panel-storage';
 import { DEFAULT_MAP_TIME_RANGE } from '@/config/map-defaults';
 import { isPlanetSlamSourcePanel } from '@/config/planetslam-panels';
-import { isPanelHiddenForBrand } from '@/config/panels';
+import { DEFAULT_MAP_LAYERS, isPanelHiddenForBrand } from '@/config/panels';
 import { BRAND, IS_PLANETSLAM } from '@/config/brand';
 import { clearTelegramIntelCache } from '@/services/telegram-intel';
 import { subscribeRuntimeConfig } from '@/services/runtime-config';
@@ -82,6 +83,8 @@ import {
 } from '@/app/pro-activation-controller';
 import { PasskeyOfferBoot } from '@/app/passkey-offer-boot';
 import { showCheckoutFailureBanner } from '@/components/checkout-failure-banner';
+import { getPlanetSlamDashboard, isPlanetSlamDashboardId } from '@/config/planetslam-dashboards';
+import { buildPlanetSlamDashboard, requestedPlanetSlamDashboard, type PlanetSlamWorkspace } from '@/services/planetslam-dashboards';
 import { PanelTabBar, tabCapGateCopy } from '@/components/PanelTabBar';
 import {
   loadTabsState,
@@ -462,6 +465,8 @@ export interface PanelLayoutManagerCallbacks {
   loadSecurityAdvisories?: () => Promise<void>;
   loadTelegramIntel?: () => Promise<void>;
   applyMapLayerChange?: (layer: keyof MapLayers, enabled: boolean, source: 'programmatic') => void;
+  applyDashboardMap?: (state: PlanetSlamWorkspace) => MapLayers;
+  invalidateNewsHydration?: () => void;
   isFreeTierFallbackActive?: () => boolean;
 }
 
@@ -490,6 +495,9 @@ type HydrationSchedulePhase = 'visible' | 'near';
 export class PanelLayoutManager implements AppModule {
   private ctx: AppContext;
   private callbacks: PanelLayoutManagerCallbacks;
+  private planetSlamWorkspace: PlanetSlamWorkspace | null = null;
+  private applyingPlanetSlamDashboard = false;
+  private planetSlamNewWorkspace = false;
   private panelDragCleanupHandlers: Array<() => void> = [];
   private deferredPanelMounts: Map<string, DeferredPanelMount> = new Map();
   private lazyPanelRegistrations: Map<string, LazyPanelRegistration> = new Map();
@@ -522,7 +530,8 @@ export class PanelLayoutManager implements AppModule {
   private readonly passkeyOfferController: PasskeyOfferBoot;
   private readonly checkoutReturnFocusController = new AbortController();
   private readonly onCyberShowMap = (): void => {
-    if (!(IS_PLANETSLAM && SITE_VARIANT === 'tech')) return;
+    if (!(IS_PLANETSLAM)) return;
+    this.callbacks.applyMapLayerChange?.('techEvents', true, 'programmatic');
     const config = this.ctx.panelSettings.map;
     if (config) { config.enabled = true; saveToStorage(STORAGE_KEYS.panels, this.ctx.panelSettings); this.applyPanelSettings(); }
     this.revealMobileMap();
@@ -754,7 +763,7 @@ export class PanelLayoutManager implements AppModule {
   }
 
   async init(): Promise<void> {
-    if (IS_PLANETSLAM && SITE_VARIANT === 'tech') window.addEventListener('planetslam:cyber-show-map', this.onCyberShowMap);
+    if (IS_PLANETSLAM) window.addEventListener('planetslam:cyber-show-map', this.onCyberShowMap);
     await this.renderLayout();
     if (this.ctx.isDestroyed) return;
     void this.reconcileCheckoutReturnFocus();
@@ -1130,11 +1139,11 @@ export class PanelLayoutManager implements AppModule {
       <div class="header" role="banner">
         <div class="header-left">
           ${IS_PLANETSLAM ? `<details class="ps-dashboard-picker ps-header-menu"><summary>${escapeHtml(dashboardLabel)} <span aria-hidden="true">▾</span></summary>` : ''}
-          <div class="variant-switcher">${(() => {
+          <div class="variant-switcher">${IS_PLANETSLAM ? '<div class="ps-menu-label">Dashboard presets</div>' : ''}${(() => {
         const local = this.ctx.isDesktopApp || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
         const inIframe = window.self !== window.top;
         const vHref = (v: keyof typeof VARIANT_SWITCHER_DASHBOARD_URLS) =>
-          variantSwitcherHref(v, SITE_VARIANT, local);
+          IS_PLANETSLAM ? `/dashboard?dashboard=${v}` : variantSwitcherHref(v, SITE_VARIANT, local);
         const vTarget = (v: string) => !local && SITE_VARIANT !== v && inIframe ? 'target="_blank" rel="noopener"' : '';
         return `
             <a href="${vHref('full')}"
@@ -1190,7 +1199,7 @@ export class PanelLayoutManager implements AppModule {
               <span class="variant-icon">☀️</span>
               <span class="variant-label">Good News</span>
             </a>`;
-      })()}</div>
+      })()}${IS_PLANETSLAM ? '<div id="psSavedWorkspaces" class="ps-saved-workspaces"></div>' : ''}</div>
           ${IS_PLANETSLAM ? `</details><span class="ps-mobile-dashboard">${escapeHtml(dashboardLabel)}</span>` : ''}
           <span class="logo">${BRAND.wordmark}</span><span class="logo-mobile">${BRAND.name}</span><span class="version">v${__APP_VERSION__}</span>${BETA_MODE ? '<span class="beta-badge">BETA</span>' : ''}
           <a href="${creditUrl}" target="_blank" rel="noopener" class="credit-link">
@@ -1241,7 +1250,7 @@ export class PanelLayoutManager implements AppModule {
           <button class="mobile-auth-fallback" id="mobileAuthFallback" type="button">Sign In</button>
         </div>
         <div class="mobile-menu-divider"></div>
-        ${IS_PLANETSLAM ? '<div class="ps-menu-label">Dashboards</div>' : ''}
+        ${IS_PLANETSLAM ? '<div class="ps-menu-label">Dashboard presets</div>' : ''}
         ${(() => {
         const variants = [
           { key: 'full', icon: '🌍', label: t('header.world') },
@@ -1265,11 +1274,12 @@ export class PanelLayoutManager implements AppModule {
           <span class="mobile-menu-item-label">${t('components.deckgl.views.global')}</span>
           <span class="mobile-menu-chevron">▸</span>
         </button>
-        <button class="mobile-menu-item" id="mobileMenuMission">
+        ${IS_PLANETSLAM ? '<div id="psMobileSavedWorkspaces" class="ps-saved-workspaces"></div>' : `        <button class="mobile-menu-item" id="mobileMenuMission">
           <span class="mobile-menu-item-icon">◎</span>
           <span class="mobile-menu-item-label">${IS_PLANETSLAM ? 'Presets' : 'Mission'}</span>
           <span class="mobile-menu-chevron">▸</span>
         </button>
+`}
         <div class="mobile-menu-divider"></div>
         <button class="mobile-menu-item" id="mobileMenuSettings">
           <span class="mobile-menu-item-icon">⚙️</span>
@@ -1314,7 +1324,7 @@ export class PanelLayoutManager implements AppModule {
         </button>`
       ).join('')}
       </div>
-      ${IS_PLANETSLAM ? '<div class="ps-workspace-row"><div class="dashboard-tabs-mount" id="panelTabsMount"></div><span id="missionPresetMount" class="mission-preset-mount"></span></div>' : '<div class="dashboard-tabs-mount" id="panelTabsMount"></div>'}
+      ${IS_PLANETSLAM ? '<div class="ps-workspace-row"><div class="dashboard-tabs-mount" id="panelTabsMount"></div></div>' : '<div class="dashboard-tabs-mount" id="panelTabsMount"></div>'}
       <main id="main" tabindex="-1" class="main-content${mapRightClassActive ? ' map-right' : ''}">
         <div class="map-section${mapStartsCollapsed ? ' collapsed' : ''}" id="mapSection">
           <div class="panel-header">
@@ -1410,12 +1420,149 @@ export class PanelLayoutManager implements AppModule {
     await this.createPanels();
 
     this.initPanelTabs();
+    if (IS_PLANETSLAM) {
+      this.initPlanetSlamDashboards();
+      this.applyInitialUrlState();
+    }
     if (import.meta.env.DEV && bootShellFootprint) warnOnBootShellFootprintDrift(bootShellFootprint);
 
     if (this.ctx.isMobile) {
       this.setupMobileMapToggle();
       this.setupMobilePanelNav();
     }
+  }
+
+  private capturePlanetSlamWorkspace(): PlanetSlamWorkspace {
+    const state = this.ctx.map?.getState();
+    const center = this.ctx.map?.getCenter();
+    return { ...this.planetSlamWorkspace!, layers: { ...this.ctx.mapLayers },
+      panelRows: { ...loadPanelSpans() }, panelColumns: { ...loadPanelColSpans() },
+      view: state?.view ?? 'global', timeRange: state?.timeRange ?? '24h', zoom: state?.zoom ?? 1,
+      ...(center ? { center: { ...center } } : {}) };
+  }
+
+  private initPlanetSlamDashboards(): void {
+    const active = this.tabsState?.tabs.find(tab => tab.id === this.tabsState?.activeTabId);
+    const requested = requestedPlanetSlamDashboard(location.search);
+    this.restorePlanetSlamWorkspace(active?.dashboard);
+    if (requested && requested !== active?.dashboard?.preset) this.applyPlanetSlamDashboard(requested);
+    else if (this.planetSlamNewWorkspace && !requested) this.applyPlanetSlamDashboard('full');
+    else this.refreshPlanetSlamDashboardMenu();
+    this.ctx.container.addEventListener('ps-panel-size-changed', () => this.markPlanetSlamCustomized(true), { signal: this.checkoutReturnFocusController.signal });
+    for (const mount of this.ctx.container.querySelectorAll('.ps-saved-workspaces')) {
+      mount.addEventListener('click', event => {
+        const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-dashboard-workspace]');
+        if ((event.target as HTMLElement).closest('[data-save-dashboard]')) {
+          if (!this.updateTabCapLock().allowed) { this.panelTabBar?.showAddLockNotice(); return; }
+          this.createAndActivateTab(`${getPlanetSlamDashboard(this.planetSlamWorkspace!.preset).label} workspace ${this.tabsState?.tabs.length ?? 1}`);
+          this.refreshPlanetSlamDashboardMenu();
+          if (mount.closest('#mobileMenu')) document.getElementById('mobileMenuClose')?.click();
+          else document.querySelector<HTMLDetailsElement>('.ps-dashboard-picker')?.removeAttribute('open');
+          showToast('Workspace saved. Double-click its tab to rename it.');
+          return;
+        }
+        if (!button?.dataset.dashboardWorkspace) return;
+        this.switchToTab(button.dataset.dashboardWorkspace);
+        if (mount.closest('#mobileMenu')) document.getElementById('mobileMenuClose')?.click();
+        document.querySelector<HTMLDetailsElement>('.ps-dashboard-picker')?.removeAttribute('open');
+      });
+    }
+  }
+
+  /** Existing tabs retain their live panel snapshot; only their map/feed state is restored here. */
+  private restorePlanetSlamWorkspace(saved?: PlanetSlamWorkspace): void {
+    const fallback = isPlanetSlamDashboardId(this.ctx.dashboardFeedVariant) ? this.ctx.dashboardFeedVariant : 'full';
+    this.planetSlamWorkspace = saved ? structuredClone(saved) : {
+      preset: fallback, customized: true, layers: { ...this.ctx.mapLayers },
+      view: 'global', zoom: 1, timeRange: '24h',
+    };
+    this.ctx.dashboardFeedVariant = this.planetSlamWorkspace.preset;
+    this.callbacks.invalidateNewsHydration?.();
+    this.applyingPlanetSlamDashboard = true;
+    if (saved) {
+      this.restorePlanetSlamSizes(saved);
+      this.planetSlamWorkspace.layers = this.callbacks.applyDashboardMap?.(saved) ?? saved.layers;
+    }
+    this.applyingPlanetSlamDashboard = false;
+  }
+
+  private restorePlanetSlamSizes(state: PlanetSlamWorkspace): void {
+    if (!state.panelRows || !state.panelColumns) return;
+    saveToStorage(PANEL_SPANS_KEY, state.panelRows);
+    saveToStorage(PANEL_COL_SPANS_KEY, state.panelColumns);
+    invalidatePanelStorageCacheForKeys([PANEL_SPANS_KEY, PANEL_COL_SPANS_KEY]);
+    for (const panel of Object.values(this.ctx.panels)) panel.restoreWorkspaceSize();
+  }
+
+  public applyPlanetSlamDashboard(id: string): void {
+    if (!IS_PLANETSLAM || !isPlanetSlamDashboardId(id)) return;
+    // Snapshot the active workspace before replacing its live layout.
+    this.snapshotActiveTab();
+    this.applyingPlanetSlamDashboard = true;
+    const preset = buildPlanetSlamDashboard(id, this.ctx.panelSettings, DEFAULT_MAP_LAYERS);
+    const state: PlanetSlamWorkspace = { preset: id, customized: false, layers: preset.layers, view: 'global', timeRange: '24h', zoom: 1, panelRows: {}, panelColumns: {} };
+    this.planetSlamWorkspace = state;
+    this.restorePlanetSlamSizes(state);
+    this.ctx.dashboardFeedVariant = id;
+    this.callbacks.invalidateNewsHydration?.();
+    state.layers = this.callbacks.applyDashboardMap?.(state) ?? state.layers;
+    this.applyTabPanelState(preset.panelSettings, [...preset.panelOrder], []);
+    this.snapshotActiveTab();
+    this.applyingPlanetSlamDashboard = false;
+    if (this.tabsState && !saveTabsState(this.tabsState).persisted) showToast('Dashboard applied for this session; storage is unavailable.');
+    this.refreshPlanetSlamDashboardMenu();
+    document.querySelector<HTMLDetailsElement>('.ps-dashboard-picker')?.removeAttribute('open');
+  }
+
+  public markPlanetSlamCustomized(force = false): void {
+    if (!IS_PLANETSLAM || !this.planetSlamWorkspace || this.applyingPlanetSlamDashboard) return;
+    // Compare selections, rather than marking asynchronous panel mounts as edits.
+    const preset = buildPlanetSlamDashboard(this.planetSlamWorkspace.preset, this.ctx.panelSettings, DEFAULT_MAP_LAYERS);
+    const changed = Object.keys(preset.panelSettings).some(key => !!preset.panelSettings[key]?.enabled !== !!this.ctx.panelSettings[key]?.enabled)
+      || Object.keys(this.ctx.mapLayers).some(key => !!this.ctx.mapLayers[key as keyof MapLayers] !== !!this.planetSlamWorkspace!.layers[key as keyof MapLayers]);
+    const map = this.ctx.map?.getState();
+    if (force || changed || (map && (map.view !== this.planetSlamWorkspace.view || map.timeRange !== this.planetSlamWorkspace.timeRange))) this.planetSlamWorkspace.customized = true;
+    const active = this.tabsState?.tabs.find(tab => tab.id === this.tabsState?.activeTabId);
+    if (active) {
+      active.dashboard = this.capturePlanetSlamWorkspace();
+      saveTabsState(this.tabsState!);
+    }
+    this.refreshPlanetSlamDashboardMenu();
+  }
+
+  private refreshPlanetSlamDashboardMenu(): void {
+    if (!this.planetSlamWorkspace) return;
+    const preset = getPlanetSlamDashboard(this.planetSlamWorkspace.preset);
+    const label = preset.label + (this.planetSlamWorkspace.customized ? ' · Custom' : '');
+    const summary = this.ctx.container.querySelector('.ps-dashboard-picker > summary');
+    if (summary) {
+      // Keep the native disclosure caret while updating only the text node.
+      if (summary.firstChild) summary.firstChild.textContent = label + ' ';
+      summary.setAttribute('aria-label', 'Dashboard presets: ' + label);
+    }
+    const mobileLabel = this.ctx.container.querySelector('.ps-mobile-dashboard');
+    if (mobileLabel) mobileLabel.textContent = label;
+    for (const link of this.ctx.container.querySelectorAll<HTMLElement>('[data-variant]')) {
+      const active = link.dataset.variant === preset.id;
+      link.classList.toggle('active', active);
+      link.setAttribute('aria-current', active ? 'true' : 'false');
+      const check = link.querySelector('.mobile-menu-check');
+      if (check) check.remove();
+    }
+    const workspaces = this.tabsState?.tabs ?? [];
+    const html = workspaces.length ? '<div class="ps-menu-label">Saved workspaces</div>' + workspaces.map(tab =>
+      `<button type="button" class="ps-workspace-option" data-dashboard-workspace="${escapeHtml(tab.id)}" aria-current="${tab.id === this.tabsState?.activeTabId}">${escapeHtml(tab.name)}</button>`).join('') + '<button type="button" class="ps-workspace-option ps-save-workspace" data-save-dashboard>+ Save current workspace</button>' : '';
+    for (const mount of this.ctx.container.querySelectorAll<HTMLElement>('.ps-saved-workspaces')) {
+      if (mount.dataset.rendered === html) continue;
+      setTrustedHtml(mount, trustedHtml(html, 'Escaped local workspace names and ids'));
+      mount.dataset.rendered = html;
+    }
+    // Preset entry links are consumed once. Customizations and reloads use the
+    // live workspace state, rather than reapplying that preset on every visit.
+    const url = new URL(location.href);
+    url.searchParams.delete('variant');
+    url.searchParams.delete('dashboard');
+    history.replaceState(history.state, '', url);
   }
 
   // ============================================
@@ -1434,6 +1581,7 @@ export class PanelLayoutManager implements AppModule {
     if (!mount) return;
 
     let state = loadTabsState();
+    this.planetSlamNewWorkspace = IS_PLANETSLAM && !state;
     if (!state) {
       // First run — wrap the user's current layout in an initial tab so
       // nothing changes visually until they create a second tab.
@@ -1925,7 +2073,8 @@ export class PanelLayoutManager implements AppModule {
       throw new Error('Dashboard tabs are not available.');
     }
     this.snapshotActiveTab();
-    const defaults = buildDefaultTabPanels(this.ctx.panelSettings);
+    const currentSnapshot = IS_PLANETSLAM ? this.captureCurrentTabState().snapshot : null;
+    const defaults = currentSnapshot ?? buildDefaultTabPanels(this.ctx.panelSettings);
     const tab: PanelTab = {
       id: generateTabId(),
       name,
@@ -1937,12 +2086,16 @@ export class PanelLayoutManager implements AppModule {
         ? enforceFreePanelLimit(defaults.panelSettings, isProUser())
         : defaults.panelSettings,
       panelOrder: defaults.panelOrder,
-      bottomSet: [],
+      bottomSet: currentSnapshot?.bottomSet ?? [],
+      ...(currentSnapshot?.dashboard ? { dashboard: currentSnapshot.dashboard } : {}),
     };
     this.tabsState.tabs.push(tab);
     this.tabsState.activeTabId = tab.id;
     const persist = saveTabsState(this.tabsState);
+    this.applyingPlanetSlamDashboard = IS_PLANETSLAM;
     this.applyTabPanelState(tab.panelSettings, tab.panelOrder, tab.bottomSet);
+    this.applyingPlanetSlamDashboard = false;
+    if (IS_PLANETSLAM) this.refreshPlanetSlamDashboardMenu();
     this.panelTabBar?.refresh();
     this.updateTabCapLock();
     return { tab, persisted: persist.persisted };
@@ -2014,7 +2167,7 @@ export class PanelLayoutManager implements AppModule {
 
   /** Capture the live panel state (settings + order) for a tab snapshot. */
   private captureCurrentTabState(): {
-    snapshot: Pick<PanelTab, 'panelSettings' | 'panelOrder' | 'bottomSet'>;
+    snapshot: Pick<PanelTab, 'panelSettings' | 'panelOrder' | 'bottomSet' | 'dashboard'>;
     persisted: boolean;
   } {
     // Persist the live DOM order first so the snapshot reflects any drags.
@@ -2024,6 +2177,7 @@ export class PanelLayoutManager implements AppModule {
         panelSettings: JSON.parse(JSON.stringify(this.ctx.panelSettings)) as Record<string, PanelConfig>,
         panelOrder: [...this.resolvedPanelOrder],
         bottomSet: Array.from(this.bottomSetMemory),
+        ...(IS_PLANETSLAM && this.planetSlamWorkspace ? { dashboard: this.capturePlanetSlamWorkspace() } : {}),
       },
       persisted,
     };
@@ -2048,7 +2202,11 @@ export class PanelLayoutManager implements AppModule {
     this.tabsState.activeTabId = tabId;
     const persist = saveTabsState(this.tabsState);
 
+    if (IS_PLANETSLAM) this.restorePlanetSlamWorkspace(target.dashboard);
+    this.applyingPlanetSlamDashboard = IS_PLANETSLAM;
     this.applyTabPanelState(target.panelSettings, target.panelOrder, target.bottomSet);
+    this.applyingPlanetSlamDashboard = false;
+    if (IS_PLANETSLAM) this.refreshPlanetSlamDashboardMenu();
     this.panelTabBar?.refresh();
     return persist;
   }
@@ -2105,6 +2263,7 @@ export class PanelLayoutManager implements AppModule {
     const tab = this.tabsState.tabs.find((t) => t.id === tabId);
     if (!tab) return { persisted: true };
     tab.name = name;
+    if (IS_PLANETSLAM) this.refreshPlanetSlamDashboardMenu();
     const persist = saveTabsState(this.tabsState);
     this.panelTabBar?.refresh();
     return persist;
@@ -2122,11 +2281,15 @@ export class PanelLayoutManager implements AppModule {
       const fallback = this.tabsState.tabs[Math.max(0, idx - 1)]!;
       this.tabsState.activeTabId = fallback.id;
       persist = saveTabsState(this.tabsState);
+      if (IS_PLANETSLAM) this.restorePlanetSlamWorkspace(fallback.dashboard);
+      this.applyingPlanetSlamDashboard = IS_PLANETSLAM;
       this.applyTabPanelState(fallback.panelSettings, fallback.panelOrder, fallback.bottomSet);
+      this.applyingPlanetSlamDashboard = false;
     } else {
       persist = saveTabsState(this.tabsState);
     }
     this.panelTabBar?.refresh();
+    if (IS_PLANETSLAM) this.refreshPlanetSlamDashboardMenu();
     // Deleting frees a slot: a capped user drops back under the limit.
     this.updateTabCapLock();
     showToast(t('dashboardTabs.tabDeleted', { name: removed!.name }));
@@ -2311,6 +2474,7 @@ export class PanelLayoutManager implements AppModule {
   }
 
   applyPanelSettings(): void {
+    this.markPlanetSlamCustomized();
     Object.entries(this.ctx.panelSettings).forEach(([key, config]) => {
       if (isPanelHiddenForBrand(key)) config.enabled = false;
       if (key === 'map') {
@@ -3328,7 +3492,7 @@ export class PanelLayoutManager implements AppModule {
     this.lazyDefaultPanel('giving', () => import('@/components/GivingPanel'), 'GivingPanel');
 
     // Happy variant panels (lazy-loaded — only relevant for happy variant)
-    if (SITE_VARIANT === 'happy') {
+    if (SITE_VARIANT === 'happy' || IS_PLANETSLAM) {
       this.lazyImportedPanel('positive-feed', () => import('@/components/PositiveNewsFeedPanel'), 'PositiveNewsFeedPanel', (PositiveNewsFeedPanel) => {
         const p = new PositiveNewsFeedPanel();
         this.ctx.positivePanel = p;
@@ -3644,7 +3808,7 @@ export class PanelLayoutManager implements AppModule {
     });
 
     this.applyPanelSettings();
-    this.applyInitialUrlState();
+    if (!IS_PLANETSLAM) this.applyInitialUrlState();
 
     // Observe each panel for viewport entry. As soon as a panel scrolls
     // within ~200px of the viewport it fires loadAllData() once
@@ -3924,6 +4088,10 @@ export class PanelLayoutManager implements AppModule {
 
     const allOrder = this.buildUnifiedOrder(sidebarIds, bottomIds);
     this.resolvedPanelOrder = allOrder;
+    if (IS_PLANETSLAM && this.planetSlamWorkspace && !this.applyingPlanetSlamDashboard) {
+      const enabled = (ids: string[]) => ids.filter(id => this.ctx.panelSettings[id]?.enabled);
+      if (JSON.stringify(enabled(allOrder)) !== JSON.stringify(enabled(loadFromStorage<string[]>(this.ctx.PANEL_ORDER_KEY, [])))) this.markPlanetSlamCustomized(true);
+    }
     const orderPersisted = saveToStorage(this.ctx.PANEL_ORDER_KEY, allOrder);
     const bottomPersisted = saveToStorage(this.ctx.PANEL_ORDER_KEY + '-bottom-set', Array.from(this.bottomSetMemory));
     return { persisted: orderPersisted && bottomPersisted };

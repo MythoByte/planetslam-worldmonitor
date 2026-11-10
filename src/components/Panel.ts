@@ -142,6 +142,7 @@ function setSpanClass(element: HTMLElement, span: number): void {
 }
 
 export class Panel {
+  private readonly defaultRowSpan: number;
   protected element: HTMLElement;
   protected content: HTMLElement;
   protected header: HTMLElement;
@@ -248,6 +249,7 @@ export class Panel {
   private destroyed = false;
 
   constructor(options: PanelOptions) {
+    this.defaultRowSpan = options.defaultRowSpan ?? 1;
     if (isPlanetSlamSourcePanel(options.id)) {
       options = { ...options, title: PLANETSLAM_SOURCE_PANEL_NAMES[options.id]!, premium: undefined };
     }
@@ -523,6 +525,7 @@ export class Panel {
       setSpanClass(this.element, next);
       savePanelSpan(this.panelId, next);
       trackLayoutCustomized('panel-resize');
+      if (IS_PLANETSLAM) this.element.dispatchEvent(new CustomEvent('ps-panel-size-changed', { bubbles: true }));
       this.syncKeyboardRowResizeAria();
     });
   }
@@ -550,6 +553,7 @@ export class Panel {
       setColSpanClass(this.element, next);
       persistPanelColSpan(this.panelId, this.element);
       trackLayoutCustomized('panel-resize');
+      if (IS_PLANETSLAM) this.element.dispatchEvent(new CustomEvent('ps-panel-size-changed', { bubbles: true }));
       this.syncKeyboardColResizeAria();
     });
   }
@@ -615,6 +619,7 @@ export class Panel {
       if (this.rowSpanClassesChangedSinceDragStart()) {
         savePanelSpan(this.panelId, getRowSpan(this.element));
         trackLayoutCustomized('panel-resize');
+        if (IS_PLANETSLAM) this.element.dispatchEvent(new CustomEvent('ps-panel-size-changed', { bubbles: true }));
       }
       this.syncKeyboardRowResizeAria();
     };
@@ -692,6 +697,7 @@ export class Panel {
       if (this.rowSpanClassesChangedSinceDragStart()) {
         savePanelSpan(this.panelId, getRowSpan(this.element));
         trackLayoutCustomized('panel-resize');
+        if (IS_PLANETSLAM) this.element.dispatchEvent(new CustomEvent('ps-panel-size-changed', { bubbles: true }));
       }
       this.syncKeyboardRowResizeAria();
     };
@@ -763,6 +769,7 @@ export class Panel {
       if (finalSpan !== this.startColSpan) {
         persistPanelColSpan(this.panelId, this.element);
         trackLayoutCustomized('panel-resize');
+        if (IS_PLANETSLAM) this.element.dispatchEvent(new CustomEvent('ps-panel-size-changed', { bubbles: true }));
       }
       this.syncKeyboardColResizeAria();
     };
@@ -836,6 +843,7 @@ export class Panel {
       if (finalSpan !== this.startColSpan) {
         persistPanelColSpan(this.panelId, this.element);
         trackLayoutCustomized('panel-resize');
+        if (IS_PLANETSLAM) this.element.dispatchEvent(new CustomEvent('ps-panel-size-changed', { bubbles: true }));
       }
       this.syncKeyboardColResizeAria();
     };
@@ -1761,15 +1769,29 @@ export class Panel {
   /**
    * Reset panel height to default
    */
+  /** Reapply sizes when restoring a PlanetSlam workspace, including mounted panels. */
+  public restoreWorkspaceSize(): void {
+    this.element.classList.remove('resized', 'span-1', 'span-2', 'span-3', 'span-4');
+    const span = loadPanelSpans()[this.panelId];
+    if (span !== undefined) setSpanClass(this.element, span);
+    else if (this.defaultRowSpan > 1) this.element.classList.add(`span-${this.defaultRowSpan}`);
+    clearColSpanClass(this.element);
+    this.restoreSavedColSpan();
+    this.syncKeyboardRowResizeAria();
+    this.syncKeyboardColResizeAria();
+  }
+
   public resetHeight(): void {
     this.element.classList.remove('resized', 'span-1', 'span-2', 'span-3', 'span-4');
     clearPanelSpan(this.panelId);
+    if (IS_PLANETSLAM) this.element.dispatchEvent(new CustomEvent('ps-panel-size-changed', { bubbles: true }));
     this.syncKeyboardRowResizeAria();
   }
 
   public resetWidth(): void {
     clearColSpanClass(this.element);
     clearPanelColSpan(this.panelId);
+    if (IS_PLANETSLAM) this.element.dispatchEvent(new CustomEvent('ps-panel-size-changed', { bubbles: true }));
     this.syncKeyboardColResizeAria();
   }
 

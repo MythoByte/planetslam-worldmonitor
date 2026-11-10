@@ -278,7 +278,7 @@ const APP_DESTROYED_NAV_RESULT = (
   context,
 });
 
-export type WebMcpVisibleMonitorNavigation = 'none' | 'reload' | 'assign' | 'blocked' | 'unavailable';
+export type WebMcpVisibleMonitorNavigation = 'none' | 'reload' | 'assign' | 'in_place' | 'blocked' | 'unavailable';
 
 export async function applyWebMcpSwitchMonitor(
   ctx: AppContext,

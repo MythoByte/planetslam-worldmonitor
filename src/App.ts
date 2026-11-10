@@ -1066,7 +1066,7 @@ export class App {
         sanitizeLayersForVariant({ ...defaultLayers }, currentVariant as MapVariant), null,
       );
       panelSettings = getInitialPanelSettingsForVariant(currentVariant);
-    } else if (appliedPanelLayoutVariant !== currentVariant) {
+    } else if (appliedPanelLayoutVariant !== currentVariant && !IS_PLANETSLAM) {
       // Variant changed - reset all settings to variant defaults.
       console.log(`[App] Variant check: applied="${appliedPanelLayoutVariant}", current="${currentVariant}"`);
       // Variant changed — seed new variant's panels, disable panels not in the new variant
@@ -1615,6 +1615,7 @@ export class App {
       newsPanels: {},
       newsCategoryPanelKeys: new Map(),
       panelSettings,
+      dashboardFeedVariant: 'full',
       mapLayers,
       allNews: [],
       newsByCategory: {},
@@ -1706,6 +1707,8 @@ export class App {
       updateMonitorResults: () => this.dataLoader.updateMonitorResults(),
       loadSecurityAdvisories: () => this.dataLoader.loadSecurityAdvisories(),
       loadTelegramIntel: () => this.dataLoader.loadTelegramIntel(),
+      applyDashboardMap: (state) => this.eventHandlers.applyPlanetSlamMap(state),
+      invalidateNewsHydration: () => this.dataLoader.invalidateNewsHydration(),
       applyMapLayerChange: (layer, enabled, source) => this.eventHandlers.applyMapLayerChange(layer, enabled, source),
       isFreeTierFallbackActive: () => this.freeTierGate.authSettleDeadlineExceeded,
     });
@@ -1720,6 +1723,8 @@ export class App {
       loadDataForLayer: (layer) => { void this.dataLoader.loadDataForLayer(layer as keyof MapLayers); },
       waitForAisData: () => this.dataLoader.waitForAisData(),
       syncDataFreshnessWithLayers: () => this.dataLoader.syncDataFreshnessWithLayers(),
+      applyDashboardPreset: (id) => this.panelLayout.applyPlanetSlamDashboard(id),
+      onDashboardMapChanged: () => this.panelLayout.markPlanetSlamCustomized(),
       applyPanelSettings: () => this.panelLayout.applyPanelSettings(),
       applySavedPanelOrder: (panelOrder?: string[]) => this.panelLayout.applySavedPanelOrder(panelOrder),
       stopLayerActivity: (layer) => this.dataLoader.stopLayerActivity(layer),

@@ -234,7 +234,7 @@ export function isSunsetLayer(key: keyof MapLayers): boolean {
 }
 
 export function getOrderedLayerKeys(variant: MapVariant): Array<keyof MapLayers> {
-  return (VARIANT_LAYER_ORDER[variant] ?? VARIANT_LAYER_ORDER.full)
+  return (IS_PLANETSLAM ? [...new Set(Object.values(VARIANT_LAYER_ORDER).flat())] : VARIANT_LAYER_ORDER[variant] ?? VARIANT_LAYER_ORDER.full)
     .filter(k => !isSunsetLayer(k) && (k !== 'aurora' || variant !== 'full' || IS_PLANETSLAM));
 }
 
