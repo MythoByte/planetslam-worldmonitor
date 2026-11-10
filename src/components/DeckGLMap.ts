@@ -1042,7 +1042,7 @@ export class DeckGLMap {
       this.createControls();
       this.createTimeSlider();
       this.createLayerToggles();
-      this.createLegend();
+      if (!IS_PLANETSLAM) this.createLegend();
     }
 
     // Start day/night timer only if layer is initially enabled

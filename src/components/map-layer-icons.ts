@@ -9,6 +9,7 @@ export function layerMarkerIcon(key: keyof MapLayers): string {
 }
 
 export function layerMarkerUrl(icon: string): string {
+  if (icon.startsWith('hazard-')) return `/branding/planetslam/layer-icons/${icon}.svg`;
   return `/branding/planetslam/layer-icons/${icon.codePointAt(0)!.toString(16)}.svg`;
 }
 
@@ -18,9 +19,27 @@ export function layerMenuIcon(iconHtml: string): string {
   return `<img class="planetslam-menu-icon" src="${layerMarkerUrl(icon)}" alt="" width="16" height="16">`;
 }
 
+const HAZARD_ICONS: readonly [RegExp, string][] = [
+  [/earthquake|seismic/, 'earthquake'], [/tsunami/, 'tsunami'],
+  [/flood/, 'flood'], [/volcan/, 'volcano'], [/wildfire|wild fire|fire/, 'wildfire'],
+  [/tornado|waterspout/, 'tornado'], [/avalanche/, 'avalanche'],
+  [/landslide|mudslide|debris flow/, 'landslide'], [/drought/, 'drought'],
+  [/heat|hot|temp extremes/, 'heat'], [/hail/, 'hail'],
+  [/snow|winter|blizzard|\bice\b|icing|freez|frost|cold/, 'winter'],
+  [/lightning|thunder/, 'lightning'], [/dust|haze|fog|smoke/, 'fog'],
+  [/coastal|surf|marine|water color/, 'coastal'],
+  [/storm|hurricane|cyclone|typhoon|wind/, 'storm'],
+];
+
+/** Shared by Earth snapshots, native events and weather alerts in all renderers. */
+export function hazardMarkerIcon(hazard: string): string {
+  const value = hazard.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
+  const match = HAZARD_ICONS.find(([pattern]) => pattern.test(value));
+  return match ? `hazard-${match[1]}` : layerMarkerIcon(value === 'other' || value === 'manmade' ? 'natural' : 'weather');
+}
+
 export function earthMarkerIcon(marker: { kind: string; hazard?: string }): string {
-  return layerMarkerIcon(marker.kind === 'camera' ? 'webcams'
-    : marker.hazard === 'wildfire' ? 'fires' : marker.hazard === 'weather' || marker.hazard === 'storm' ? 'weather' : 'natural');
+  return marker.kind === 'camera' ? layerMarkerIcon('webcams') : hazardMarkerIcon(marker.hazard ?? 'other');
 }
 
 /** Replace only the visual glyph; keep the marker's listeners, labels and badges. */

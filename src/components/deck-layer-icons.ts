@@ -2,7 +2,7 @@ import { IconLayer, ScatterplotLayer } from '@deck.gl/layers';
 import type { Layer } from '@deck.gl/core';
 import { IS_PLANETSLAM } from '@/config/brand';
 import type { MapLayers } from '@/types';
-import { earthMarkerIcon, layerMarkerIcon, layerMarkerUrl } from './map-layer-icons';
+import { earthMarkerIcon, hazardMarkerIcon, layerMarkerIcon, layerMarkerUrl } from './map-layer-icons';
 
 const MARKER_LAYERS: Record<string, keyof MapLayers> = {
   'bases-layer': 'bases',
@@ -97,6 +97,9 @@ export function withLayerIcons(layer: Layer): Layer {
   return new IconLayer({
     id: layer.id, data, getPosition, pickable, onClick, onHover, visible, opacity, parameters,
     getIcon: earth ? (marker: { kind: string; hazard?: string }) => markerArtwork(earthMarkerIcon(marker))
+      : ['earthquakes-layer', 'natural-events-layer', 'storm-centers-layer', 'weather-layer'].includes(layer.id)
+        ? (event: { category?: string; event?: string; headline?: string }) => markerArtwork(hazardMarkerIcon(
+          layer.id === 'earthquakes-layer' ? 'earthquake' : event.category || event.event || event.headline || 'weather'))
       : () => markerArtwork(news ? '📰' : layerMarkerIcon(key ?? 'cyberThreats')),
     getSize: 24, sizeUnits: 'pixels', billboard: true,
     updateTriggers: { getPosition: updateTriggers?.getPosition },

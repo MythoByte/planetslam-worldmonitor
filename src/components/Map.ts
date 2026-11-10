@@ -1,5 +1,5 @@
 import { IS_PLANETSLAM } from '@/config/brand';
-import { layerMarkerIcon, earthMarkerIcon, paintLayerMarker, layerMarkerUrl, SVG_MARKER_LAYERS } from './map-layer-icons';
+import { layerMarkerIcon, earthMarkerIcon, hazardMarkerIcon, paintLayerMarker, layerMarkerUrl, SVG_MARKER_LAYERS } from './map-layer-icons';
 import './map-layer-icons.css';
 import { type EarthMapSnapshot, earthMarkerLabel } from '@/types/earth-map';
 import { selectEarthMarker } from './earth-map-interaction';
@@ -479,7 +479,7 @@ export class MapComponent {
       container.appendChild(this.createControls());
       container.appendChild(this.createTimeSlider());
       container.appendChild(this.createLayerToggles());
-      container.appendChild(this.createLegend());
+      if (!IS_PLANETSLAM) container.appendChild(this.createLegend());
       this.healthCheckLoop = startSmartPollLoop(() => { this.runHealthCheck(); }, {
         intervalMs: 30_000,
         pauseWhenHidden: true,
@@ -1496,7 +1496,7 @@ export class MapComponent {
   private appendOverlay(node: Node): void {
     if (IS_PLANETSLAM && node instanceof HTMLElement) {
       const key = Array.from(node.classList).map(name => SVG_MARKER_LAYERS[name]).find(Boolean);
-      if (key) paintLayerMarker(node, layerMarkerIcon(key));
+      if (key) paintLayerMarker(node, node.dataset.hazard ? hazardMarkerIcon(node.dataset.hazard) : layerMarkerIcon(key));
       else if (node.classList.contains('news-location-marker')) paintLayerMarker(node, '📰');
     }
     (this.overlayAppendTarget ?? this.overlays).appendChild(node);
@@ -2687,6 +2687,7 @@ export class MapComponent {
         const size = Math.max(8, eq.magnitude * 3);
         const div = document.createElement('div');
         div.className = 'earthquake-marker';
+        div.dataset.hazard = 'earthquake';
         div.style.left = `${pos[0]}px`;
         div.style.top = `${pos[1]}px`;
         div.style.width = `${size}px`;
@@ -2756,6 +2757,7 @@ export class MapComponent {
 
         const div = document.createElement('div');
         div.className = `weather-marker ${alert.severity.toLowerCase()}`;
+        div.dataset.hazard = alert.event || alert.headline;
         div.style.left = `${pos[0]}px`;
         div.style.top = `${pos[1]}px`;
         div.style.borderColor = getSeverityColor(alert.severity);
@@ -3890,6 +3892,7 @@ export class MapComponent {
 
         const div = document.createElement('div');
         div.className = `nat-event-marker ${event.category}`;
+        div.dataset.hazard = event.category;
         div.style.left = `${pos[0]}px`;
         div.style.top = `${pos[1]}px`;
 
