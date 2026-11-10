@@ -2,7 +2,7 @@ import { IconLayer, ScatterplotLayer } from '@deck.gl/layers';
 import type { Layer } from '@deck.gl/core';
 import { IS_PLANETSLAM } from '@/config/brand';
 import type { MapLayers } from '@/types';
-import { earthMarkerIcon, hazardMarkerIcon, layerMarkerIcon, layerMarkerUrl } from './map-layer-icons';
+import { earthMarkerIcon, hazardMarkerIcon, platformMarkerIcon, markerHeading, layerMarkerIcon, layerMarkerUrl } from './map-layer-icons';
 
 const MARKER_LAYERS: Record<string, keyof MapLayers> = {
   'bases-layer': 'bases',
@@ -93,14 +93,22 @@ export function withLayerIcons(layer: Layer): Layer {
   const cyber = layer.id.startsWith('cyber-native-');
   const news = layer.id === 'news-locations-layer';
   if (!key && !earth && !cyber && !news) return layer;
+  const aircraft = ['military-flights-layer', 'military-flight-clusters-layer', 'aircraft-positions-layer', 'aircraft-emergencies'].includes(layer.id);
+  const vessel = ['military-vessels-layer', 'military-vessel-clusters-layer', 'repair-ships-layer', 'live-tankers-layer'].includes(layer.id);
   const { data, getPosition, pickable, onClick, onHover, visible, opacity, parameters, updateTriggers } = layer.props;
   return new IconLayer({
     id: layer.id, data, getPosition, pickable, onClick, onHover, visible, opacity, parameters,
-    getIcon: earth ? (marker: { kind: string; hazard?: string }) => markerArtwork(earthMarkerIcon(marker))
+    getIcon: aircraft || vessel
+      ? (object: { aircraftType?: string; vesselType?: string }) => markerArtwork(platformMarkerIcon(aircraft ? 'aircraft' : 'vessel',
+        layer.id === 'aircraft-emergencies' ? 'emergency' : layer.id === 'repair-ships-layer' ? 'repair'
+          : layer.id === 'live-tankers-layer' ? 'auxiliary' : aircraft ? object.aircraftType : object.vesselType))
+      : earth ? (marker: { kind: string; hazard?: string }) => markerArtwork(earthMarkerIcon(marker))
       : ['earthquakes-layer', 'natural-events-layer', 'storm-centers-layer', 'weather-layer'].includes(layer.id)
         ? (event: { category?: string; event?: string; headline?: string }) => markerArtwork(hazardMarkerIcon(
           layer.id === 'earthquakes-layer' ? 'earthquake' : event.category || event.event || event.headline || 'weather'))
       : () => markerArtwork(news ? '📰' : layerMarkerIcon(key ?? 'cyberThreats')),
+    // IconLayer angles are counter-clockwise; tracking headings are clockwise from north.
+    getAngle: aircraft || vessel ? (object: { heading?: number; trackDeg?: number }) => -markerHeading(object.heading ?? object.trackDeg) : 0,
     getSize: 24, sizeUnits: 'pixels', billboard: true,
     updateTriggers: { getPosition: updateTriggers?.getPosition },
   });

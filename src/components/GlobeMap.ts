@@ -1,5 +1,5 @@
 import { IS_PLANETSLAM } from '@/config/brand';
-import { layerMarkerIcon, earthMarkerIcon, hazardMarkerIcon, paintLayerMarker, layerMenuIcon, GLOBE_MARKER_LAYERS } from './map-layer-icons';
+import { layerMarkerIcon, earthMarkerIcon, hazardMarkerIcon, platformMarkerIcon, paintLayerMarker, layerMenuIcon, GLOBE_MARKER_LAYERS } from './map-layer-icons';
 import './map-layer-icons.css';
 import { type EarthMapSnapshot, earthMarkerLabel } from '@/types/earth-map';
 import { selectEarthMarker } from './earth-map-interaction';
@@ -147,6 +147,7 @@ interface VesselMarker extends BaseMarker {
   id: string;
   name: string;
   type: string;       // raw enum key: 'carrier'|'destroyer' etc — color/icon lookup
+  heading: number;
   typeLabel: string;  // human-readable: 'Aircraft Carrier' etc — display only
   hullNumber?: string;
   operator?: string;
@@ -1477,14 +1478,26 @@ export class GlobeMap {
 
     const key = GLOBE_MARKER_LAYERS[d._kind];
     if (IS_PLANETSLAM && (key || d._kind === 'newsLocation')) {
-      paintLayerMarker(el, d._kind === 'earthquake' ? hazardMarkerIcon('earthquake')
+      paintLayerMarker(el, d._kind === 'flight' ? platformMarkerIcon('aircraft', d.type)
+        : d._kind === 'vessel' ? platformMarkerIcon('vessel', d.type)
+        : d._kind === 'cluster' ? platformMarkerIcon('vessel')
+        : d._kind === 'repairShip' ? platformMarkerIcon('vessel', 'repair')
+        : d._kind === 'earthquake' ? hazardMarkerIcon('earthquake')
         : d._kind === 'natural' ? hazardMarkerIcon(d.category)
         : d._kind === 'weather' ? hazardMarkerIcon(d.event || d.headline)
-        : key ? layerMarkerIcon(key) : '📰');
-      if ('count' in d && typeof d.count === 'number' && d.count > 1) {
+        : key ? layerMarkerIcon(key) : '📰', d._kind === 'flight' || d._kind === 'vessel' ? d.heading : 0);
+      if (d._kind === 'vessel' && d.isDark) {
+        const warning = document.createElement('span');
+        warning.className = 'dark-vessel-indicator';
+        warning.textContent = '⚠';
+        warning.title = 'AIS Signal Lost';
+        el.appendChild(warning);
+      }
+      const markerCount = d._kind === 'cluster' ? d.vesselCount : 'count' in d ? d.count : undefined;
+      if (typeof markerCount === 'number' && markerCount > 1) {
         const count = document.createElement('span');
         count.className = 'planetslam-marker-count';
-        count.textContent = String(d.count);
+        count.textContent = String(markerCount);
         el.appendChild(count);
       }
     }
@@ -2818,7 +2831,7 @@ export class GlobeMap {
       _lng: f.lon,
       id: f.id,
       callsign: f.callsign ?? '',
-      type: (f as any).aircraftType ?? (f as any).type ?? 'fighter',
+      type: f.aircraftType ?? (f as any).type ?? (IS_PLANETSLAM ? 'unknown' : 'fighter'),
       heading: (f as any).heading ?? 0,
     }));
     this.flushMarkers();
@@ -2890,6 +2903,7 @@ export class GlobeMap {
       _lng: v.lon,
       id: v.id,
       name: v.name ?? 'vessel',
+      heading: v.heading,
       type: v.vesselType,                                                    // raw enum — color/icon key
       typeLabel: vesselTypeLabel(v, GlobeMap.VESSEL_TYPE_LABELS),            // display string
       hullNumber: v.hullNumber,
