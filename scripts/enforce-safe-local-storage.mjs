@@ -311,7 +311,6 @@ export const LEGACY_RAW_LOCAL_STORAGE = [
   'src/services/referral-capture.ts :: localStorage.<member> x7',
   'src/services/runtime-config.ts :: localStorage.<member> x2',
   'src/services/sentiment-gate.ts :: localStorage.<member> x1',
-  'src/services/tab-store.ts :: localStorage.<member> x2',
   'src/services/telegram-watchlist.ts :: localStorage.<member> x2',
   'src/services/trending-keywords.ts :: <global>.localStorage x1',
   'src/services/trending-keywords.ts :: localStorage.<member> x2',

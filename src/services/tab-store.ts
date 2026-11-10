@@ -1,3 +1,4 @@
+import { safeStorageGet, safeStorageSetChecked, isStorageAvailable } from '@/utils/safe-storage';
 import { IS_PLANETSLAM } from '@/config/brand';
 import { PLANETSLAM_DASHBOARDS } from '@/config/planetslam-dashboards';
 import { DEFAULT_MAP_LAYERS } from '@/config/panels';
@@ -78,15 +79,15 @@ export function normalizeTabsState(parsed: unknown): TabsState | null {
 
 export function loadTabsState(): TabsState | null {
   try {
-    const raw = localStorage.getItem(TABS_STORAGE_KEY);
+    const raw = safeStorageGet(TABS_STORAGE_KEY);
     let current: TabsState | null = null;
     try { current = raw ? normalizeTabsState(JSON.parse(raw)) : null; } catch { /* Keep other legacy workspaces recoverable. */ }
-    if (!IS_PLANETSLAM || localStorage.getItem('planetslam-workspaces-migrated-v1')) return current;
+    if (!IS_PLANETSLAM || safeStorageGet('planetslam-workspaces-migrated-v1')) return current;
     // Archive the old World payload before consolidating edition-specific tabs.
-    if (raw && !localStorage.getItem('planetslam-workspaces-legacy-world-v1')) {
-      try { localStorage.setItem('planetslam-workspaces-legacy-world-v1', raw); } catch { return current; }
+    if (raw && !safeStorageGet('planetslam-workspaces-legacy-world-v1')) {
+      if (!isStorageAvailable() || !safeStorageSetChecked('planetslam-workspaces-legacy-world-v1', raw)) return current;
     }
-    const legacyVariant = localStorage.getItem('worldmonitor-panel-layout-variant');
+    const legacyVariant = safeStorageGet('worldmonitor-panel-layout-variant');
     const tabs: PanelTab[] = (current?.tabs ?? []).map(tab => ({ ...tab, dashboard: tab.dashboard ?? {
       preset: 'full' as const, customized: true,
       layers: buildPlanetSlamDashboard('full', tab.panelSettings, DEFAULT_MAP_LAYERS).layers,
@@ -96,7 +97,7 @@ export function loadTabsState(): TabsState | null {
     const ids = new Set(tabs.map(tab => tab.id));
     for (const preset of PLANETSLAM_DASHBOARDS) {
       if (preset.id === 'full') continue;
-      const stored = localStorage.getItem(`worldmonitor-tabs-v1:${preset.id}`);
+      const stored = safeStorageGet(`worldmonitor-tabs-v1:${preset.id}`);
       let edition: TabsState | null = null;
       try { edition = stored ? normalizeTabsState(JSON.parse(stored)) : null; } catch { continue; }
       if (!edition) continue;
@@ -118,13 +119,13 @@ export function loadTabsState(): TabsState | null {
     // Keep it with the workspace that owned it before the upgrade.
     if (active?.dashboard && (!legacyVariant || active.dashboard.preset === legacyVariant)) {
       try {
-        const stored = JSON.parse(localStorage.getItem('worldmonitor-layers') ?? '{}') as Record<string, unknown>;
+        const stored = JSON.parse(safeStorageGet('worldmonitor-layers') ?? '{}') as Record<string, unknown>;
         for (const key of Object.keys(active.dashboard.layers) as Array<keyof typeof active.dashboard.layers>) {
           if (typeof stored[key] === 'boolean') active.dashboard.layers[key] = stored[key] as boolean;
         }
       } catch { /* Use the preset map when legacy storage is malformed. */ }
     }
-    if (saveTabsState(merged).persisted) localStorage.setItem('planetslam-workspaces-migrated-v1', '1');
+    if (saveTabsState(merged).persisted) safeStorageSetChecked('planetslam-workspaces-migrated-v1', '1');
     return merged;
   } catch {
     return null;
@@ -137,10 +138,8 @@ export interface TabsPersistReceipt {
 
 export function saveTabsState(state: TabsState): TabsPersistReceipt {
   try {
-    localStorage.setItem(TABS_STORAGE_KEY, JSON.stringify(state));
-    return { persisted: true };
+    return { persisted: isStorageAvailable() && safeStorageSetChecked(TABS_STORAGE_KEY, JSON.stringify(state)) };
   } catch {
-    // Storage unavailable (private mode / quota) — tabs still work this session.
     return { persisted: false };
   }
 }
