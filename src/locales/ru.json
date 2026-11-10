@@ -1335,7 +1335,8 @@
         "notamAirspace": "Ограничения воздушного пространства NOTAM",
         "no2Activity": "Промышленная активность",
         "aurora": "Aurora forecast",
-        "commercialShipping": "Commercial Shipping"
+        "commercialShipping": "Commercial Shipping",
+        "attackReports": "Reported Air Attacks"
       },
       "tooltip": {
         "earthquake": "Землетрясение",

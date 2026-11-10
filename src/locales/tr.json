@@ -1329,7 +1329,8 @@
         "notamAirspace": "NOTAM Hava Sahasına İlişkin Kısıtlamalar",
         "no2Activity": "Sanayi faaliyeti",
         "aurora": "Aurora forecast",
-        "commercialShipping": "Commercial Shipping"
+        "commercialShipping": "Commercial Shipping",
+        "attackReports": "Reported Air Attacks"
       },
       "tooltip": {
         "earthquake": "Deprem",

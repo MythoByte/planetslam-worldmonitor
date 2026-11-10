@@ -5803,6 +5803,36 @@ async function seedMiddleEastStrikes() {
   }
 }
 
+let attackReportModule;
+let attackReportCache;
+let attackReportInFlight = false;
+
+async function seedAttackReports() {
+  if (attackReportInFlight) return;
+  attackReportInFlight = true;
+  try {
+    attackReportModule ??= await import('./_gdelt-attack-reports.mjs');
+    const previous = attackReportCache || await envelopeRead(attackReportModule.ATTACK_REPORT_KEY);
+    const snapshot = await attackReportModule.refreshAttackReports(previous);
+    attackReportCache = snapshot;
+    if (UPSTASH_ENABLED) {
+      await attackReportModule.publishAttackReports(snapshot, {
+        writeSnapshot: value => envelopeWrite(attackReportModule.ATTACK_REPORT_KEY, value, 26 * 3600, {
+          fetchedAt: value.updatedAt, recordCount: value.reports.length, sourceVersion: 'gdelt-events-2', zeroOk: true,
+        }),
+        writeMeta: meta => upstashSet(attackReportModule.ATTACK_REPORT_META_KEY, meta, 7 * 24 * 3600),
+        activate: async fetchedAt => (await upstashEval("return redis.call('SET', KEYS[1], ARGV[1])",
+          [attackReportModule.ATTACK_REPORT_ACTIVATION_KEY], [String(fetchedAt)])) === 'OK',
+      });
+    }
+  } finally { attackReportInFlight = false; }
+}
+
+function startAttackReportsLoop() {
+  startBootSeedLoop('GdeltAttackReports', 'seed-meta:gdelt:attack-reports', 15 * 60_000, seedAttackReports,
+    error => console.warn('[GdeltAttackReports] Feed unavailable:', error?.message || error));
+}
+
 function startMiddleEastStrikesLoop() {
   if (!MIDDLE_EAST_STRIKES_ENABLED) {
     console.log('[MiddleEastStrikes] Disabled (IRAN_EVENTS_ENABLED is not true)');
@@ -12974,6 +13004,13 @@ async function handleRelayRequest(req, res) {
       'Content-Type': 'application/json',
       'Cache-Control': 'no-store',
     }, JSON.stringify({ ok: true }));
+  } else if (pathname === '/gdelt/attack-reports') {
+    attackReportModule ??= await import('./_gdelt-attack-reports.mjs');
+    attackReportCache ||= await envelopeRead(attackReportModule.ATTACK_REPORT_KEY);
+    const snapshot = attackReportModule.attackReportsSnapshot(attackReportCache);
+    return sendCompressed(req, res, 200, {
+      'Content-Type': 'application/json', 'Cache-Control': 'private, max-age=60',
+    }, JSON.stringify(snapshot));
   } else if (pathname.startsWith('/ais/snapshot')) {
     incrementRelayMetric('aisSnapshotRequests');
     // Aggregated AIS snapshot for server-side fanout — serve pre-serialized + pre-gzipped
@@ -15687,6 +15724,7 @@ server.listen(PORT, () => {
   startClassifySeedLoop();
   startDigestWarmLoop();
   startMiddleEastStrikesLoop();
+  startAttackReportsLoop();
   startServiceStatusesSeedLoop();
   startTheaterPostureSeedLoop();
 

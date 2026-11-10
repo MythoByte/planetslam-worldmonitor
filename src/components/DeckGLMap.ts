@@ -10,6 +10,8 @@ import { createEarthMapLayers } from './earth-map-layers';
 import { createCyberMapLayers } from './cyber-map-layers';
 import type { SpaceOrbitSnapshot, SpaceOrbitPosition, SpaceGroundTrack } from '@/types/space-orbits';
 import { commercialVesselLabel, freshCommercialVessels, type CommercialVessel } from '@/types/commercial-shipping';
+import { attackReportLabel, validAttackReports, type AttackReport } from '@/types/attack-reports';
+import { selectAttackReport } from './attack-report-interaction';
 import { BRAND } from '@/config/brand';
 import type { SpaceMapSnapshot, SpaceAuroraPoint, SpaceLaunchMarker } from '@/types/space-map';
 /**
@@ -638,6 +640,12 @@ export class DeckGLMap {
   private spaceOverlay: SpaceMapSnapshot = { aurora: [], launches: [] };
 
   private commercialVessels: CommercialVessel[] = [];
+  private attackReports: AttackReport[] = [];
+
+  public setAttackReports(reports: AttackReport[]): void {
+    this.attackReports = reports;
+    this.render();
+  }
 
   public setCommercialVessels(vessels: CommercialVessel[]): void {
     this.commercialVessels = vessels;
@@ -2174,6 +2182,12 @@ export class DeckGLMap {
       id: 'commercial-shipping-layer', data: freshCommercialVessels(this.commercialVessels),
       getPosition: vessel => [vessel.lon, vessel.lat], getRadius: 6, radiusUnits: 'pixels',
       getFillColor: [80, 220, 200, 255], pickable: true,
+    }));
+    if (mapLayers.attackReports) layers.push(new ScatterplotLayer<AttackReport>({
+      id: 'gdelt-attack-reports', data: validAttackReports(this.filterByTimeCached(this.attackReports, r => r.indexedAt)),
+      getPosition: report => [report.longitude, report.latitude], getRadius: 8, radiusUnits: 'pixels',
+      getFillColor: [255, 150, 70, 255], pickable: true,
+      onClick: info => { if (info.object) selectAttackReport(info.object); },
     }));
     if (mapLayers.spaceports && this.spaceOverlay.launches.length) layers.push(new ScatterplotLayer<SpaceLaunchMarker>({
       id: 'space-upcoming-launches', data: this.spaceOverlay.launches,
@@ -5328,6 +5342,7 @@ export class DeckGLMap {
 
     const rawLayerId = info.layer?.id || '';
     const layerId = rawLayerId.endsWith('-ghost') ? rawLayerId.slice(0, -6) : rawLayerId;
+    if (layerId === 'gdelt-attack-reports') return { html: escapeHtml(attackReportLabel(info.object as AttackReport)) };
     if (layerId === 'commercial-shipping-layer') {
       return { html: escapeHtml(commercialVesselLabel(info.object as CommercialVessel)) };
     }

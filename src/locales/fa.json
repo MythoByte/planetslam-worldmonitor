@@ -1471,7 +1471,8 @@
         "notamAirspace": "محدودیت‌های فضای هوایی NOTAM",
         "no2Activity": "فعالیت صنعتی",
         "aurora": "Aurora forecast",
-        "commercialShipping": "Commercial Shipping"
+        "commercialShipping": "Commercial Shipping",
+        "attackReports": "Reported Air Attacks"
       },
       "tooltip": {
         "earthquake": "زمین‌لرزه",

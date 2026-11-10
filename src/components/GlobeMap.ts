@@ -9,6 +9,8 @@ import type { SpaceOrbitSnapshot } from '@/types/space-orbits';
 import { BRAND } from '@/config/brand';
 import type { SpaceMapSnapshot } from '@/types/space-map';
 import { commercialVesselLabel, freshCommercialVessels, type CommercialVessel } from '@/types/commercial-shipping';
+import { attackReportLabel, validAttackReports, type AttackReport } from '@/types/attack-reports';
+import { selectAttackReport } from './attack-report-interaction';
 /**
  * GlobeMap - 3D interactive globe using globe.gl
  *
@@ -552,6 +554,12 @@ export class GlobeMap {
   private spaceOverlay: SpaceMapSnapshot = { aurora: [], launches: [] };
 
   private commercialVessels: CommercialVessel[] = [];
+  private attackReports: AttackReport[] = [];
+
+  public setAttackReports(reports: AttackReport[]): void {
+    this.attackReports = reports;
+    this.flushMarkers();
+  }
 
   public setCommercialVessels(vessels: CommercialVessel[]): void {
     this.commercialVessels = vessels;
@@ -566,6 +574,10 @@ export class GlobeMap {
   private paintSpaceOverlay(): void {
     if (!this.globe || !this.initialized || this.destroyed || this.webglLost) return;
     const points = [
+      ...validAttackReports(this.layers.attackReports ? this.attackReports : [])
+        .filter(report => report.indexedAt >= Date.now() - ({ '1h': 1, '6h': 6, '24h': 24, '48h': 48, '7d': 168, all: Infinity }[this.timeRange]) * 3600000).map(report => ({
+        ...report, kind: 'attack', name: attackReportLabel(report), color: '#ff9646', radius: 0.5,
+      })),
       ...freshCommercialVessels(this.layers.commercialShipping ? this.commercialVessels : []).map(vessel => ({
         kind: 'commercial', id: vessel.mmsi, latitude: vessel.lat, longitude: vessel.lon,
         name: commercialVesselLabel(vessel), color: '#50dcc8', radius: 0.4,
@@ -577,7 +589,7 @@ export class GlobeMap {
       ...(this.layers.spaceports ? this.spaceOverlay.launches : []).map(launch => ({ ...launch, kind: 'launch', name: `${launch.name} · ${launch.pad} · ${new Date(launch.net).toUTCString()}`, color: '#ffbc50', radius: 0.55 })),
       ...(this.layers.satellites ? this.spaceOrbits?.positions ?? [] : []).map(orbit => ({ ...orbit, kind: 'satellite', name: `${orbit.name} · calculated position · ${orbit.altitudeKm.toFixed(1)} km · elements ${orbit.elementStatus}`, color: orbit.elementStatus === 'stale' ? '#ffbc50' : orbit.selected ? '#4be1ff' : '#82a0d7', radius: orbit.selected ? 0.65 : 0.32 })),
     ];
-    const sources = [this.earthMap, this.cyberMap, this.spaceOverlay, this.spaceOrbits, this.layers.satellites, this.layers.spaceports, this.layers.aurora, this.commercialVessels, this.layers.commercialShipping];
+    const sources = [this.earthMap, this.cyberMap, this.spaceOverlay, this.spaceOrbits, this.layers.satellites, this.layers.spaceports, this.layers.aurora, this.commercialVessels, this.layers.commercialShipping, this.attackReports, this.layers.attackReports, this.timeRange];
     if (IS_PLANETSLAM && sources.some((source, index) => source !== this.editionMarkerSources[index])) {
       this.editionMarkerSources = sources;
       this.editionMarkers = points.filter(point => point.kind !== 'aurora').map(point => {
@@ -585,9 +597,13 @@ export class GlobeMap {
         return {
           _kind: 'edition', _lat: marker.latitude, _lng: marker.longitude,
           icon: marker.kind === 'earth' ? earthMarkerIcon({ kind: marker.earthKind ?? 'event', hazard: marker.hazard })
-            : layerMarkerIcon(marker.kind === 'commercial' ? 'commercialShipping' : marker.kind === 'cyber' ? 'cyberThreats' : marker.kind === 'launch' ? 'spaceports' : 'satellites'),
+            : layerMarkerIcon(marker.kind === 'attack' ? 'attackReports' : marker.kind === 'commercial' ? 'commercialShipping' : marker.kind === 'cyber' ? 'cyberThreats' : marker.kind === 'launch' ? 'spaceports' : 'satellites'),
           title: marker.name, altitude: marker.kind === 'satellite' ? (marker.altitudeKm ?? 0) / 6371 : 0.003,
           select: () => {
+            if (marker.kind === 'attack') {
+              const report = this.attackReports.find(r => r.id === marker.id);
+              if (report) selectAttackReport(report);
+            }
             if (marker.kind === 'earth') {
               const original = this.earthMap?.markers.find(m => m.id === marker.id && m.kind === marker.earthKind);
               if (original) selectEarthMarker(original);

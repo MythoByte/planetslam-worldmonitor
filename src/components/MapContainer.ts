@@ -1,5 +1,6 @@
 import { globalEarthMapSnapshot } from '@/services/earth-global-map';
 import { CommercialShippingLayer } from './CommercialShippingLayer';
+import { AttackReportLayer } from './AttackReportLayer';
 import { IS_PLANETSLAM } from '@/config/brand';
 import type { EarthMapSnapshot } from '@/types/earth-map';
 import type { CyberMapSnapshot } from '@/types/cyber-map';
@@ -356,6 +357,16 @@ export class MapContainer {
     else this.svgMap?.setCommercialVessels(vessels);
   }
 
+  private attackReportLayer: AttackReportLayer;
+  private cachedAttackReports: import('@/types/attack-reports').AttackReport[] = [];
+
+  private setAttackReports(reports: import('@/types/attack-reports').AttackReport[]): void {
+    this.cachedAttackReports = reports;
+    if (this.useGlobe) this.globeMap?.setAttackReports(reports);
+    else if (this.useDeckGL) this.deckGLMap?.setAttackReports(reports);
+    else this.svgMap?.setAttackReports(reports);
+  }
+
   private emergencyLayer: AircraftEmergencyLayer;
   // DeckGL-only layer: the feed runs only while the DeckGL renderer is active.
   private notamAirspaceLayer: NotamAirspaceLayer;
@@ -364,6 +375,7 @@ export class MapContainer {
   constructor(container: HTMLElement, initialState: MapContainerState, preferGlobe = false, options: MapContainerOptions = {}) {
     this.container = container;
     this.commercialShippingLayer = new CommercialShippingLayer(container, vessels => this.setCommercialVessels(vessels));
+    this.attackReportLayer = new AttackReportLayer(container, reports => this.setAttackReports(reports));
     this.emergencyLayer = new AircraftEmergencyLayer(container, markers => {
       if (this.useDeckGL) this.deckGLMap?.setAircraftEmergencies(markers);
       else this.svgMap?.setAircraftEmergencies(markers);
@@ -950,6 +962,8 @@ export class MapContainer {
     if (this.cachedSpaceOrbits) this.setSpaceOrbitSnapshot(this.cachedSpaceOrbits);
     this.setSpaceOverlay(this.cachedSpaceOverlay);
     this.setCommercialVessels(this.cachedCommercialVessels);
+    this.setAttackReports(this.cachedAttackReports);
+    this.attackReportLayer.setEnabled(IS_PLANETSLAM && this.getState().layers.attackReports === true);
     this.commercialShippingLayer.setEnabled(IS_PLANETSLAM && this.getState().layers.commercialShipping === true);
     // 1. Re-wire callbacks (through own public methods for adapter safety)
     if (this.cachedOnStateChanged) this.onStateChanged(this.cachedOnStateChanged);
@@ -1229,6 +1243,7 @@ export class MapContainer {
       sanitized = sanitizeLockedLayers(sanitized, false);
     }
     this.initialState = { ...this.initialState, layers: sanitized };
+    this.attackReportLayer.setEnabled(IS_PLANETSLAM && sanitized.attackReports === true);
     this.commercialShippingLayer.setEnabled(IS_PLANETSLAM && sanitized.commercialShipping === true);
     if (IS_PLANETSLAM) this.cyberMapController?.setEnabled(sanitized.techEvents === true);
     this.renderUkmtoStatus(sanitized.ais);
@@ -1705,6 +1720,7 @@ export class MapContainer {
     const notify = (layer: keyof MapLayers, enabled: boolean, source: 'user' | 'programmatic'): void => {
       if (layer === 'ais') this.renderUkmtoStatus(enabled);
       if (layer === 'commercialShipping') this.commercialShippingLayer.setEnabled(IS_PLANETSLAM && enabled);
+      if (layer === 'attackReports') this.attackReportLayer.setEnabled(IS_PLANETSLAM && enabled);
       if (layer === 'aircraftEmergencies') this.emergencyLayer.setEnabled(!this.useGlobe && enabled);
       if (layer === 'flights') this.notamAirspaceLayer.setEnabled(this.useDeckGL && enabled);
       this.renderEarthMap({ ...this.getState().layers, [layer]: enabled });
@@ -1807,6 +1823,7 @@ export class MapContainer {
 
   // Layer enable/disable and trigger methods
   public enableLayer(layer: keyof MapLayers): void {
+    if (layer === 'attackReports') this.attackReportLayer.setEnabled(IS_PLANETSLAM);
     if (layer === 'commercialShipping') this.commercialShippingLayer.setEnabled(IS_PLANETSLAM);
     if (layer === 'resilienceScore' && !this.useDeckGL) return;
     // #6045 — don't stamp initialState or enable locked premium layers for free users.
@@ -2056,6 +2073,7 @@ export class MapContainer {
     this.spaceOverlayController = null;
     this.emergencyLayer.destroy();
     this.commercialShippingLayer.destroy();
+    this.attackReportLayer.destroy();
     this.notamAirspaceLayer.destroy();
     this.destroyed = true;
     this.container.removeEventListener('pointerdown', this.invalidateViewportAuthority);

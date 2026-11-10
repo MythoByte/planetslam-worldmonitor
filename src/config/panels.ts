@@ -147,6 +147,7 @@ const FULL_PANELS: Record<string, PanelConfig> = {
 
 const FULL_MAP_LAYERS: MapLayers = {
   commercialShipping: IS_PLANETSLAM,
+  attackReports: IS_PLANETSLAM,
   aurora: IS_PLANETSLAM,
   aircraftEmergencies: false,
   iranAttacks: IRAN_ATTACKS_ENABLED && !_desktop,
@@ -220,6 +221,7 @@ const FULL_MAP_LAYERS: MapLayers = {
 
 const FULL_MOBILE_MAP_LAYERS: MapLayers = {
   commercialShipping: IS_PLANETSLAM,
+  attackReports: IS_PLANETSLAM,
   aurora: IS_PLANETSLAM,
   aircraftEmergencies: false,
   iranAttacks: IRAN_ATTACKS_ENABLED,

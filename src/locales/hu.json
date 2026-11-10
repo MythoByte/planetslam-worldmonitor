@@ -1471,7 +1471,8 @@
         "notamAirspace": "NOTAM légtéri korlátozások",
         "no2Activity": "Ipari aktivitás",
         "aurora": "Aurora forecast",
-        "commercialShipping": "Commercial Shipping"
+        "commercialShipping": "Commercial Shipping",
+        "attackReports": "Reported Air Attacks"
       },
       "tooltip": {
         "earthquake": "Földrengés",

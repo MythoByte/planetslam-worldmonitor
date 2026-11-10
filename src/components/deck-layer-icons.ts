@@ -6,6 +6,7 @@ import { earthMarkerIcon, hazardMarkerIcon, platformMarkerIcon, markerHeading, l
 
 const MARKER_LAYERS: Record<string, keyof MapLayers> = {
   'commercial-shipping-layer': 'commercialShipping',
+  'gdelt-attack-reports': 'attackReports',
   'bases-layer': 'bases',
   'bases-cluster-layer': 'bases',
   'nuclear-layer': 'nuclear',

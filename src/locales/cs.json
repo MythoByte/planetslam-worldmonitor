@@ -1323,7 +1323,8 @@
         "notamAirspace": "Omezení vzdušného prostoru NOTAM",
         "no2Activity": "Průmyslová aktivita",
         "aurora": "Aurora forecast",
-        "commercialShipping": "Commercial Shipping"
+        "commercialShipping": "Commercial Shipping",
+        "attackReports": "Reported Air Attacks"
       },
       "tooltip": {
         "earthquake": "Zemětřesení",

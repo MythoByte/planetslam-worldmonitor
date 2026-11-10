@@ -1332,7 +1332,8 @@
         "notamAirspace": "Restricții de spațiu aerian NOTAM",
         "no2Activity": "Activitate industrială",
         "aurora": "Aurora forecast",
-        "commercialShipping": "Commercial Shipping"
+        "commercialShipping": "Commercial Shipping",
+        "attackReports": "Reported Air Attacks"
       },
       "tooltip": {
         "earthquake": "Cutremur",

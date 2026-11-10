@@ -406,6 +406,7 @@ const BOOTSTRAP_KEYS = {
 // aggregate is cleanly absent. Include both fallback keys in the same health
 // sweep so the canadaAlerts probe grades the data clients actually receive.
 const STANDALONE_KEYS = {
+  gdeltAttackReports: 'gdelt:attack-reports:v1',
   ukmtoIncidents: 'maritime:ukmto-incidents:v1',
   sanctionsChanges: 'sanctions:changes:v1',
   predictionCountryMarkets: 'prediction:markets-country-index:v1',
@@ -1471,6 +1472,11 @@ const SEED_META = {
   },
   researchArxivHnTrending: { key: 'seed-meta:research:arxiv-hn-trending', maxStaleMin: 150 },
   gdeltIntel:       { key: 'seed-meta:intelligence:gdelt-intel',   maxStaleMin: 45 }, // 15min bulk materializer; 45min = 3× cadence and expires before the 24h canonical key.
+  gdeltAttackReports: {
+    key: 'seed-meta:gdelt:attack-reports', maxStaleMin: 45,
+    activationKey: 'seed-activated:gdelt:attack-reports',
+    cutover: { mode: 'activation-marker', fromKey: null, issue: 41, activationKey: 'seed-activated:gdelt:attack-reports' },
+  },
   gdeltDyadTension: {
     key: 'seed-meta:gdelt:bulk:dyad-tension', maxStaleMin: 45,
     activationKey: 'seed-activated:gdelt:bulk:dyad-tension',
@@ -2703,6 +2709,7 @@ const ON_DEMAND_KEYS = new Set([
   // Per-country GDELT article index (#7748). The 15-minute materializer
   // writes the marker after the index and its seed-meta publish; absence is
   // pending until that first tick and strict afterward.
+  'gdeltAttackReports',
   'gdeltCountryArticles',
   'gdeltDyadTension',
   'gdeltCountryEvents',
@@ -2921,6 +2928,7 @@ const ACTIVATION_MARKERS = {
   predictionCountryMarkets: SEED_META.predictionCountryMarkets.activationKey,
   // Written by scripts/seed-gdelt-bulk-materializer.mjs after the per-country
   // article index publishes with its seed-meta (#7748).
+  gdeltAttackReports: SEED_META.gdeltAttackReports.activationKey,
   gdeltCountryArticles: SEED_META.gdeltCountryArticles.activationKey,
   gdeltDyadTension: SEED_META.gdeltDyadTension.activationKey,
   tensionEvidence: SEED_META.tensionEvidence.activationKey,

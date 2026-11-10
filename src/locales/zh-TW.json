@@ -1326,7 +1326,8 @@
         "notamAirspace": "NOTAM 空域限制",
         "no2Activity": "工業活動",
         "aurora": "Aurora forecast",
-        "commercialShipping": "Commercial Shipping"
+        "commercialShipping": "Commercial Shipping",
+        "attackReports": "Reported Air Attacks"
       },
       "tooltip": {
         "earthquake": "地震",

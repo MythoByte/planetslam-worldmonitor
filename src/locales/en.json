@@ -1499,6 +1499,7 @@
         "militaryActivity": "Military Activity",
         "shipTraffic": "Ship Traffic",
         "commercialShipping": "Commercial Shipping",
+        "attackReports": "Reported Air Attacks",
         "flightDelays": "Aviation",
         "protests": "Protests",
         "ucdpEvents": "Armed Conflict Events",
