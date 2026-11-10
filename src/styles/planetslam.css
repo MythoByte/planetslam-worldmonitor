@@ -104,3 +104,125 @@ html[data-brand="planetslam"] .mobile-menu-account:not(:has(.auth-clerk-user-but
 }
 
 html[data-brand="planetslam"] .legal-links-row:empty { display: none; }
+
+/* Navigation: dashboards, workspaces and map scope each have their own place. */
+html[data-brand="planetslam"] .header { contain: none; }
+html[data-brand="planetslam"] .header-left { gap: 12px; }
+html[data-brand="planetslam"] .header-left > .logo,
+html[data-brand="planetslam"] .header-left > .logo-mobile { order: -3; }
+html[data-brand="planetslam"] .header-left > .status-indicator { order: -2; }
+html[data-brand="planetslam"] .header-left > .version,
+html[data-brand="planetslam"] .header-left > .credit-link,
+html[data-brand="planetslam"] .header-left > .github-link { display: none; }
+html[data-brand="planetslam"] .ps-header-menu { position: relative; }
+html[data-brand="planetslam"] .ps-header-menu > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--ps-radius);
+  color: var(--text);
+  font-size: 12px;
+  white-space: nowrap;
+}
+html[data-brand="planetslam"] .ps-header-menu > summary::-webkit-details-marker { display: none; }
+html[data-brand="planetslam"] .ps-dashboard-picker .variant-switcher,
+html[data-brand="planetslam"] .ps-more-actions {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 190px;
+  padding: 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--ps-radius);
+  box-shadow: 0 8px 24px #0006;
+}
+html[data-brand="planetslam"] .ps-dashboard-picker .variant-option {
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 10px;
+}
+html[data-brand="planetslam"] .ps-dashboard-picker .variant-label { display: inline; }
+html[data-brand="planetslam"] .ps-dashboard-picker .variant-divider { display: none; }
+html[data-brand="planetslam"] .ps-more-actions { left: auto; right: 0; }
+html[data-brand="planetslam"] .ps-more-actions > button,
+html[data-brand="planetslam"] .ps-more-actions > a {
+  padding: 10px;
+  text-align: start;
+  color: var(--text);
+  font-size: 12px;
+}
+html[data-brand="planetslam"] .ps-more-actions > a { text-decoration: none; }
+html[data-brand="planetslam"] .ps-header-menu > summary:hover,
+html[data-brand="planetslam"] .ps-more-actions > a:hover { background: var(--surface-hover); }
+html[data-brand="planetslam"] .header-right { padding-left: 0; gap: 10px; }
+html[data-brand="planetslam"] .header-right > #searchBtn { order: -3; }
+html[data-brand="planetslam"] .header-right > .intel-findings-badge {
+  position: static;
+  translate: none;
+  width: auto;
+  order: -2;
+  gap: 6px;
+}
+html[data-brand="planetslam"] .intel-findings-badge::after { content: 'Findings'; font-size: 12px; }
+html[data-brand="planetslam"] #unifiedSettingsMount { order: -1; }
+html[data-brand="planetslam"] #unifiedSettingsBtn::after { content: 'Settings'; margin-left: 6px; font-size: 12px; }
+html[data-brand="planetslam"] #authWidgetMount { min-width: 0; }
+html[data-brand="planetslam"] .ps-workspace-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding-inline-end: 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+html[data-brand="planetslam"] .ps-workspace-row > .dashboard-tabs-mount { flex: 1; min-width: 0; border: 0; }
+html[data-brand="planetslam"] .ps-workspace-row > .mission-preset-mount { padding-inline-start: 18px; border-inline-start: 1px solid var(--border); }
+html[data-brand="planetslam"] .map-header-actions .region-select { max-width: 130px; }
+html[data-brand="planetslam"] .ps-menu-label { padding: 10px 20px 4px; color: var(--text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+html[data-brand="planetslam"] .ps-mobile-more-actions { padding: 8px 20px; }
+@media (max-width: 768px) {
+  html[data-brand="planetslam"] .ps-dashboard-picker { display: none; }
+  html[data-brand="planetslam"] .ps-dashboard-picker > summary > span,
+  html[data-brand="planetslam"] .ps-dashboard-picker .variant-switcher,
+  html[data-brand="planetslam"] .ps-more,
+  html[data-brand="planetslam"] .ps-workspace-row > .mission-preset-mount { display: none; }
+  html[data-brand="planetslam"] .header-left { gap: 8px; }
+  html[data-brand="planetslam"] .map-header-actions .region-select { max-width: 95px; font-size: 10px; }
+  html[data-brand="planetslam"] .ps-mobile-more-actions:empty { display: none; }
+}
+html[data-brand="planetslam"] .ps-dashboard-picker .variant-label { max-width: none; opacity: 1; }
+@layer base {
+  html[data-brand="planetslam"] .ps-more-actions .copy-link-btn,
+  html[data-brand="planetslam"] .ps-more-actions .fullscreen-btn { display: block !important; }
+  @media (min-width: 769px) {
+    html[data-brand="planetslam"] .ps-dashboard-picker .variant-switcher { display: flex !important; }
+    html[data-brand="planetslam"] .ps-workspace-row > .mission-preset-mount { display: inline-flex !important; }
+  }
+  @media (max-width: 768px) {
+    html[data-brand="planetslam"] .map-header-actions .region-selector { display: flex !important; }
+  }
+}
+html[data-brand="planetslam"] #unifiedSettingsBtn { width: auto; padding: 0 10px; transform: none; }
+html[data-brand="planetslam"] #psMoreActions .export-btn::after,
+html[data-brand="planetslam"] #psMobileMoreActions .export-btn::after { content: ' Export'; }
+html[data-brand="planetslam"] #psMoreActions #fullscreenBtn::after { content: ' Fullscreen'; }
+html[data-brand="planetslam"] .ps-dashboard-picker .variant-option { font-size: 12px; letter-spacing: 0; }
+html[data-brand="planetslam"] .map-section .panel-header { flex-wrap: wrap; row-gap: 6px; }
+html[data-brand="planetslam"] .map-section .header-clock { position: static; transform: none; margin-inline-start: auto; }
+html[data-brand="planetslam"] .map-header-actions { margin-inline-start: auto; }
+
+html[data-brand="planetslam"] .ps-mobile-dashboard { display: none; }
+@media (max-width: 768px) {
+  html[data-brand="planetslam"] .ps-mobile-dashboard { display: inline; color: var(--text-dim); font-size: 11px; }
+}
