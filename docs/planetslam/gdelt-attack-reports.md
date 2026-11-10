@@ -8,7 +8,7 @@ The relay polls once every 15 minutes, retains a bounded rolling 24-hour reporti
 
 Responses cap at 500 reports and deduplicate the same article, approximate action area and event day. The initial window is partial, missed exports may leave gaps, and no completeness claim is made. Records with missing coordinates, invalid dates or unsafe source URLs are rejected. Successful empty results, stale cached data and unavailable feeds have distinct labels. Source freshness expires after 45 minutes; reports expire after 24 hours of GDELT indexing age.
 
-Deploy the app/API and repository `Dockerfile.relay` together. The relay image includes the parser and existing verified GDELT download helpers. `gdeltAttackReports` is monitored as a standalone health key with `seed-meta:gdelt:attack-reports`; it does not expand the bootstrap payload or reuse the separate Middle East strike feed.
+Deploy the app/API and repository `Dockerfile.relay` together. The relay image includes the parser and existing verified GDELT download helpers. `gdeltAttackReports` is monitored as a standalone health key with `seed-meta:gdelt:attack-reports`; its durable activation marker is written only after the canonical data and seed metadata both publish successfully (tracked in PR #41). Health is pending before that marker and strict afterward. It does not expand the bootstrap payload or reuse the separate Middle East strike feed.
 
 Validation:
 

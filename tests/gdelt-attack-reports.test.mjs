@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createHash } from 'node:crypto';
-import { parseAttackReports, refreshAttackReports, attackReportsSnapshot, REPORT_WINDOW_MS } from '../scripts/_gdelt-attack-reports.mjs';
+import { parseAttackReports, refreshAttackReports, publishAttackReports, attackReportsSnapshot, REPORT_WINDOW_MS } from '../scripts/_gdelt-attack-reports.mjs';
 
 const now = Date.UTC(2026, 10, 10, 20, 5);
 function row(extra = {}) {
@@ -61,4 +61,17 @@ test('outages retain cached reports as stale, old/historical events expire, and 
   assert.equal(empty.status,'fresh'); assert.equal(empty.reports.length,0);
   assert.equal(attackReportsSnapshot(null,now).status,'unavailable');
   await assert.rejects(refreshAttackReports(null,{now:now+3600000,fetchImpl:transport(row())}),/stale/);
+});
+
+test('activation follows successful data and metadata writes, including valid empty batches; failures never activate', async () => {
+  for (const failAt of ['none','snapshot','meta','activate','stale']) {
+    const calls = [];
+    const result = await publishAttackReports({ status: failAt === 'stale' ? 'stale' : 'fresh', reports: [], updatedAt: now }, {
+      writeSnapshot: async () => { calls.push('snapshot'); return failAt !== 'snapshot'; },
+      writeMeta: async meta => { calls.push('meta'); assert.equal(meta.recordCount,0); return failAt !== 'meta'; },
+      activate: async timestamp => { calls.push('activate'); assert.equal(timestamp,now); return failAt !== 'activate'; },
+    });
+    assert.equal(result,failAt === 'none');
+    assert.deepEqual(calls,failAt === 'stale' ? [] : failAt === 'snapshot' ? ['snapshot'] : failAt === 'meta' ? ['snapshot','meta'] : ['snapshot','meta','activate']);
+  }
 });

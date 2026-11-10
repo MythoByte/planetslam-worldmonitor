@@ -2,6 +2,7 @@ import { fetchGdeltBulkConflictEvents, gdeltTimestampToMs } from './_conflict-gd
 
 export const ATTACK_REPORT_KEY = 'gdelt:attack-reports:v1';
 export const ATTACK_REPORT_META_KEY = 'seed-meta:gdelt:attack-reports';
+export const ATTACK_REPORT_ACTIVATION_KEY = 'seed-activated:gdelt:attack-reports';
 export const REPORT_WINDOW_MS = 24 * 60 * 60_000;
 export const REPORT_FRESH_MS = 45 * 60_000;
 export const MAX_ATTACK_REPORTS = 500;
@@ -74,4 +75,12 @@ export async function refreshAttackReports(previous, { fetchImpl = globalThis.fe
   const coverageStart = Math.max(now - REPORT_WINDOW_MS, Math.min(previous?.coverageStart || Infinity, gdeltTimestampToMs(bulk.oldestExportTimestamp)));
   const raw = { reports: [...unique.values()].sort((a,b) => b.indexedAt - a.indexedAt || a.id.localeCompare(b.id)), updatedAt: now, latestBatchAt, coverageStart };
   return { ...attackReportsSnapshot(raw, now), exportsRequested: bulk.exportsRequested, exportsSucceeded: bulk.exportsSucceeded };
+}
+
+/** Health becomes strict only after both durable data and metadata exist. */
+export async function publishAttackReports(snapshot, { writeSnapshot, writeMeta, activate }) {
+  if (snapshot?.status !== 'fresh') return false;
+  if (!await writeSnapshot(snapshot)) return false;
+  if (!await writeMeta({ fetchedAt: snapshot.updatedAt, recordCount: snapshot.reports.length, sourceVersion: 'gdelt-events-2' })) return false;
+  return await activate(snapshot.updatedAt);
 }

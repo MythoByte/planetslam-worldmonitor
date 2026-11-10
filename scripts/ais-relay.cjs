@@ -5816,12 +5816,14 @@ async function seedAttackReports() {
     const snapshot = await attackReportModule.refreshAttackReports(previous);
     attackReportCache = snapshot;
     if (UPSTASH_ENABLED) {
-      const written = await envelopeWrite(attackReportModule.ATTACK_REPORT_KEY, snapshot, 26 * 3600, {
-        fetchedAt: snapshot.updatedAt, recordCount: snapshot.reports.length, sourceVersion: 'gdelt-events-2', zeroOk: true,
+      await attackReportModule.publishAttackReports(snapshot, {
+        writeSnapshot: value => envelopeWrite(attackReportModule.ATTACK_REPORT_KEY, value, 26 * 3600, {
+          fetchedAt: value.updatedAt, recordCount: value.reports.length, sourceVersion: 'gdelt-events-2', zeroOk: true,
+        }),
+        writeMeta: meta => upstashSet(attackReportModule.ATTACK_REPORT_META_KEY, meta, 7 * 24 * 3600),
+        activate: async fetchedAt => (await upstashEval("return redis.call('SET', KEYS[1], ARGV[1])",
+          [attackReportModule.ATTACK_REPORT_ACTIVATION_KEY], [String(fetchedAt)])) === 'OK',
       });
-      if (written) await upstashSet(attackReportModule.ATTACK_REPORT_META_KEY, {
-        fetchedAt: snapshot.updatedAt, recordCount: snapshot.reports.length, sourceVersion: 'gdelt-events-2',
-      }, 7 * 24 * 3600);
     }
   } finally { attackReportInFlight = false; }
 }
