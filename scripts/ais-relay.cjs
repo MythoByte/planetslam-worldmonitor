@@ -493,7 +493,11 @@ function upstashSet(key, value, ttlSeconds) {
   return new Promise((resolve) => {
     if (!UPSTASH_ENABLED) return resolve(false);
     const url = new URL('/', UPSTASH_REDIS_REST_URL);
-    const body = JSON.stringify(['SET', key, JSON.stringify(value), 'EX', String(ttlSeconds)]);
+    // An omitted TTL writes durable activation markers through gateways that
+    // intentionally restrict EVAL. Existing seed writes retain their expiry.
+    const command = ['SET', key, JSON.stringify(value)];
+    if (ttlSeconds != null) command.push('EX', String(ttlSeconds));
+    const body = JSON.stringify(command);
     const req = UPSTASH_HTTP_MODULE.request(url, {
       method: 'POST',
       headers: {
@@ -5821,8 +5825,7 @@ async function seedAttackReports() {
           fetchedAt: value.updatedAt, recordCount: value.reports.length, sourceVersion: 'gdelt-events-2', zeroOk: true,
         }),
         writeMeta: meta => upstashSet(attackReportModule.ATTACK_REPORT_META_KEY, meta, 7 * 24 * 3600),
-        activate: async fetchedAt => (await upstashEval("return redis.call('SET', KEYS[1], ARGV[1])",
-          [attackReportModule.ATTACK_REPORT_ACTIVATION_KEY], [String(fetchedAt)])) === 'OK',
+        activate: fetchedAt => upstashSet(attackReportModule.ATTACK_REPORT_ACTIVATION_KEY, fetchedAt),
       });
     }
   } finally { attackReportInFlight = false; }
