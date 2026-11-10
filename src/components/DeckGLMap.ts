@@ -9,6 +9,7 @@ import { type CyberMapSnapshot, type CyberMapMarker, cyberMarkerLabel } from '@/
 import { createEarthMapLayers } from './earth-map-layers';
 import { createCyberMapLayers } from './cyber-map-layers';
 import type { SpaceOrbitSnapshot, SpaceOrbitPosition, SpaceGroundTrack } from '@/types/space-orbits';
+import { commercialVesselLabel, freshCommercialVessels, type CommercialVessel } from '@/types/commercial-shipping';
 import { BRAND } from '@/config/brand';
 import type { SpaceMapSnapshot, SpaceAuroraPoint, SpaceLaunchMarker } from '@/types/space-map';
 /**
@@ -635,6 +636,13 @@ export class DeckGLMap {
   public setCyberMap(snapshot: CyberMapSnapshot): void { this.cyberMap = snapshot; this.render(); }
 
   private spaceOverlay: SpaceMapSnapshot = { aurora: [], launches: [] };
+
+  private commercialVessels: CommercialVessel[] = [];
+
+  public setCommercialVessels(vessels: CommercialVessel[]): void {
+    this.commercialVessels = vessels;
+    this.render();
+  }
 
   public setSpaceOverlay(snapshot: SpaceMapSnapshot): void {
     this.spaceOverlay = snapshot;
@@ -2161,6 +2169,11 @@ export class DeckGLMap {
       getPosition: point => [point.longitude, point.latitude], getRadius: 42_000,
       getFillColor: point => [65, 235, 140, Math.round(35 + point.probability * 1.5)],
       radiusMinPixels: 1, pickable: true,
+    }));
+    if (mapLayers.commercialShipping) layers.push(new ScatterplotLayer<CommercialVessel>({
+      id: 'commercial-shipping-layer', data: freshCommercialVessels(this.commercialVessels),
+      getPosition: vessel => [vessel.lon, vessel.lat], getRadius: 6, radiusUnits: 'pixels',
+      getFillColor: [80, 220, 200, 255], pickable: true,
     }));
     if (mapLayers.spaceports && this.spaceOverlay.launches.length) layers.push(new ScatterplotLayer<SpaceLaunchMarker>({
       id: 'space-upcoming-launches', data: this.spaceOverlay.launches,
@@ -5315,6 +5328,9 @@ export class DeckGLMap {
 
     const rawLayerId = info.layer?.id || '';
     const layerId = rawLayerId.endsWith('-ghost') ? rawLayerId.slice(0, -6) : rawLayerId;
+    if (layerId === 'commercial-shipping-layer') {
+      return { html: escapeHtml(commercialVesselLabel(info.object as CommercialVessel)) };
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const obj = info.object as any;
     const text = (value: unknown): string => escapeHtml(String(value ?? ''));

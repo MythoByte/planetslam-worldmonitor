@@ -1,4 +1,5 @@
 import { IS_PLANETSLAM } from '@/config/brand';
+import { commercialVesselLabel, freshCommercialVessels, type CommercialVessel } from '@/types/commercial-shipping';
 import { layerMarkerIcon, earthMarkerIcon, hazardMarkerIcon, platformMarkerIcon, paintLayerMarker, layerMarkerUrl, SVG_MARKER_LAYERS } from './map-layer-icons';
 import './map-layer-icons.css';
 import { type EarthMapSnapshot, earthMarkerLabel } from '@/types/earth-map';
@@ -268,6 +269,29 @@ export class MapComponent {
   }
 
   private spaceOverlay: SpaceMapSnapshot = { aurora: [], launches: [] };
+
+  private commercialVessels: CommercialVessel[] = [];
+
+  public setCommercialVessels(vessels: CommercialVessel[]): void {
+    this.commercialVessels = vessels;
+    this.render();
+  }
+
+  private renderCommercialShipping(projection: d3.GeoProjection): void {
+    if (!this.state.layers.commercialShipping) return;
+    const group = this.dynamicLayerGroup?.append('g').attr('class', 'commercial-shipping-markers');
+    if (!group) return;
+    for (const vessel of freshCommercialVessels(this.commercialVessels)) {
+      const position = projection([vessel.lon, vessel.lat]);
+      if (!position) continue;
+      const size = 18 / Math.max(1, this.state.zoom);
+      group.append('image').attr('class', 'commercial-shipping-marker').attr('data-mmsi', vessel.mmsi)
+        .attr('href', layerMarkerUrl(layerMarkerIcon('commercialShipping')))
+        .attr('x', position[0] - size / 2).attr('y', position[1] - size / 2)
+        .attr('width', size).attr('height', size)
+        .append('title').text(commercialVesselLabel(vessel));
+    }
+  }
 
   public setSpaceOverlay(snapshot: SpaceMapSnapshot): void {
     this.spaceOverlay = snapshot;
@@ -743,7 +767,7 @@ export class MapComponent {
 
     // Variant-aware layer buttons
     const fullLayers: (keyof MapLayers)[] = [
-      ...(IS_PLANETSLAM ? ['satellites', 'spaceports', 'aurora', 'webcams', 'fires'] as (keyof MapLayers)[] : []),
+      ...(IS_PLANETSLAM ? ['satellites', 'spaceports', 'aurora', 'webcams', 'fires', 'commercialShipping'] as (keyof MapLayers)[] : []),
       'iranAttacks',                                      // Iran conflict
       'conflicts', 'hotspots', 'sanctions', 'protests',  // geopolitical
       'bases', 'nuclear', 'irradiators',                 // military/strategic
@@ -1668,6 +1692,7 @@ export class MapComponent {
     if (this.cyberMap?.markers.length) steps.push(() => this.renderCyberMap(projection));
     steps.push(() => this.renderSpaceOverlay(projection));
     steps.push(() => this.renderSpaceOrbits(projection));
+    steps.push(() => this.renderCommercialShipping(projection));
     if (this.state.layers.cables) steps.push(() => this.renderCables(projection));
     if (this.state.layers.pipelines) steps.push(() => this.renderPipelines(projection));
     if (this.state.layers.conflicts) steps.push(() => this.renderConflicts(projection));

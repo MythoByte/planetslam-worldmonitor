@@ -1331,7 +1331,8 @@
         "canadaAlerts": "Alerte Canada",
         "notamAirspace": "Restricții de spațiu aerian NOTAM",
         "no2Activity": "Activitate industrială",
-        "aurora": "Aurora forecast"
+        "aurora": "Aurora forecast",
+        "commercialShipping": "Commercial Shipping"
       },
       "tooltip": {
         "earthquake": "Cutremur",

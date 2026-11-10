@@ -18,6 +18,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { describe, it } from 'node:test';
+import { createRequire } from 'node:module';
+const { selectCommercialVessels } = createRequire(import.meta.url)('../scripts/_commercial-shipping.cjs');
 
 const RELAY = readFileSync(new URL('../scripts/ais-relay.cjs', import.meta.url), 'utf8');
 
@@ -90,6 +92,17 @@ describe('ShipStaticData meta cache', () => {
 });
 
 describe('PositionReport classification through the cache', () => {
+  it('exposes a commercial cargo position through the map selector without adding a military candidate', () => {
+    const h = harness();
+    const mmsi = '211123419';
+    h.processPositionReportForSnapshot(positionFrame(mmsi));
+    h.processShipStaticDataForMeta(staticFrame(mmsi, 70));
+    const snapshot = selectCommercialVessels(h.vessels, h.vesselMeta, h.candidateReports, h.clock.now);
+    assert.equal(snapshot.vessels.length, 1);
+    assert.equal(snapshot.vessels[0].mmsi, mmsi);
+    assert.equal(snapshot.vessels[0].shipType, 70);
+    assert.equal(h.candidateReports.size, 0);
+  });
   it('captures a tanker whose position report carries no ShipType once static data was seen', () => {
     const h = harness();
     h.processShipStaticDataForMeta(staticFrame('211123410', 85));

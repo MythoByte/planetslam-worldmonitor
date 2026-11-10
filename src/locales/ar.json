@@ -1288,7 +1288,8 @@
         "canadaAlerts": "تنبيهات كندا",
         "notamAirspace": "قيود المجال الجوي NOTAM",
         "no2Activity": "النشاط الصناعي",
-        "aurora": "Aurora forecast"
+        "aurora": "Aurora forecast",
+        "commercialShipping": "Commercial Shipping"
       },
       "tooltip": {
         "earthquake": "زلزال",

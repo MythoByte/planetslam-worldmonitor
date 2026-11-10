@@ -1,5 +1,6 @@
 // Full geopolitical variant - worldmonitor.app
 import type { PanelConfig, MapLayers } from '@/types';
+import { IS_PLANETSLAM } from '@/config/brand';
 import type { VariantConfig } from './base';
 
 // Re-export base config
@@ -66,6 +67,7 @@ export const DEFAULT_MAP_LAYERS: MapLayers = {
   cables: false,
   pipelines: false,
   hotspots: true,
+  commercialShipping: IS_PLANETSLAM,
   ais: false,
   nuclear: true,
   irradiators: false,
@@ -137,6 +139,7 @@ export const MOBILE_DEFAULT_MAP_LAYERS: MapLayers = {
   cables: false,
   pipelines: false,
   hotspots: true,
+  commercialShipping: IS_PLANETSLAM,
   ais: false,
   nuclear: false,
   irradiators: false,

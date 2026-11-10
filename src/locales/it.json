@@ -1162,7 +1162,8 @@
         "canadaAlerts": "Allerte Canada",
         "notamAirspace": "Restrizioni Spazio Aereo NOTAM",
         "no2Activity": "Attività industriale",
-        "aurora": "Aurora forecast"
+        "aurora": "Aurora forecast",
+        "commercialShipping": "Commercial Shipping"
       },
       "layersTitle": "Livelli",
       "layerSearch": "Cerca livelli...",

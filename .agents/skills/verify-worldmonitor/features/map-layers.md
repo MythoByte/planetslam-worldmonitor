@@ -10,6 +10,7 @@ The layer controls under the map decide what a user sees on it — conflicts, ho
 - `layer-explain` opens the per-layer explanation from `.layer-explain-btn[data-layer="…"]`.
 - `layer-svg-cap` disables further layers at 9 active in the SVG renderer (`limit-reached`).
 - `layer-dimension` switches renderer between 2D and 3D from `#mapDimensionToggle`.
+- `commercial-shipping` is PlanetSlam's separate civilian vessel layer, enabled in the World preset. Run `VITE_BRAND=planetslam npx playwright test e2e/planetslam-commercial-shipping.spec.ts --project=chromium`. Controlled API responses prove fresh desktop/mobile loading, the desktop toggle and saved off preference, empty/unavailable states, and SVG/globe/DeckGL marker show/hide behavior. Markers carry vessel name, category, MMSI, speed and receipt time. Unknown types and military candidates are excluded by the relay; positions expire after ten minutes and responses cap at 2,000 vessels. This does not prove live provider coverage. Mobile uses the preset's fixed layer state and hides layer controls.
 - `aircraft-emergencies` enables the separate 7500/7600/7700 layer on SVG and DeckGL, opens aircraft details, and checks conflict, missing position, unavailable, expiry, and successful empty states. The globe does not offer this layer.
 
 - `notam-airspace` enables the Aviation layer, proves the on-demand `notamAirspace` key (FAA NMS airspace areas) is fetched only once Aviation is on and only on deck.gl, hovers a drawn restriction for its tooltip, and checks there is no separate NOTAM toggle.

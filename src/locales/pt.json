@@ -609,7 +609,8 @@
         "canadaAlerts": "Alertas do Canadá",
         "notamAirspace": "Restrições de Espaço Aéreo NOTAM",
         "no2Activity": "Atividade industrial",
-        "aurora": "Aurora forecast"
+        "aurora": "Aurora forecast",
+        "commercialShipping": "Commercial Shipping"
       },
       "layersTitle": "Camadas",
       "layerSearch": "Pesquisar camadas...",

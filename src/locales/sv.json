@@ -608,7 +608,8 @@
         "canadaAlerts": "Kanadensiska varningar",
         "notamAirspace": "NOTAM-luftrumsbegränsningar",
         "no2Activity": "Industriell aktivitet",
-        "aurora": "Aurora forecast"
+        "aurora": "Aurora forecast",
+        "commercialShipping": "Commercial Shipping"
       },
       "layersTitle": "Lager",
       "layerSearch": "Sök lager...",

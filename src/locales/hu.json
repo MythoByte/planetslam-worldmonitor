@@ -1470,7 +1470,8 @@
         "canadaAlerts": "Kanadai riasztások",
         "notamAirspace": "NOTAM légtéri korlátozások",
         "no2Activity": "Ipari aktivitás",
-        "aurora": "Aurora forecast"
+        "aurora": "Aurora forecast",
+        "commercialShipping": "Commercial Shipping"
       },
       "tooltip": {
         "earthquake": "Földrengés",
