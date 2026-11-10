@@ -1711,7 +1711,7 @@ export function getVariantPanelCategories(
   variant: string,
 ): VariantPanelCategory[] {
   return Object.entries(PANEL_CATEGORY_MAP)
-    .filter(([, def]) => !def.variants || def.variants.includes(variant))
+    .filter(([, def]) => IS_PLANETSLAM || !def.variants || def.variants.includes(variant))
     .filter(([, def]) => def.panelKeys.some((pk) => panelSettings[pk]?.enabled))
     .map(([key, def]) => ({ key, labelKey: def.labelKey, panelKeys: def.panelKeys }));
 }

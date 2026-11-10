@@ -1,3 +1,4 @@
+import { getFeedsForVariant } from '@/config/feeds';
 import { IS_PLANETSLAM } from '@/config/brand';
 import { isPlanetSlamSourcePanel } from '@/config/planetslam-panels';
 import type { AppContext, AppModule } from '@/app/app-context';
@@ -479,6 +480,7 @@ export class DataLoaderManager implements AppModule {
   // when nothing good is on screen yet).
   private xIntelHasLiveData = false;
 
+  private digestBreakerScope: string | null = null;
   private digestBreaker = { state: 'closed' as 'closed' | 'open' | 'half-open', failures: 0, cooldownUntil: 0 };
   // Notification freshness belongs to the exact news generation committed to
   // ctx.allNews. Fetches carry their own selection state until that commit, so
@@ -779,7 +781,7 @@ export class DataLoaderManager implements AppModule {
   private async crossEditionCategoryItems(
     category: string,
   ): Promise<{ items: NewsItem[]; servedStale: boolean; complete: boolean } | null> {
-    const editions = digestEditionsFor(category).filter(edition => edition !== SITE_VARIANT);
+    const editions = digestEditionsFor(category).filter(edition => edition !== this.newsVariant);
     if (editions.length === 0) return null;
     const language = getCurrentLanguage();
     const selections = await Promise.all(editions.map(edition => this.selectEditionDigest(edition, language)));
@@ -799,20 +801,25 @@ export class DataLoaderManager implements AppModule {
     // language's cache when the user switches languages in flight.
     const requestLanguage = getCurrentLanguage();
     const requestKey = this.digestCacheKey(requestLanguage);
+    if (IS_PLANETSLAM && this.digestBreakerScope !== requestKey) {
+      this.digestBreakerScope = requestKey;
+      this.digestBreaker = { state: 'closed', failures: 0, cooldownUntil: 0 };
+    }
+    const breaker = this.digestBreaker;
 
-    if (this.digestBreaker.state === 'open') {
-      if (now < this.digestBreaker.cooldownUntil) {
+    if (breaker.state === 'open') {
+      if (now < breaker.cooldownUntil) {
         const fallback = this.getRetainedDigest(requestKey) ?? await this.loadPersistedDigest(requestKey);
         this.reportDigestCoverage(fallback, fallback ? 'stale' : 'unavailable');
         return fallback ? { digest: fallback, servedStale: true } : null;
       }
-      this.digestBreaker.state = 'half-open';
+      breaker.state = 'half-open';
     }
 
     try {
       markLcpDebug('wm:data:feed-digest-start');
       const resp = await publicRpcFetch(
-        toApiUrl(`/api/news/v1/list-feed-digest?variant=${SITE_VARIANT}&lang=${requestLanguage}`),
+        toApiUrl(`/api/news/v1/list-feed-digest?variant=${this.newsVariant}&lang=${requestLanguage}`),
         { signal: AbortSignal.timeout(this.digestRequestTimeoutMs) },
       );
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -844,7 +851,7 @@ export class DataLoaderManager implements AppModule {
       } else {
         this.persistDigest(requestKey, data);
       }
-      this.digestBreaker = { state: 'closed', failures: 0, cooldownUntil: 0 };
+      if (this.digestBreaker === breaker) this.digestBreaker = { state: 'closed', failures: 0, cooldownUntil: 0 };
 
       const currentKey = this.digestCacheKey();
       if (currentKey !== requestKey) {
@@ -861,10 +868,10 @@ export class DataLoaderManager implements AppModule {
     } catch (e) {
       markLcpDebug('wm:data:feed-digest-error');
       console.warn('[News] Digest fetch failed, using fallback:', e);
-      this.digestBreaker.failures++;
-      if (this.digestBreaker.failures >= 2) {
-        this.digestBreaker.state = 'open';
-        this.digestBreaker.cooldownUntil = now + this.digestBreakerCooldownMs;
+      breaker.failures++;
+      if (breaker.failures >= 2) {
+        breaker.state = 'open';
+        breaker.cooldownUntil = now + this.digestBreakerCooldownMs;
       }
       const currentKey = this.digestCacheKey();
       const fallback = this.getRetainedDigest(currentKey) ?? await this.loadPersistedDigest(currentKey);
@@ -909,7 +916,7 @@ export class DataLoaderManager implements AppModule {
    * entries simply become unreachable rather than needing to be detected.
    */
   private digestCacheKey(language = getCurrentLanguage()): string {
-    return digestCacheKey(SITE_VARIANT, language);
+    return digestCacheKey(this.newsVariant, language);
   }
 
   private getRetainedDigest(key = this.digestCacheKey()): ListFeedDigestResponse | null {
@@ -1166,7 +1173,7 @@ export class DataLoaderManager implements AppModule {
     }
 
     // Progress charts data (happy variant only)
-    if (SITE_VARIANT === 'happy') {
+    if (SITE_VARIANT === 'happy' || IS_PLANETSLAM) {
       if (shouldLoad('progress')) {
         tasks.push({
           name: 'progress',
@@ -1179,14 +1186,14 @@ export class DataLoaderManager implements AppModule {
           task: () => runGuarded('species', () => this.loadSpeciesData()),
         });
       }
-      tasks.push({
+      if (!IS_PLANETSLAM || this.ctx.mapLayers.happiness) tasks.push({
         name: 'happinessMap',
         task: () => runGuarded('happinessMap', async () => {
           const data = await fetchHappinessScores();
           this.ctx.map?.setHappinessScores(data);
         }),
       });
-      tasks.push({
+      if (!IS_PLANETSLAM || this.ctx.mapLayers.renewableInstallations) tasks.push({
         name: 'renewableMap',
         task: () => runGuarded('renewableMap', async () => {
           const installations = await fetchRenewableInstallations();
@@ -1697,7 +1704,7 @@ export class DataLoaderManager implements AppModule {
         // left out. A user who turned nothing off never makes this request.
         if (items.length < delivered.length) {
           this.fillAfterRender(category, generation, items,
-            this.sourceRowsBelowCap(category, [SITE_VARIANT], delivered, enabledFeeds), delivered.length);
+            this.sourceRowsBelowCap(category, [this.newsVariant], delivered, enabledFeeds), delivered.length);
         }
 
         this.ctx.statusPanel?.updateFeed(category.charAt(0).toUpperCase() + category.slice(1), {
@@ -1752,7 +1759,7 @@ export class DataLoaderManager implements AppModule {
           // #9796: the cached rows of enabled sources no carrying edition's
           // top items include, for the panel's free slots.
           if (items.length < this.customCategoryMergedItemLimit) {
-            const editions = digestEditionsFor(category).filter(edition => edition !== SITE_VARIANT);
+            const editions = digestEditionsFor(category).filter(edition => edition !== this.newsVariant);
             this.fillAfterRender(category, generation, items,
               this.sourceRowsBelowCap(category, editions, crossEdition.items, enabledFeeds), this.customCategoryMergedItemLimit);
           }
@@ -1922,7 +1929,7 @@ export class DataLoaderManager implements AppModule {
 
     // The server builds intel into the full edition's digest only, so an Intel
     // Feed added on another edition reads that one.
-    const readsFullEdition = SITE_VARIANT !== 'full' && !(digestSelection?.digest.categories && 'intel' in digestSelection.digest.categories);
+    const readsFullEdition = this.newsVariant !== 'full' && !(digestSelection?.digest.categories && 'intel' in digestSelection.digest.categories);
     let selection = digestSelection;
     if (readsFullEdition) {
       // A superseded load must not replace the newer load's fetch or
@@ -2039,9 +2046,11 @@ export class DataLoaderManager implements AppModule {
    * categories aren't in the active edition's digest, so they're flagged
    * `isCustom` and read from the editions that carry them in loadNewsCategory().
    */
+  private get newsVariant(): string { return IS_PLANETSLAM ? this.ctx.dashboardFeedVariant || 'full' : SITE_VARIANT; }
+
   private resolveEnabledNewsCategories(): ResolvedCategory[] {
     return resolveNewsCategories(
-      FEEDS,
+      IS_PLANETSLAM ? getFeedsForVariant(this.newsVariant) : FEEDS,
       CANONICAL_FEEDS,
       enabledNewsCategoryKeys(this.ctx.newsCategoryPanelKeys, this.ctx.panelSettings),
     );
@@ -2090,6 +2099,7 @@ export class DataLoaderManager implements AppModule {
    */
   invalidateNewsHydration(): void {
     this.loadedNewsSignature = null;
+    if (IS_PLANETSLAM) this.newsLoadGeneration += 1;
   }
 
   private beginNewsLoad(): number {
@@ -2183,7 +2193,7 @@ export class DataLoaderManager implements AppModule {
   async loadNews(): Promise<void> {
     const generation = this.beginNewsLoad();
     // Reset happy variant accumulator for fresh pipeline run
-    if (SITE_VARIANT === 'happy') {
+    if (this.newsVariant === 'happy') {
       this.ctx.happyAllItems = [];
     }
 
@@ -2205,7 +2215,7 @@ export class DataLoaderManager implements AppModule {
     // post-toggle set for a load that used the pre-toggle one.
     const disabledAtLoadStart = new Set(this.ctx.disabledSources);
 
-    const maxCategoryConcurrency = SITE_VARIANT === 'tech' ? 4 : 5;
+    const maxCategoryConcurrency = this.newsVariant === 'tech' ? 4 : 5;
     const loadsIntel = this.hydratesPanel('intel', ['full']);
     const categoryConcurrency = Math.max(1, Math.min(maxCategoryConcurrency, categories.length));
     const categoryServedStale = new Map<string, boolean>();
@@ -2228,7 +2238,7 @@ export class DataLoaderManager implements AppModule {
             generation,
             servedStale => categoryServedStale.set(key, servedStale),
           );
-          if (IS_PLANETSLAM && SITE_VARIANT === 'tech' && key === 'security') {
+          if (IS_PLANETSLAM && key === 'security') {
             try {
               const [{ fetchCyberDataset }, { mergeTechCyberNews }] = await Promise.all([
                 import('@/services/cyber-dashboard'), import('@/services/tech-cyber-news'),
@@ -2274,7 +2284,7 @@ export class DataLoaderManager implements AppModule {
     for (const { key } of categories) {
       const items = categoryItemsByKey.get(key) ?? [];
       // Tag items with content categories for happy variant
-      if (SITE_VARIANT === 'happy') {
+      if (this.newsVariant === 'happy') {
         for (const item of items) {
           item.happyCategory = classifyNewsItem(item.source, item.title);
         }
@@ -2382,7 +2392,7 @@ export class DataLoaderManager implements AppModule {
     }
 
     // Happy variant: run multi-stage positive news pipeline + map layers
-    if (SITE_VARIANT === 'happy') {
+    if (this.newsVariant === 'happy' || (IS_PLANETSLAM && this.ctx.panelSettings['positive-feed']?.enabled)) {
       await this.loadHappySupplementaryAndRender();
       await Promise.allSettled([
         this.ctx.mapLayers.positiveEvents ? this.loadPositiveEvents() : Promise.resolve(),
@@ -5063,7 +5073,7 @@ export class DataLoaderManager implements AppModule {
     const species = await fetchConservationWins();
     this.callPanel('species', 'setData', species);
     this.ctx.map?.setSpeciesRecoveryZones(species);
-    if (SITE_VARIANT === 'happy' && species.length > 0) {
+    if ((SITE_VARIANT === 'happy' || IS_PLANETSLAM) && species.length > 0) {
       checkMilestones({
         speciesRecoveries: species.map(s => ({ name: s.commonName, status: s.recoveryStatus })),
         newSpeciesCount: species.length,
@@ -5075,7 +5085,7 @@ export class DataLoaderManager implements AppModule {
     const { fetchRenewableEnergyData, fetchEnergyCapacity } = await import('@/services/renewable-energy-data');
     const result = await fetchRenewableEnergyData();
     this.callPanel('renewable', 'setData', result);
-    if (SITE_VARIANT === 'happy' && result.state === 'live' && result.data?.globalPercentage) {
+    if ((SITE_VARIANT === 'happy' || IS_PLANETSLAM) && result.state === 'live' && result.data?.globalPercentage) {
       checkMilestones({
         renewablePercent: result.data.globalPercentage,
       });

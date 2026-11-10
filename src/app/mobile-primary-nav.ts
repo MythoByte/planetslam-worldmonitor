@@ -1,3 +1,4 @@
+import { IS_PLANETSLAM } from '@/config/brand';
 import type { AppContext } from '@/app/app-context';
 import type { MapView } from '@/components/MapContainer';
 import type { AuthLauncher } from '@/components/AuthLauncher';
@@ -193,7 +194,8 @@ export class MobilePrimaryNav {
     menu.querySelectorAll<HTMLButtonElement>('.mobile-menu-variant').forEach((button) => {
       button.addEventListener('click', () => {
         const variant = button.dataset.variant;
-        if (variant && variant !== SITE_VARIANT) void this.callbacks.navigateToVariant(variant, { isLocalDev });
+        if (IS_PLANETSLAM) this.closeMenu();
+        if (variant && (IS_PLANETSLAM || variant !== SITE_VARIANT)) void this.callbacks.navigateToVariant(variant, { isLocalDev });
       }, options);
     });
     document.getElementById('mobileMenuRegion')?.addEventListener('click', () => {

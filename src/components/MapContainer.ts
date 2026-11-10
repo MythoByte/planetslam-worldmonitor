@@ -398,9 +398,9 @@ export class MapContainer {
         if (!this.destroyed) this.earthMapController = new EarthMapOverlay(this.container, snapshot => this.setEarthMap(snapshot), (lat, lon) => this.setCenter(lat, lon, 4), IS_PLANETSLAM && SITE_VARIANT === 'full');
       });
     }
-    if (SITE_VARIANT === 'cyber' || (IS_PLANETSLAM && SITE_VARIANT === 'tech')) {
+    if (SITE_VARIANT === 'cyber' || IS_PLANETSLAM) {
       void import('./CyberMapOverlay').then(({ CyberMapOverlay }) => {
-        if (!this.destroyed) this.cyberMapController = new CyberMapOverlay(this.container, snapshot => this.setCyberMap(snapshot), (lat, lon) => this.setCenter(lat, lon, 3));
+        if (!this.destroyed) this.cyberMapController = new CyberMapOverlay(this.container, snapshot => this.setCyberMap(snapshot), (lat, lon) => this.setCenter(lat, lon, 3), !IS_PLANETSLAM || this.getState().layers.techEvents === true);
       });
     }
     if (SITE_VARIANT === 'space' || (IS_PLANETSLAM && SITE_VARIANT === 'full')) {
@@ -1215,6 +1215,7 @@ export class MapContainer {
       sanitized = sanitizeLockedLayers(sanitized, false);
     }
     this.initialState = { ...this.initialState, layers: sanitized };
+    if (IS_PLANETSLAM) this.cyberMapController?.setEnabled(sanitized.techEvents === true);
     this.renderUkmtoStatus(sanitized.ais);
     this.emergencyLayer.setEnabled(!this.useGlobe && sanitized.aircraftEmergencies === true);
     this.notamAirspaceLayer.setEnabled(this.useDeckGL && sanitized.flights === true);

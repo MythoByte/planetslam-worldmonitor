@@ -1420,7 +1420,7 @@ export class UnifiedSettings {
   }
 
   private categoryMatchesVariant(catDef: { variants?: string[] }): boolean {
-    return !catDef.variants || catDef.variants.includes(SITE_VARIANT);
+    return IS_PLANETSLAM || !catDef.variants || catDef.variants.includes(SITE_VARIANT);
   }
 
   private getAvailablePanelCategories(): Array<{ key: string; label: string }> {

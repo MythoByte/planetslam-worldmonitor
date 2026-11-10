@@ -226,3 +226,24 @@ html[data-brand="planetslam"] .ps-mobile-dashboard { display: none; }
 @media (max-width: 768px) {
   html[data-brand="planetslam"] .ps-mobile-dashboard { display: inline; color: var(--text-dim); font-size: 11px; }
 }
+
+/* Dashboard choices apply a preset to the current World workspace. */
+html[data-brand="planetslam"] .ps-dashboard-picker .variant-switcher { min-width: 230px; max-height: min(75vh, 650px); overflow-y: auto; }
+html[data-brand="planetslam"] .ps-dashboard-picker .variant-option.active { pointer-events: auto; }
+html[data-brand="planetslam"] .ps-workspace-option { display: block; width: 100%; text-align: start; padding: 10px; color: var(--text); background: transparent; border: 0; cursor: pointer; }
+html[data-brand="planetslam"] .ps-workspace-option:hover { background: var(--surface-hover); }
+html[data-brand="planetslam"] .ps-workspace-option[aria-current="true"] { color: var(--accent); }
+html[data-brand="planetslam"] .ps-saved-workspaces { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 4px; }
+html[data-brand="planetslam"] .ps-saved-workspaces:empty { display: none; }
+html[data-brand="planetslam"] .ps-saved-workspaces .ps-menu-label { padding: 8px 10px 4px; }
+html[data-brand="planetslam"] #psMobileSavedWorkspaces .ps-workspace-option { padding-inline: 20px; }
+html[data-brand="planetslam"] .ps-workspace-row { gap: 0; padding-inline-end: 0; }
+
+/* Wide blocks must not create implicit columns in the narrow map sidebar. */
+html[data-brand="planetslam"] .panels-grid { container: ps-panels / inline-size; }
+@layer base {
+  @container ps-panels (max-width: 569px) {
+    html[data-brand="planetslam"] .panels-grid > .panel,
+    html[data-brand="planetslam"] .panels-grid > .panel-deferred-shell { grid-column: span 1 !important; }
+  }
+}

@@ -1908,8 +1908,8 @@ export class DeckGLMap {
     const boundsKey = `${bbox[0].toFixed(4)}:${bbox[1].toFixed(4)}:${bbox[2].toFixed(4)}:${bbox[3].toFixed(4)}`;
     const layers = this.state.layers;
     const useProtests = layers.protests && this.protestSuperclusterSource.length > 0;
-    const useTechHQ = SITE_VARIANT === 'tech' && layers.techHQs;
-    const useTechEvents = SITE_VARIANT === 'tech' && layers.techEvents && this.techEvents.length > 0;
+    const useTechHQ = (SITE_VARIANT === 'tech' || IS_PLANETSLAM) && layers.techHQs;
+    const useTechEvents = (SITE_VARIANT === 'tech' || IS_PLANETSLAM) && layers.techEvents && this.techEvents.length > 0;
     const useDatacenterClusters = layers.datacenters && zoom < 5;
     const layerMask = `${Number(useProtests)}${Number(useTechHQ)}${Number(useTechEvents)}${Number(useDatacenterClusters)}`;
     if (zoom === this.lastSCZoom && boundsKey === this.lastSCBoundsKey && layerMask === this.lastSCMask) return;
@@ -2595,7 +2595,7 @@ export class DeckGLMap {
     }
 
     // Tech variant layers (Supercluster-based deck.gl layers for HQs and events)
-    if (SITE_VARIANT === 'tech') {
+    if (SITE_VARIANT === 'tech' || IS_PLANETSLAM) {
       if (mapLayers.startupHubs) {
         layers.push(this.createStartupHubsLayer());
       }

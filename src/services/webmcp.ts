@@ -351,7 +351,7 @@ export const WEBMCP_MONITOR_KEYS = SITE_VARIANTS;
 
 export type WebMcpMonitorKey = SiteVariant;
 export type WebMcpNavDestination = WebMcpMonitorKey | 'settings' | 'alerts' | 'mission_picker';
-export type WebMcpMonitorNavigation = 'none' | 'reload' | 'assign';
+export type WebMcpMonitorNavigation = 'none' | 'reload' | 'assign' | 'in_place';
 
 export interface WebMcpNavigationResult {
   ok: boolean;

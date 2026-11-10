@@ -20,7 +20,9 @@ export class CyberMapOverlay {
   private infrastructure: CyberEnvelope<CyberInfrastructureData> | null = null;
   private selected: { kind: string; id: string } | null = null;
   private destroyed = false;
-  constructor(private container: HTMLElement, private paint: (snapshot: CyberMapSnapshot) => void, private center: (lat: number, lon: number) => void) {
+  private enabled = true;
+  constructor(private container: HTMLElement, private paint: (snapshot: CyberMapSnapshot) => void, private center: (lat: number, lon: number) => void, enabled = true) {
+    this.enabled = enabled;
     this.controls.className = 'cyber-map-controls'; this.controls.dataset.testid = 'cyber-map-controls';
     for (const event of ['pointerdown', 'wheel']) this.controls.addEventListener(event, e => e.stopPropagation(), { signal: this.abort.signal });
     this.controls.addEventListener('change', e => {
@@ -61,13 +63,22 @@ export class CyberMapOverlay {
   private attach(): void { if (!this.destroyed && this.controls.parentElement !== this.container) this.container.append(this.controls); }
   private records() { return { incidents: this.incidents?.status !== 'unavailable' ? this.incidents?.data?.items || [] : [], infrastructure: this.infrastructure?.status !== 'unavailable' ? this.infrastructure?.data?.items || [] : [] }; }
   private snapshot(): CyberMapSnapshot { const r = this.records(); return normalizeCyberMap(cyberMapSnapshot(r.incidents, r.infrastructure)); }
+  public setEnabled(enabled: boolean): void {
+    if (this.enabled === enabled) return;
+    this.enabled = enabled;
+    this.render();
+    if (enabled) void this.refresh();
+  }
   private async refresh(): Promise<void> {
+    if (!this.enabled) return;
     const [a, b] = await Promise.allSettled([fetchCyberDataset<CyberIncidentData>('incidents'), fetchCyberDataset<CyberInfrastructureData>('infrastructure')]);
     if (this.destroyed) return;
     this.incidents = a.status === 'fulfilled' ? a.value : null; this.infrastructure = b.status === 'fulfilled' ? b.value : null; this.render();
   }
   private render(): void {
     if (this.destroyed) return;
+    this.controls.hidden = !this.enabled;
+    if (!this.enabled) { this.paint({ markers: [] }); return; }
     const r = this.records(), snapshot = this.snapshot();
     const i = snapshot.markers.filter(m => m.kind === 'incident').length, n = snapshot.markers.filter(m => m.kind === 'infrastructure').length;
     const country = getCyberFilters().country;
