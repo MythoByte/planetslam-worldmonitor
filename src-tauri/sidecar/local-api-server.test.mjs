@@ -1941,6 +1941,89 @@ test('allows only Docker mode to fetch configured private Redis REST origin', as
   }
 });
 
+test('allows only Docker mode to fetch configured private AIS relay HTTP origin from a WebSocket URL', async () => {
+  const originalRelayUrl = process.env.WS_RELAY_URL;
+  const originalRelayToken = process.env.RELAY_SHARED_SECRET;
+  let upstreamHits = 0;
+
+  const upstream = createServer((_req, res) => {
+    upstreamHits += 1;
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ ok: true }));
+  });
+  const upstreamPort = await listen(upstream);
+  const relayOrigin = `http://127.0.0.1:${upstreamPort}`;
+
+  const localApi = await setupApiDir({
+    'relay-probe.js': `
+      export default async function handler() {
+        const upstream = await fetch(process.env.WS_RELAY_URL.replace(/^ws:/, 'http:') + '/ais/snapshot?commercial=true', {
+          headers: { Authorization: 'Bearer ' + process.env.RELAY_SHARED_SECRET },
+        });
+        const payload = await upstream.text();
+        return new Response(payload, {
+          status: upstream.status,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+    `,
+    'other-relay-probe.js': `
+      export default async function handler() {
+        const url = new URL(process.env.WS_RELAY_URL.replace(/^ws:/, 'http:'));
+        url.port = String(Number(url.port) + 1);
+        return fetch(url);
+      }
+    `,
+  });
+
+  async function runProbe(mode) {
+    const app = await createLocalApiServer({
+      port: 0,
+      apiDir: localApi.apiDir,
+      mode,
+      logger: { log() { }, warn() { }, error() { } },
+    });
+    const { port } = await app.start();
+    try {
+      const response = await authFetch(`http://127.0.0.1:${port}/api/relay-probe`);
+      if (mode === 'docker') {
+        const other = await authFetch(`http://127.0.0.1:${port}/api/other-relay-probe`);
+        assert.equal(other.status, 502);
+        assert.match((await other.json()).reason, /SSRF blocked/);
+      }
+      return response;
+    } finally {
+      await app.close();
+    }
+  }
+
+  process.env.WS_RELAY_URL = relayOrigin.replace(/^http:/, 'ws:');
+  process.env.RELAY_SHARED_SECRET = 'test-token';
+
+  try {
+    const dockerResponse = await runProbe('docker');
+    assert.equal(dockerResponse.status, 200);
+    assert.deepEqual(await dockerResponse.json(), { ok: true });
+    assert.equal(upstreamHits, 1);
+
+    const desktopResponse = await runProbe('desktop-sidecar');
+    assert.equal(desktopResponse.status, 502);
+    const desktopBody = await desktopResponse.json();
+    assert.equal(desktopBody.error, 'Local handler error');
+    assert.match(desktopBody.reason, /SSRF blocked/);
+    assert.equal(upstreamHits, 1);
+  } finally {
+    if (originalRelayUrl === undefined) delete process.env.WS_RELAY_URL;
+    else process.env.WS_RELAY_URL = originalRelayUrl;
+    if (originalRelayToken === undefined) delete process.env.RELAY_SHARED_SECRET;
+    else process.env.RELAY_SHARED_SECRET = originalRelayToken;
+    await localApi.cleanup();
+    await new Promise((resolve, reject) => {
+      upstream.close((error) => (error ? reject(error) : resolve()));
+    });
+  }
+});
+
 test('allows Docker LLM origins and only the configured Ollama origin on desktop', async () => {
   const envSnapshot = {
     LOCAL_API_MODE: process.env.LOCAL_API_MODE,
