@@ -24,6 +24,7 @@ for (const width of [1440, 768, 390]) {
     await page.goto('/dashboard');
     await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready', 'true', { timeout: 60_000 });
     await expect(page.locator('#panelsGrid .panel').first()).toBeVisible();
+    if (branded) await expect(page).toHaveTitle('PlanetSlam — Global Intelligence');
     await expect(page.locator(width <= 768 ? '.logo-mobile' : '.logo')).toHaveText(branded ? (width <= 768 ? 'PlanetSlam' : 'PLANETSLAM') : (width <= 768 ? 'World Monitor' : 'MONITOR'));
     if (branded) {
       await expect(page.locator('.auth-signin-btn:visible, .auth-signup-link:visible, .mobile-auth-fallback:visible')).toHaveCount(0);

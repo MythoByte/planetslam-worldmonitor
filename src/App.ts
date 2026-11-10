@@ -2525,7 +2525,7 @@ export class App {
     const spaceEdition = IS_PLANETSLAM && SITE_VARIANT === 'space';
     const techEdition = IS_PLANETSLAM && SITE_VARIANT === 'tech';
     const earthEdition = IS_PLANETSLAM && SITE_VARIANT === 'earth';
-    const documentTitle = earthEdition ? 'PlanetSlam Earth — Weather & Natural Hazards' : techEdition ? 'PlanetSlam Tech — Technology & Cybersecurity' : spaceEdition ? 'PlanetSlam Space — Live Space Dashboard' : t('shell.documentTitle');
+    const documentTitle = earthEdition ? 'PlanetSlam Earth — Weather & Natural Hazards' : techEdition ? 'PlanetSlam Tech — Technology & Cybersecurity' : spaceEdition ? 'PlanetSlam Space — Live Space Dashboard' : IS_PLANETSLAM ? 'PlanetSlam — Global Intelligence' : t('shell.documentTitle');
     const description = earthEdition ? 'Weather, earthquakes, floods, wildfires, storms, volcanoes, official alerts, Earth news, and webcams.' : techEdition ? 'Technology, AI, startups, cybersecurity news, exploited vulnerabilities, incidents, and your security workbench.' : spaceEdition
       ? 'Space cameras, launches, NASA imagery, space weather, satellites, and near-Earth objects.'
       : t('shell.metaDescription');
