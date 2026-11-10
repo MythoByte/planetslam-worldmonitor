@@ -1,5 +1,5 @@
 import { IS_PLANETSLAM } from '@/config/brand';
-import { layerMarkerIcon, earthMarkerIcon, paintLayerMarker, layerMenuIcon, GLOBE_MARKER_LAYERS } from './map-layer-icons';
+import { layerMarkerIcon, earthMarkerIcon, hazardMarkerIcon, paintLayerMarker, layerMenuIcon, GLOBE_MARKER_LAYERS } from './map-layer-icons';
 import './map-layer-icons.css';
 import { type EarthMapSnapshot, earthMarkerLabel } from '@/types/earth-map';
 import { selectEarthMarker } from './earth-map-interaction';
@@ -170,6 +170,7 @@ interface ClusterMarker extends BaseMarker {
 }
 interface WeatherMarker extends BaseMarker {
   _kind: 'weather';
+  event: string;
   id: string;
   severity: string;
   headline: string;
@@ -1476,7 +1477,10 @@ export class GlobeMap {
 
     const key = GLOBE_MARKER_LAYERS[d._kind];
     if (IS_PLANETSLAM && (key || d._kind === 'newsLocation')) {
-      paintLayerMarker(el, key ? layerMarkerIcon(key) : '📰');
+      paintLayerMarker(el, d._kind === 'earthquake' ? hazardMarkerIcon('earthquake')
+        : d._kind === 'natural' ? hazardMarkerIcon(d.category)
+        : d._kind === 'weather' ? hazardMarkerIcon(d.event || d.headline)
+        : key ? layerMarkerIcon(key) : '📰');
       if ('count' in d && typeof d.count === 'number' && d.count > 1) {
         const count = document.createElement('span');
         count.className = 'planetslam-marker-count';
@@ -2921,6 +2925,7 @@ export class GlobeMap {
         _lat: a.centroid![1],   // centroid is [lon, lat]
         _lng: a.centroid![0],
         id: a.id,
+        event: a.event ?? '',
         severity: a.severity ?? 'Minor',
         headline: a.headline ?? a.event ?? '',
       }));
