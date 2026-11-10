@@ -10,7 +10,7 @@
 }
 .planetslam-layer-marker::before,
 .planetslam-layer-marker::after { display: none !important; }
-.planetslam-layer-marker > :not(.planetslam-layer-glyph):not([class*="label"]):not([class*="badge"]):not([class*="count"]) { display: none !important; }
+.planetslam-layer-marker > :not(.planetslam-layer-glyph):not([class*="label"]):not([class*="badge"]):not([class*="count"]):not(.dark-vessel-indicator):not(.military-flight-altitude) { display: none !important; }
 .planetslam-layer-glyph {
   display: flex;
   position: absolute;
@@ -63,3 +63,29 @@
 }
 .planetslam-layer-picker .layer-toggle { white-space: nowrap; }
 .planetslam-layer-picker:not(.deckgl-layer-toggles) { max-width: min(340px, calc(100% - 20px)); }
+
+.planetslam-layer-marker > .cluster-count,
+.planetslam-layer-marker > .dark-vessel-indicator,
+.planetslam-emergency-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  min-width: 12px;
+  padding: 1px 3px;
+  border-radius: 4px;
+  background: #101923;
+  color: #fff;
+  font: 10px/1.2 sans-serif;
+  z-index: 1;
+}
+.planetslam-layer-marker > .dark-vessel-indicator,
+.planetslam-emergency-badge { color: #ffce63; }
+.planetslam-layer-marker > .military-flight-altitude {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.planetslam-layer-marker > .cluster-count::before,
+.planetslam-layer-marker > .cluster-count::after { display: none; }

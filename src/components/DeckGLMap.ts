@@ -2452,6 +2452,13 @@ export class DeckGLMap {
     // Military vessel clusters layer
     if (mapLayers.military && filteredMilitaryVesselClusters.length > 0) {
       layers.push(this.createMilitaryVesselClustersLayer(filteredMilitaryVesselClusters));
+      if (IS_PLANETSLAM) layers.push(new TextLayer<MilitaryVesselCluster>({
+        id: 'military-vessel-cluster-counts', data: filteredMilitaryVesselClusters,
+        getPosition: cluster => [cluster.lon, cluster.lat], getText: cluster => String(cluster.vesselCount),
+        getSize: 11, getColor: [255, 255, 255, 255], getPixelOffset: [12, -12],
+        background: true, getBackgroundColor: [16, 25, 35, 240], backgroundPadding: [2, 1],
+        billboard: true, pickable: false,
+      }));
     }
 
     // Military flight trails (rendered beneath dots)
@@ -2467,6 +2474,13 @@ export class DeckGLMap {
     // Military flight clusters layer
     if (mapLayers.military && filteredMilitaryFlightClusters.length > 0) {
       layers.push(this.createMilitaryFlightClustersLayer(filteredMilitaryFlightClusters));
+      if (IS_PLANETSLAM) layers.push(new TextLayer<MilitaryFlightCluster>({
+        id: 'military-flight-cluster-counts', data: filteredMilitaryFlightClusters,
+        getPosition: cluster => [cluster.lon, cluster.lat], getText: cluster => String(cluster.flightCount),
+        getSize: 11, getColor: [255, 255, 255, 255], getPixelOffset: [12, -12],
+        background: true, getBackgroundColor: [16, 25, 35, 240], backgroundPadding: [2, 1],
+        billboard: true, pickable: false,
+      }));
     }
 
     // Above military flights: an emergency-squawking military aircraft is drawn

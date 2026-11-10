@@ -1,5 +1,5 @@
 import { IS_PLANETSLAM } from '@/config/brand';
-import { layerMarkerIcon, earthMarkerIcon, hazardMarkerIcon, paintLayerMarker, layerMarkerUrl, SVG_MARKER_LAYERS } from './map-layer-icons';
+import { layerMarkerIcon, earthMarkerIcon, hazardMarkerIcon, platformMarkerIcon, paintLayerMarker, layerMarkerUrl, SVG_MARKER_LAYERS } from './map-layer-icons';
 import './map-layer-icons.css';
 import { type EarthMapSnapshot, earthMarkerLabel } from '@/types/earth-map';
 import { selectEarthMarker } from './earth-map-interaction';
@@ -1496,7 +1496,12 @@ export class MapComponent {
   private appendOverlay(node: Node): void {
     if (IS_PLANETSLAM && node instanceof HTMLElement) {
       const key = Array.from(node.classList).map(name => SVG_MARKER_LAYERS[name]).find(Boolean);
-      if (key) paintLayerMarker(node, node.dataset.hazard ? hazardMarkerIcon(node.dataset.hazard) : layerMarkerIcon(key));
+      if (key) {
+        const icon = node.dataset.platform === 'aircraft' || node.dataset.platform === 'vessel'
+          ? platformMarkerIcon(node.dataset.platform, node.dataset.platformType)
+          : node.dataset.hazard ? hazardMarkerIcon(node.dataset.hazard) : layerMarkerIcon(key);
+        paintLayerMarker(node, icon, Number(node.dataset.heading ?? 0));
+      }
       else if (node.classList.contains('news-location-marker')) paintLayerMarker(node, '📰');
     }
     (this.overlayAppendTarget ?? this.overlays).appendChild(node);
@@ -2896,6 +2901,8 @@ export class MapComponent {
 
         const div = document.createElement('div');
         div.className = `repair-ship-marker ${ship.status}`;
+        div.dataset.platform = 'vessel';
+        div.dataset.platformType = 'repair';
         div.style.left = `${pos[0]}px`;
         div.style.top = `${pos[1]}px`;
 
@@ -3625,6 +3632,7 @@ export class MapComponent {
 
         const div = document.createElement('div');
         div.className = 'aircraft-marker';
+        div.dataset.platform = 'aircraft';
         div.style.position = 'absolute';
         div.style.left = `${pt[0]}px`;
         div.style.top = `${pt[1]}px`;
@@ -3661,6 +3669,9 @@ export class MapComponent {
 
         const div = document.createElement('div');
         div.className = `military-flight-marker ${flight.operator} ${flight.aircraftType}${flight.isInteresting ? ' interesting' : ''}`;
+        div.dataset.platform = 'aircraft';
+        div.dataset.platformType = flight.aircraftType;
+        div.dataset.heading = String(flight.heading);
         div.style.left = `${pos[0]}px`;
         div.style.top = `${pos[1]}px`;
 
@@ -3730,6 +3741,7 @@ export class MapComponent {
 
         const div = document.createElement('div');
         div.className = `military-cluster-marker flight-cluster ${cluster.activityType || 'unknown'}`;
+        div.dataset.platform = 'aircraft';
         div.style.left = `${pos[0]}px`;
         div.style.top = `${pos[1]}px`;
 
@@ -3766,6 +3778,9 @@ export class MapComponent {
 
         const div = document.createElement('div');
         div.className = `military-vessel-marker ${vessel.operator} ${vessel.vesselType}${vessel.isDark ? ' dark-vessel' : ''}${vessel.isInteresting ? ' interesting' : ''}`;
+        div.dataset.platform = 'vessel';
+        div.dataset.platformType = vessel.vesselType;
+        div.dataset.heading = String(vessel.heading);
         div.style.left = `${pos[0]}px`;
         div.style.top = `${pos[1]}px`;
 
@@ -3834,6 +3849,7 @@ export class MapComponent {
 
         const div = document.createElement('div');
         div.className = `military-cluster-marker vessel-cluster ${cluster.activityType || 'unknown'}`;
+        div.dataset.platform = 'vessel';
         div.style.left = `${pos[0]}px`;
         div.style.top = `${pos[1]}px`;
 
@@ -3872,6 +3888,14 @@ export class MapComponent {
         marker.type = 'button';
         marker.className = 'aircraft-emergency-marker';
         marker.textContent = `✈ ${aircraft.squawk}`;
+        if (IS_PLANETSLAM) {
+          marker.dataset.platform = 'aircraft';
+          marker.dataset.platformType = 'emergency';
+          const squawk = document.createElement('span');
+          squawk.className = 'planetslam-emergency-badge';
+          squawk.textContent = aircraft.squawk;
+          marker.appendChild(squawk);
+        }
         marker.setAttribute('aria-label', `Reported squawk ${aircraft.squawk}, aircraft ${aircraft.address}`);
         marker.style.left = `${point[0]}px`;
         marker.style.top = `${point[1]}px`;

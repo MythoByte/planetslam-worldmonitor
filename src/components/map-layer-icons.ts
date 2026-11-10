@@ -1,6 +1,6 @@
 import { LAYER_REGISTRY } from '@/config/map-layer-definitions';
 import { IS_PLANETSLAM } from '@/config/brand';
-import type { MapLayers } from '@/types';
+import type { MapLayers, MilitaryAircraftType, MilitaryVesselType } from '@/types';
 
 /** Decode the registry's numeric HTML entities for shared SVG artwork selection. */
 export function layerMarkerIcon(key: keyof MapLayers): string {
@@ -9,7 +9,7 @@ export function layerMarkerIcon(key: keyof MapLayers): string {
 }
 
 export function layerMarkerUrl(icon: string): string {
-  if (icon.startsWith('hazard-')) return `/branding/planetslam/layer-icons/${icon}.svg`;
+  if (icon.startsWith('hazard-') || icon.startsWith('platform-')) return `/branding/planetslam/layer-icons/${icon}.svg`;
   return `/branding/planetslam/layer-icons/${icon.codePointAt(0)!.toString(16)}.svg`;
 }
 
@@ -42,8 +42,35 @@ export function earthMarkerIcon(marker: { kind: string; hazard?: string }): stri
   return marker.kind === 'camera' ? layerMarkerIcon('webcams') : hazardMarkerIcon(marker.hazard ?? 'other');
 }
 
+const AIRCRAFT_ICONS: Record<MilitaryAircraftType, string> = {
+  fighter: 'fighter', bomber: 'bomber', transport: 'transport', tanker: 'tanker',
+  awacs: 'awacs', reconnaissance: 'recon', helicopter: 'helicopter', drone: 'drone',
+  patrol: 'recon', special_ops: 'plane', vip: 'plane', unknown: 'plane',
+};
+const VESSEL_ICONS: Record<MilitaryVesselType, string> = {
+  carrier: 'carrier', destroyer: 'warship', frigate: 'warship', submarine: 'submarine',
+  amphibious: 'amphibious', patrol: 'patrol', auxiliary: 'auxiliary', research: 'research',
+  icebreaker: 'icebreaker', special: 'ship', unknown: 'ship',
+};
+
+/** Use only the feed's class, never infer a hull or airframe from its name/operator. */
+export function platformMarkerIcon(kind: 'aircraft' | 'vessel', type = 'unknown'): string {
+  if (kind === 'aircraft') {
+    const icon = type === 'emergency' ? 'emergency'
+      : Object.prototype.hasOwnProperty.call(AIRCRAFT_ICONS, type) ? AIRCRAFT_ICONS[type as MilitaryAircraftType] : 'plane';
+    return `platform-aircraft-${icon}`;
+  }
+  const icon = type === 'repair' ? 'repair'
+    : Object.prototype.hasOwnProperty.call(VESSEL_ICONS, type) ? VESSEL_ICONS[type as MilitaryVesselType] : 'ship';
+  return `platform-vessel-${icon}`;
+}
+
+export function markerHeading(heading: unknown): number {
+  return typeof heading === 'number' && Number.isFinite(heading) && heading >= 0 && heading <= 360 ? heading % 360 : 0;
+}
+
 /** Replace only the visual glyph; keep the marker's listeners, labels and badges. */
-export function paintLayerMarker(element: HTMLElement, icon: string): void {
+export function paintLayerMarker(element: HTMLElement, icon: string, heading = 0): void {
   if (!IS_PLANETSLAM) return;
   for (const child of Array.from(element.childNodes)) {
     if (child.nodeType === Node.TEXT_NODE && child.textContent?.trim()) child.remove();
@@ -55,6 +82,7 @@ export function paintLayerMarker(element: HTMLElement, icon: string): void {
   glyph.setAttribute('aria-hidden', 'true');
   glyph.src = layerMarkerUrl(icon);
   glyph.alt = '';
+  glyph.style.transform = `translate(-50%, -50%) rotate(${markerHeading(heading)}deg)`;
   glyph.width = glyph.height = 22;
   element.prepend(glyph);
 }
