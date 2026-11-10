@@ -5831,8 +5831,10 @@ async function seedAttackReports() {
   } finally { attackReportInFlight = false; }
 }
 
-function startAttackReportsLoop() {
-  startBootSeedLoop('GdeltAttackReports', 'seed-meta:gdelt:attack-reports', 15 * 60_000, seedAttackReports,
+async function startAttackReportsLoop() {
+  // Recover an interrupted first publication even when metadata is fresh.
+  const activated = await upstashGet('seed-activated:gdelt:attack-reports');
+  startBootSeedLoop('GdeltAttackReports', activated ? 'seed-meta:gdelt:attack-reports' : null, 15 * 60_000, seedAttackReports,
     error => console.warn('[GdeltAttackReports] Feed unavailable:', error?.message || error));
 }
 

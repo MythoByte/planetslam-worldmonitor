@@ -100,3 +100,17 @@ test('relay activation uses durable SET without EVAL; regular seeds keep TTL and
   reply = null; assert.equal(await set('marker', now), false);
   assert.match(relay, /activate: fetchedAt => upstashSet\(attackReportModule\.ATTACK_REPORT_ACTIVATION_KEY, fetchedAt\)/);
 });
+
+
+test('relay immediately retries an incomplete activation and throttles an activated feed on boot', async () => {
+  const relay = readFileSync(new URL('../scripts/ais-relay.cjs', import.meta.url), 'utf8');
+  const start = relay.slice(relay.indexOf('async function startAttackReportsLoop('), relay.indexOf('function startMiddleEastStrikesLoop('));
+  for (const active of [null, now]) {
+    let scheduled;
+    const run = runInNewContext(start + '; startAttackReportsLoop', {
+      upstashGet: async key => { assert.equal(key, 'seed-activated:gdelt:attack-reports'); return active; },
+      startBootSeedLoop: (...args) => { scheduled = args; }, seedAttackReports() {}, console,
+    });
+    await run(); assert.equal(scheduled[1], active ? 'seed-meta:gdelt:attack-reports' : null); assert.equal(scheduled[2], 900000);
+  }
+});
