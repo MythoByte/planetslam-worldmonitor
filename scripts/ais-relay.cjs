@@ -12980,6 +12980,14 @@ async function handleRelayRequest(req, res) {
     connectUpstream();
     recordAisSnapshotAvailability(buildSnapshot()); // ensures cache is warm and records usable freshness
     const url = new URL(req.url, `http://localhost:${PORT}`);
+    if (url.searchParams.get('commercial') === 'true') {
+      const { selectCommercialVessels } = require('./_commercial-shipping.cjs');
+      const commercial = selectCommercialVessels(vessels, vesselMeta, candidateReports);
+      return sendCompressed(req, res, 200, {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'private, max-age=15',
+      }, JSON.stringify({ ...commercial, available: lastSnapshot?.status?.currentPositionReady === true }));
+    }
     const includeCandidates = url.searchParams.get('candidates') === 'true';
     const includeTankers = url.searchParams.get('tankers') === 'true';
     const bbox = parseBbox(url.searchParams.get('bbox'));

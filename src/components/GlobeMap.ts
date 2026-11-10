@@ -8,6 +8,7 @@ import { selectCyberMarker } from './cyber-map-interaction';
 import type { SpaceOrbitSnapshot } from '@/types/space-orbits';
 import { BRAND } from '@/config/brand';
 import type { SpaceMapSnapshot } from '@/types/space-map';
+import { commercialVesselLabel, freshCommercialVessels, type CommercialVessel } from '@/types/commercial-shipping';
 /**
  * GlobeMap - 3D interactive globe using globe.gl
  *
@@ -550,6 +551,13 @@ export class GlobeMap {
 
   private spaceOverlay: SpaceMapSnapshot = { aurora: [], launches: [] };
 
+  private commercialVessels: CommercialVessel[] = [];
+
+  public setCommercialVessels(vessels: CommercialVessel[]): void {
+    this.commercialVessels = vessels;
+    this.flushMarkers();
+  }
+
   public setSpaceOverlay(snapshot: SpaceMapSnapshot): void {
     this.spaceOverlay = snapshot;
     this.flushMarkers();
@@ -558,6 +566,10 @@ export class GlobeMap {
   private paintSpaceOverlay(): void {
     if (!this.globe || !this.initialized || this.destroyed || this.webglLost) return;
     const points = [
+      ...freshCommercialVessels(this.layers.commercialShipping ? this.commercialVessels : []).map(vessel => ({
+        kind: 'commercial', id: vessel.mmsi, latitude: vessel.lat, longitude: vessel.lon,
+        name: commercialVesselLabel(vessel), color: '#50dcc8', radius: 0.4,
+      })),
       ...(this.earthMap?.markers ?? []).map(marker => ({ ...marker, earthKind: marker.kind, kind: 'earth', name: earthMarkerLabel(marker), color: marker.kind === 'camera' ? '#4ed5c8' : marker.mode === 'warning' ? '#ff6c6c' : marker.mode === 'forecast' ? '#bc97ff' : '#ffbd5b', radius: marker.kind === 'camera' ? 0.3 : 0.55 })),
       ...(this.cyberMap?.markers ?? []).map(marker => ({ ...marker, cyberKind: marker.kind, kind: 'cyber',
         name: cyberMarkerLabel(marker), color: marker.kind === 'incident' ? '#ffbc50' : '#bd91ff', radius: marker.kind === 'incident' ? 0.55 : 0.3 })),
@@ -565,7 +577,7 @@ export class GlobeMap {
       ...(this.layers.spaceports ? this.spaceOverlay.launches : []).map(launch => ({ ...launch, kind: 'launch', name: `${launch.name} · ${launch.pad} · ${new Date(launch.net).toUTCString()}`, color: '#ffbc50', radius: 0.55 })),
       ...(this.layers.satellites ? this.spaceOrbits?.positions ?? [] : []).map(orbit => ({ ...orbit, kind: 'satellite', name: `${orbit.name} · calculated position · ${orbit.altitudeKm.toFixed(1)} km · elements ${orbit.elementStatus}`, color: orbit.elementStatus === 'stale' ? '#ffbc50' : orbit.selected ? '#4be1ff' : '#82a0d7', radius: orbit.selected ? 0.65 : 0.32 })),
     ];
-    const sources = [this.earthMap, this.cyberMap, this.spaceOverlay, this.spaceOrbits, this.layers.satellites, this.layers.spaceports, this.layers.aurora];
+    const sources = [this.earthMap, this.cyberMap, this.spaceOverlay, this.spaceOrbits, this.layers.satellites, this.layers.spaceports, this.layers.aurora, this.commercialVessels, this.layers.commercialShipping];
     if (IS_PLANETSLAM && sources.some((source, index) => source !== this.editionMarkerSources[index])) {
       this.editionMarkerSources = sources;
       this.editionMarkers = points.filter(point => point.kind !== 'aurora').map(point => {
@@ -573,7 +585,7 @@ export class GlobeMap {
         return {
           _kind: 'edition', _lat: marker.latitude, _lng: marker.longitude,
           icon: marker.kind === 'earth' ? earthMarkerIcon({ kind: marker.earthKind ?? 'event', hazard: marker.hazard })
-            : layerMarkerIcon(marker.kind === 'cyber' ? 'cyberThreats' : marker.kind === 'launch' ? 'spaceports' : 'satellites'),
+            : layerMarkerIcon(marker.kind === 'commercial' ? 'commercialShipping' : marker.kind === 'cyber' ? 'cyberThreats' : marker.kind === 'launch' ? 'spaceports' : 'satellites'),
           title: marker.name, altitude: marker.kind === 'satellite' ? (marker.altitudeKm ?? 0) / 6371 : 0.003,
           select: () => {
             if (marker.kind === 'earth') {

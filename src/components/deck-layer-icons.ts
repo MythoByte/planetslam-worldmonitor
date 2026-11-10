@@ -5,6 +5,7 @@ import type { MapLayers } from '@/types';
 import { earthMarkerIcon, hazardMarkerIcon, platformMarkerIcon, markerHeading, layerMarkerIcon, layerMarkerUrl } from './map-layer-icons';
 
 const MARKER_LAYERS: Record<string, keyof MapLayers> = {
+  'commercial-shipping-layer': 'commercialShipping',
   'bases-layer': 'bases',
   'bases-cluster-layer': 'bases',
   'nuclear-layer': 'nuclear',

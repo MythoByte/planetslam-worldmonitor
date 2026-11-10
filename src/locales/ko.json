@@ -1325,7 +1325,8 @@
         "canadaAlerts": "캐나다 경보",
         "notamAirspace": "NOTAM 공역 제한",
         "no2Activity": "산업 활동",
-        "aurora": "Aurora forecast"
+        "aurora": "Aurora forecast",
+        "commercialShipping": "Commercial Shipping"
       },
       "tooltip": {
         "earthquake": "지진",

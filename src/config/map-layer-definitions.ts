@@ -76,6 +76,7 @@ export const LAYER_REGISTRY: Record<keyof MapLayers, LayerDefinition> = {
   military:                 def('military',                 '&#9992;',   'militaryActivity',         'Military Activity'),
   aircraftEmergencies:       def('aircraftEmergencies',       '&#9888;',   'aircraftEmergencies',      'Aircraft Emergencies', ['svg', 'deck']),
   ais:                      def('ais',                      '&#128674;', 'shipTraffic',              'Ship Traffic'),
+  commercialShipping:       def('commercialShipping',       '&#128674;', 'commercialShipping',       'Commercial Shipping'),
   tradeRoutes:              def('tradeRoutes',              '&#9875;',   'tradeRoutes',              'Trade Routes'),
   flights:                  def('flights',                  '&#9992;',   'flightDelays',             'Aviation'),
   protests:                 def('protests',                 '&#128226;', 'protests',                 'Protests'),
@@ -178,7 +179,7 @@ const VARIANT_LAYER_ORDER: Record<MapVariant, Array<keyof MapLayers>> = {
     'iranAttacks', 'hotspots', 'conflicts',
     'bases', 'nuclear', 'irradiators', 'radiationWatch', 'spaceports',
     'cables', 'pipelines', 'storageFacilities', 'fuelShortages', 'datacenters', 'military',
-    'ais', 'tradeRoutes', 'flights', 'aircraftEmergencies', 'protests',
+    'ais', 'commercialShipping', 'tradeRoutes', 'flights', 'aircraftEmergencies', 'protests',
     'ucdpEvents', 'displacement', 'climate', 'weather', 'canadaRoads', 'canadaAlerts',
     'outages', 'cyberThreats', 'natural', 'fires',
     'waterways', 'economic', 'minerals', 'gpsJamming',
@@ -235,7 +236,7 @@ export function isSunsetLayer(key: keyof MapLayers): boolean {
 
 export function getOrderedLayerKeys(variant: MapVariant): Array<keyof MapLayers> {
   return (IS_PLANETSLAM ? [...new Set(Object.values(VARIANT_LAYER_ORDER).flat())] : VARIANT_LAYER_ORDER[variant] ?? VARIANT_LAYER_ORDER.full)
-    .filter(k => !isSunsetLayer(k) && (k !== 'aurora' || variant !== 'full' || IS_PLANETSLAM));
+    .filter(k => !isSunsetLayer(k) && (k !== 'commercialShipping' || IS_PLANETSLAM) && (k !== 'aurora' || variant !== 'full' || IS_PLANETSLAM));
 }
 
 export function getCompleteLayerCatalogKeys(variant: MapVariant): Array<keyof MapLayers> {

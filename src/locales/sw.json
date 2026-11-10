@@ -1470,7 +1470,8 @@
         "canadaAlerts": "Tahadhari za Kanada",
         "notamAirspace": "Vikwazo vya Anga la NOTAM",
         "no2Activity": "Shughuli za viwanda",
-        "aurora": "Aurora forecast"
+        "aurora": "Aurora forecast",
+        "commercialShipping": "Commercial Shipping"
       },
       "tooltip": {
         "earthquake": "Tetemeko la ardhi",

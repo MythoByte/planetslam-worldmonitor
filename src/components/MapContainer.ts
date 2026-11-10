@@ -1,4 +1,5 @@
 import { globalEarthMapSnapshot } from '@/services/earth-global-map';
+import { CommercialShippingLayer } from './CommercialShippingLayer';
 import { IS_PLANETSLAM } from '@/config/brand';
 import type { EarthMapSnapshot } from '@/types/earth-map';
 import type { CyberMapSnapshot } from '@/types/cyber-map';
@@ -345,6 +346,16 @@ export class MapContainer {
   private cachedDdosLocations: DdosLocationHit[] | null = null;
   private cachedChokepointData: GetChokepointStatusResponse | null | undefined;
   private cachedChinaCorridorSelection: ChinaCorridorControlTower | null = null;
+  private commercialShippingLayer: import('./CommercialShippingLayer').CommercialShippingLayer;
+  private cachedCommercialVessels: import('@/types/commercial-shipping').CommercialVessel[] = [];
+
+  private setCommercialVessels(vessels: import('@/types/commercial-shipping').CommercialVessel[]): void {
+    this.cachedCommercialVessels = vessels;
+    if (this.useGlobe) this.globeMap?.setCommercialVessels(vessels);
+    else if (this.useDeckGL) this.deckGLMap?.setCommercialVessels(vessels);
+    else this.svgMap?.setCommercialVessels(vessels);
+  }
+
   private emergencyLayer: AircraftEmergencyLayer;
   // DeckGL-only layer: the feed runs only while the DeckGL renderer is active.
   private notamAirspaceLayer: NotamAirspaceLayer;
@@ -352,6 +363,7 @@ export class MapContainer {
 
   constructor(container: HTMLElement, initialState: MapContainerState, preferGlobe = false, options: MapContainerOptions = {}) {
     this.container = container;
+    this.commercialShippingLayer = new CommercialShippingLayer(container, vessels => this.setCommercialVessels(vessels));
     this.emergencyLayer = new AircraftEmergencyLayer(container, markers => {
       if (this.useDeckGL) this.deckGLMap?.setAircraftEmergencies(markers);
       else this.svgMap?.setAircraftEmergencies(markers);
@@ -937,6 +949,8 @@ export class MapContainer {
     if (this.cachedCyberMap) this.setCyberMap(this.cachedCyberMap);
     if (this.cachedSpaceOrbits) this.setSpaceOrbitSnapshot(this.cachedSpaceOrbits);
     this.setSpaceOverlay(this.cachedSpaceOverlay);
+    this.setCommercialVessels(this.cachedCommercialVessels);
+    this.commercialShippingLayer.setEnabled(IS_PLANETSLAM && this.getState().layers.commercialShipping === true);
     // 1. Re-wire callbacks (through own public methods for adapter safety)
     if (this.cachedOnStateChanged) this.onStateChanged(this.cachedOnStateChanged);
     if (this.cachedOnLayerChange) this.setOnLayerChange(this.cachedOnLayerChange);
@@ -1215,6 +1229,7 @@ export class MapContainer {
       sanitized = sanitizeLockedLayers(sanitized, false);
     }
     this.initialState = { ...this.initialState, layers: sanitized };
+    this.commercialShippingLayer.setEnabled(IS_PLANETSLAM && sanitized.commercialShipping === true);
     if (IS_PLANETSLAM) this.cyberMapController?.setEnabled(sanitized.techEvents === true);
     this.renderUkmtoStatus(sanitized.ais);
     this.emergencyLayer.setEnabled(!this.useGlobe && sanitized.aircraftEmergencies === true);
@@ -1689,6 +1704,7 @@ export class MapContainer {
     this.cachedOnLayerChange = callback;
     const notify = (layer: keyof MapLayers, enabled: boolean, source: 'user' | 'programmatic'): void => {
       if (layer === 'ais') this.renderUkmtoStatus(enabled);
+      if (layer === 'commercialShipping') this.commercialShippingLayer.setEnabled(IS_PLANETSLAM && enabled);
       if (layer === 'aircraftEmergencies') this.emergencyLayer.setEnabled(!this.useGlobe && enabled);
       if (layer === 'flights') this.notamAirspaceLayer.setEnabled(this.useDeckGL && enabled);
       this.renderEarthMap({ ...this.getState().layers, [layer]: enabled });
@@ -1791,6 +1807,7 @@ export class MapContainer {
 
   // Layer enable/disable and trigger methods
   public enableLayer(layer: keyof MapLayers): void {
+    if (layer === 'commercialShipping') this.commercialShippingLayer.setEnabled(IS_PLANETSLAM);
     if (layer === 'resilienceScore' && !this.useDeckGL) return;
     // #6045 — don't stamp initialState or enable locked premium layers for free users.
     if (!isLayerEntitled(layer, hasPremiumAccess(getAuthState()))) return;
@@ -2038,6 +2055,7 @@ export class MapContainer {
     this.spaceOverlayController?.destroy();
     this.spaceOverlayController = null;
     this.emergencyLayer.destroy();
+    this.commercialShippingLayer.destroy();
     this.notamAirspaceLayer.destroy();
     this.destroyed = true;
     this.container.removeEventListener('pointerdown', this.invalidateViewportAuthority);

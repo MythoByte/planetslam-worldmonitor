@@ -1322,7 +1322,8 @@
         "canadaAlerts": "Výstrahy Kanada",
         "notamAirspace": "Omezení vzdušného prostoru NOTAM",
         "no2Activity": "Průmyslová aktivita",
-        "aurora": "Aurora forecast"
+        "aurora": "Aurora forecast",
+        "commercialShipping": "Commercial Shipping"
       },
       "tooltip": {
         "earthquake": "Zemětřesení",

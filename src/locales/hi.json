@@ -1470,7 +1470,8 @@
         "canadaAlerts": "कनाडा अलर्ट",
         "notamAirspace": "NOTAM हवाई क्षेत्र प्रतिबंध",
         "no2Activity": "औद्योगिक गतिविधि",
-        "aurora": "Aurora forecast"
+        "aurora": "Aurora forecast",
+        "commercialShipping": "Commercial Shipping"
       },
       "tooltip": {
         "earthquake": "भूकंप",

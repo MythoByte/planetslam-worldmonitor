@@ -1470,7 +1470,8 @@
         "canadaAlerts": "هشدارهای کانادا",
         "notamAirspace": "محدودیت‌های فضای هوایی NOTAM",
         "no2Activity": "فعالیت صنعتی",
-        "aurora": "Aurora forecast"
+        "aurora": "Aurora forecast",
+        "commercialShipping": "Commercial Shipping"
       },
       "tooltip": {
         "earthquake": "زمین‌لرزه",
