@@ -891,6 +891,11 @@ export class EventHandlerManager implements AppModule {
     });
 
     this.boundResizeHandler = debounce(() => {
+      if (IS_PLANETSLAM) {
+        this.ctx.container.querySelectorAll<HTMLElement>(
+          '#psMoreActions > .export-panel-container, #psMobileMoreActions > .export-panel-container, #psMoreActions > .playback-control, #psMobileMoreActions > .playback-control',
+        ).forEach(element => this.attachSecondaryHeaderAction(element));
+      }
       this.ctx.map?.setIsResizing(false);
       this.ctx.map?.render();
     }, 150);
@@ -2137,6 +2142,14 @@ export class EventHandlerManager implements AppModule {
     }
   }
 
+  private attachSecondaryHeaderAction(element: HTMLElement): void {
+    const selector = IS_PLANETSLAM
+      ? (window.matchMedia('(max-width: 768px)').matches ? '#psMobileMoreActions' : '#psMoreActions')
+      : '.header-right';
+    const mount = this.ctx.container.querySelector(selector);
+    if (mount && element.parentElement !== mount) mount.insertBefore(element, mount.firstChild);
+  }
+
   setupExportPanel(): void {
     const getExportData = () => {
       const allCards = this.ctx.correlationEngine?.getAllCards() ?? [];
@@ -2163,12 +2176,7 @@ export class EventHandlerManager implements AppModule {
     };
 
     const attachExportPanel = (panel: NonNullable<AppContext['exportPanel']>): void => {
-      const el = panel.getElement();
-      if (el.parentElement) return;
-      const headerRight = this.ctx.container.querySelector(IS_PLANETSLAM ? (this.ctx.isMobile ? '#psMobileMoreActions' : '#psMoreActions') : '.header-right');
-      if (headerRight) {
-        headerRight.insertBefore(el, headerRight.firstChild);
-      }
+      this.attachSecondaryHeaderAction(panel.getElement());
     };
 
     let currentExportFormats: readonly DataExportFormat[] = [];
@@ -2213,7 +2221,7 @@ export class EventHandlerManager implements AppModule {
     // injected AFTER it is in the accessibility tree.
     const liveRegion = h('span', { className: 'wm-visually-hidden', role: 'status' });
     liveRegion.setAttribute('aria-live', 'polite');
-    const initialHeaderRight = this.ctx.container.querySelector(IS_PLANETSLAM ? (this.ctx.isMobile ? '#psMobileMoreActions' : '#psMoreActions') : '.header-right');
+    const initialHeaderRight = this.ctx.container.querySelector('.header-right');
     initialHeaderRight?.appendChild(liveRegion);
 
     const removeLockedControl = (): void => {
@@ -2239,8 +2247,7 @@ export class EventHandlerManager implements AppModule {
           resolveGateAction(lockedReason, { openAuthModal: () => this.ctx.authModal?.open() })();
         },
       });
-      const headerRight = this.ctx.container.querySelector(IS_PLANETSLAM ? (this.ctx.isMobile ? '#psMobileMoreActions' : '#psMoreActions') : '.header-right');
-      headerRight?.insertBefore(lockedControl.getElement(), headerRight.firstChild);
+      this.attachSecondaryHeaderAction(lockedControl.getElement());
     };
 
     const unlock = (formats: readonly DataExportFormat[]): void => {
@@ -2471,10 +2478,7 @@ export class EventHandlerManager implements AppModule {
     });
 
     const el = this.ctx.playbackControl.getElement();
-    const headerRight = this.ctx.container.querySelector(IS_PLANETSLAM ? (this.ctx.isMobile ? '#psMobileMoreActions' : '#psMoreActions') : '.header-right');
-    if (headerRight) {
-      headerRight.insertBefore(el, headerRight.firstChild);
-    }
+    this.attachSecondaryHeaderAction(el);
 
     // #5632: gate on the entitlement chain, NOT `user.role === 'pro'` — nothing
     // writes Clerk publicMetadata, so that field read 'free' for paying

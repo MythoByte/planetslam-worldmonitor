@@ -62,6 +62,13 @@ for (const width of [1440, 900, 390]) {
     }
     await expect(page.locator('body')).toHaveJSProperty('scrollWidth', width);
     await page.screenshot({ animations: 'disabled', path: `/tmp/ps-nav-${width}.png` });
+    // Actions follow the visible More menu after both breakpoint crossings.
+    for (const resizedWidth of width > 768 ? [390, width] : [900, width]) {
+      await page.setViewportSize({ width: resizedWidth, height: 1000 });
+      const mount = resizedWidth > 768 ? '#psMoreActions' : '#psMobileMoreActions';
+      await expect(page.locator(`${mount} > .export-panel-container`)).toHaveCount(1);
+      await expect(page.locator(`${mount} > .playback-control`)).toHaveCount(1);
+    }
     if (width > 768) {
       await picker.locator('summary').click();
       await picker.locator('[data-variant="tech"]').click();
