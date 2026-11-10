@@ -1107,6 +1107,20 @@ export class PanelLayoutManager implements AppModule {
       return `<a href="${href}" target="_blank" rel="noopener">${label}</a>`;
     }).join('');
 
+    const regionSelectorHtml = `<div class="region-selector">
+            <select id="regionSelect" class="region-select" aria-label="${t('header.selectRegion')}">
+              <option value="global">${t('components.deckgl.views.global')}</option>
+              <option value="america">${t('components.deckgl.views.americas')}</option>
+              <option value="mena">${t('components.deckgl.views.mena')}</option>
+              <option value="eu">${t('components.deckgl.views.europe')}</option>
+              <option value="asia">${t('components.deckgl.views.asia')}</option>
+              <option value="latam">${t('components.deckgl.views.latam')}</option>
+              <option value="africa">${t('components.deckgl.views.africa')}</option>
+              <option value="oceania">${t('components.deckgl.views.oceania')}</option>
+            </select>
+          </div>`;
+    const dashboardLabel = ({ full: 'World', tech: 'Tech', finance: 'Finance', commodity: 'Commodities', energy: 'Energy', happy: 'Good News' } as Record<string, string>)[SITE_VARIANT] ?? 'World';
+
     markLcpDebug('wm:layout:render-start');
     document.documentElement.classList.add('wm-layout-hydrated');
     setTrustedHtml(this.ctx.container, trustedHtml(`
@@ -1115,6 +1129,7 @@ export class PanelLayoutManager implements AppModule {
       <div id="proBannerSlot" class="pro-banner-slot" aria-live="polite"></div>
       <div class="header" role="banner">
         <div class="header-left">
+          ${IS_PLANETSLAM ? `<details class="ps-dashboard-picker ps-header-menu"><summary>${escapeHtml(dashboardLabel)} <span aria-hidden="true">▾</span></summary>` : ''}
           <div class="variant-switcher">${(() => {
         const local = this.ctx.isDesktopApp || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
         const inIframe = window.self !== window.top;
@@ -1153,9 +1168,9 @@ export class PanelLayoutManager implements AppModule {
                class="variant-option ${SITE_VARIANT === 'commodity' ? 'active' : ''}"
                data-variant="commodity"
                ${vTarget('commodity')}
-               title="${t('header.commodity')}${SITE_VARIANT === 'commodity' ? ` ${t('common.currentVariant')}` : ''}">
+               title="${IS_PLANETSLAM ? 'Commodities' : t('header.commodity')}${SITE_VARIANT === 'commodity' ? ` ${t('common.currentVariant')}` : ''}">
               <span class="variant-icon">⛏️</span>
-              <span class="variant-label">${t('header.commodity')}</span>
+              <span class="variant-label">${IS_PLANETSLAM ? 'Commodities' : t('header.commodity')}</span>
             </a>
             <span class="variant-divider"></span>
             <a href="${vHref('energy')}"
@@ -1176,6 +1191,7 @@ export class PanelLayoutManager implements AppModule {
               <span class="variant-label">Good News</span>
             </a>`;
       })()}</div>
+          ${IS_PLANETSLAM ? `</details><span class="ps-mobile-dashboard">${escapeHtml(dashboardLabel)}</span>` : ''}
           <span class="logo">${BRAND.wordmark}</span><span class="logo-mobile">${BRAND.name}</span><span class="version">v${__APP_VERSION__}</span>${BETA_MODE ? '<span class="beta-badge">BETA</span>' : ''}
           <a href="${creditUrl}" target="_blank" rel="noopener" class="credit-link">
             <svg class="x-logo" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -1191,36 +1207,27 @@ export class PanelLayoutManager implements AppModule {
             <span class="status-dot"></span>
             <span>${t('header.live')}</span>
           </div>
-          <div class="region-selector">
-            <select id="regionSelect" class="region-select" aria-label="${t('header.selectRegion')}">
-              <option value="global">${t('components.deckgl.views.global')}</option>
-              <option value="america">${t('components.deckgl.views.americas')}</option>
-              <option value="mena">${t('components.deckgl.views.mena')}</option>
-              <option value="eu">${t('components.deckgl.views.europe')}</option>
-              <option value="asia">${t('components.deckgl.views.asia')}</option>
-              <option value="latam">${t('components.deckgl.views.latam')}</option>
-              <option value="africa">${t('components.deckgl.views.africa')}</option>
-              <option value="oceania">${t('components.deckgl.views.oceania')}</option>
-            </select>
-          </div>
+          ${IS_PLANETSLAM ? '' : `${regionSelectorHtml}
           <span id="missionPresetMount" class="mission-preset-mount"></span>
+`}
           <button class="mobile-search-btn" id="mobileSearchBtn" aria-label="${t('header.search')}">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </button>
         </div>
         <div class="header-right">
           <button class="search-btn" id="searchBtn"><kbd>⌘K</kbd> ${t('header.search')}</button>
+          ${IS_PLANETSLAM ? '<details class="ps-more ps-header-menu"><summary>More <span aria-hidden="true">⋯</span></summary><div class="ps-more-actions" id="psMoreActions">' : ''}
           ${this.ctx.isDesktopApp ? '' : `<button class="copy-link-btn" id="copyLinkBtn">${t('header.copyLink')}</button>`}
           ${this.ctx.isDesktopApp ? '' : `<button class="copy-link-btn embed-link-btn" id="embedLinkBtn">${t('header.embed')}</button>`}
           ${this.ctx.isDesktopApp ? '' : `<button class="fullscreen-btn" id="fullscreenBtn" title="${t('header.fullscreen')}" aria-label="${t('header.fullscreen')}">⛶</button>`}
           ${SITE_VARIANT === 'happy' ? `<button class="tv-mode-btn" id="tvModeBtn" title="TV Mode (Shift+T)" aria-label="TV Mode"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></button>` : ''}
+          ${IS_PLANETSLAM ? `<a href="${BRAND.source}" target="_blank" rel="noopener">Source · AGPL-3.0</a></div></details>` : ''}
           <span id="unifiedSettingsMount"></span>
           <span id="authWidgetMount" class="auth-widget-mount"></span>
         </div>
       </div>
       <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
       <nav class="mobile-menu" id="mobileMenu" aria-label="Menu">
-        ${IS_PLANETSLAM ? `<a class="mobile-menu-item" href="${BRAND.source}" target="_blank" rel="noopener">PlanetSlam source · AGPL-3.0 · Powered by World Monitor</a>` : ''}
         <div class="mobile-menu-header">
           <span class="mobile-menu-title">${BRAND.name.toUpperCase()}</span>
           <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">
@@ -1234,12 +1241,13 @@ export class PanelLayoutManager implements AppModule {
           <button class="mobile-auth-fallback" id="mobileAuthFallback" type="button">Sign In</button>
         </div>
         <div class="mobile-menu-divider"></div>
+        ${IS_PLANETSLAM ? '<div class="ps-menu-label">Dashboards</div>' : ''}
         ${(() => {
         const variants = [
           { key: 'full', icon: '🌍', label: t('header.world') },
           { key: 'tech', icon: '💻', label: t('header.tech') },
           { key: 'finance', icon: '📈', label: t('header.finance') },
-          { key: 'commodity', icon: '⛏️', label: t('header.commodity') },
+          { key: 'commodity', icon: '⛏️', label: IS_PLANETSLAM ? 'Commodities' : t('header.commodity') },
           { key: 'energy', icon: '⚡', label: t('header.energy') },
           { key: 'happy', icon: '☀️', label: 'Good News' },
         ];
@@ -1259,7 +1267,7 @@ export class PanelLayoutManager implements AppModule {
         </button>
         <button class="mobile-menu-item" id="mobileMenuMission">
           <span class="mobile-menu-item-icon">◎</span>
-          <span class="mobile-menu-item-label">Mission</span>
+          <span class="mobile-menu-item-label">${IS_PLANETSLAM ? 'Presets' : 'Mission'}</span>
           <span class="mobile-menu-chevron">▸</span>
         </button>
         <div class="mobile-menu-divider"></div>
@@ -1283,6 +1291,7 @@ export class PanelLayoutManager implements AppModule {
           <a href="https://www.worldmonitor.app/docs/documentation" target="_blank" rel="noopener">Docs</a>
           <a href="https://status.worldmonitor.app/" target="_blank" rel="noopener">Status</a>
         </div>`}
+        ${IS_PLANETSLAM ? `<div class="mobile-menu-divider"></div><div id="psMobileMoreActions" class="ps-mobile-more-actions"></div><a class="mobile-menu-item" href="${BRAND.source}" target="_blank" rel="noopener">Source · AGPL-3.0 · Powered by World Monitor</a>` : ''}
         <div class="mobile-menu-version">v${__APP_VERSION__}</div>
       </nav>
       <div class="region-sheet-backdrop" id="regionSheetBackdrop"></div>
@@ -1305,7 +1314,7 @@ export class PanelLayoutManager implements AppModule {
         </button>`
       ).join('')}
       </div>
-      <div class="dashboard-tabs-mount" id="panelTabsMount"></div>
+      ${IS_PLANETSLAM ? '<div class="ps-workspace-row"><div class="dashboard-tabs-mount" id="panelTabsMount"></div><span id="missionPresetMount" class="mission-preset-mount"></span></div>' : '<div class="dashboard-tabs-mount" id="panelTabsMount"></div>'}
       <main id="main" tabindex="-1" class="main-content${mapRightClassActive ? ' map-right' : ''}">
         <div class="map-section${mapStartsCollapsed ? ' collapsed' : ''}" id="mapSection">
           <div class="panel-header">
@@ -1314,6 +1323,7 @@ export class PanelLayoutManager implements AppModule {
             </div>
             <span class="header-clock" id="headerClock" translate="no"></span>
             <div class="map-header-actions">
+              ${IS_PLANETSLAM ? regionSelectorHtml : ''}
               <div class="map-dimension-toggle" id="mapDimensionToggle">
                 <button class="map-dim-btn${isGlobeMode ? '' : ' active'}" data-mode="flat" title="2D Map">2D</button>
                 <button class="map-dim-btn${isGlobeMode ? ' active' : ''}" data-mode="globe" title="3D Globe">3D</button>

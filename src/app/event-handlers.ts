@@ -843,6 +843,23 @@ export class EventHandlerManager implements AppModule {
     };
     document.addEventListener('keydown', this.boundUndoHandler);
 
+    this.ctx.container.querySelectorAll<HTMLDetailsElement>('.ps-header-menu').forEach(menu => {
+      menu.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+          menu.open = false;
+          menu.querySelector('summary')?.focus();
+        }
+      });
+      menu.addEventListener('focusout', event => {
+        if (!menu.contains(event.relatedTarget as Node | null)) menu.open = false;
+      });
+      menu.addEventListener('toggle', () => {
+        if (menu.open) this.ctx.container.querySelectorAll<HTMLDetailsElement>('.ps-header-menu').forEach(other => {
+          if (other !== menu) other.open = false;
+        });
+      });
+    });
+
     const isLocalDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
     this.ctx.container.querySelectorAll<HTMLAnchorElement>('.variant-option').forEach(link => {
       link.addEventListener('click', (e) => {
@@ -874,6 +891,11 @@ export class EventHandlerManager implements AppModule {
     });
 
     this.boundResizeHandler = debounce(() => {
+      if (IS_PLANETSLAM) {
+        this.ctx.container.querySelectorAll<HTMLElement>(
+          '#psMoreActions > .export-panel-container, #psMobileMoreActions > .export-panel-container, #psMoreActions > .playback-control, #psMobileMoreActions > .playback-control',
+        ).forEach(element => this.attachSecondaryHeaderAction(element));
+      }
       this.ctx.map?.setIsResizing(false);
       this.ctx.map?.render();
     }, 150);
@@ -1029,7 +1051,7 @@ export class EventHandlerManager implements AppModule {
     if (!mount) return;
 
     const active = loadStoredMissionPreset();
-    const label = active?.shortLabel ?? 'Mission';
+    const label = IS_PLANETSLAM ? (active ? `Presets: ${active.shortLabel}` : 'Presets') : active?.shortLabel ?? 'Mission';
     const icon = active?.icon ?? '◎';
     const activeClass = active ? ' mission-preset-button--active' : '';
     const suggestedClass = !active && !isMissionPresetPromptDismissed() ? ' mission-preset-button--suggested' : '';
@@ -1041,7 +1063,7 @@ export class EventHandlerManager implements AppModule {
         type="button"
         aria-haspopup="dialog"
         aria-expanded="false"
-        title="${escapeHtml(active ? `Mission: ${active.label}` : 'Choose mission preset')}"
+        title="${escapeHtml(IS_PLANETSLAM ? (active ? `Presets: ${active.label}` : 'Choose preset') : active ? `Mission: ${active.label}` : 'Choose mission preset')}"
       >
         <span class="mission-preset-button__icon">${escapeHtml(icon)}</span>
         <span class="mission-preset-button__label">${escapeHtml(label)}</span>
@@ -1058,7 +1080,7 @@ export class EventHandlerManager implements AppModule {
   private updateMobileMissionLabel(active: MissionPreset | null = loadStoredMissionPreset()): void {
     const item = document.getElementById('mobileMenuMission');
     const label = item?.querySelector('.mobile-menu-item-label');
-    if (label) label.textContent = active ? `Mission: ${active.shortLabel}` : 'Mission';
+    if (label) label.textContent = IS_PLANETSLAM ? (active ? `Presets: ${active.shortLabel}` : 'Presets') : active ? `Mission: ${active.shortLabel}` : 'Mission';
   }
 
   private toggleMissionPresetPopover(anchor: HTMLElement | null, mobile: boolean): void {
@@ -2120,6 +2142,14 @@ export class EventHandlerManager implements AppModule {
     }
   }
 
+  private attachSecondaryHeaderAction(element: HTMLElement): void {
+    const selector = IS_PLANETSLAM
+      ? (window.matchMedia('(max-width: 768px)').matches ? '#psMobileMoreActions' : '#psMoreActions')
+      : '.header-right';
+    const mount = this.ctx.container.querySelector(selector);
+    if (mount && element.parentElement !== mount) mount.insertBefore(element, mount.firstChild);
+  }
+
   setupExportPanel(): void {
     const getExportData = () => {
       const allCards = this.ctx.correlationEngine?.getAllCards() ?? [];
@@ -2146,12 +2176,7 @@ export class EventHandlerManager implements AppModule {
     };
 
     const attachExportPanel = (panel: NonNullable<AppContext['exportPanel']>): void => {
-      const el = panel.getElement();
-      if (el.parentElement) return;
-      const headerRight = this.ctx.container.querySelector('.header-right');
-      if (headerRight) {
-        headerRight.insertBefore(el, headerRight.firstChild);
-      }
+      this.attachSecondaryHeaderAction(panel.getElement());
     };
 
     let currentExportFormats: readonly DataExportFormat[] = [];
@@ -2222,8 +2247,7 @@ export class EventHandlerManager implements AppModule {
           resolveGateAction(lockedReason, { openAuthModal: () => this.ctx.authModal?.open() })();
         },
       });
-      const headerRight = this.ctx.container.querySelector('.header-right');
-      headerRight?.insertBefore(lockedControl.getElement(), headerRight.firstChild);
+      this.attachSecondaryHeaderAction(lockedControl.getElement());
     };
 
     const unlock = (formats: readonly DataExportFormat[]): void => {
@@ -2454,10 +2478,7 @@ export class EventHandlerManager implements AppModule {
     });
 
     const el = this.ctx.playbackControl.getElement();
-    const headerRight = this.ctx.container.querySelector('.header-right');
-    if (headerRight) {
-      headerRight.insertBefore(el, headerRight.firstChild);
-    }
+    this.attachSecondaryHeaderAction(el);
 
     // #5632: gate on the entitlement chain, NOT `user.role === 'pro'` — nothing
     // writes Clerk publicMetadata, so that field read 'free' for paying
