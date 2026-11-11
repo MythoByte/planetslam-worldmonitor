@@ -69,6 +69,10 @@ for (const width of [1440, 390]) {
       await expect(page.locator('.commercial-shipping-marker')).toHaveCount(0);
       await expect(page.locator('.commercial-shipping-status')).toBeHidden();
       await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('worldmonitor-layers') || '{}').commercialShipping)).toBe(false);
+      await expect.poll(() => {
+        const layers = new URL(page.url()).searchParams.get('layers');
+        return layers !== null && !layers.split(',').includes('commercialShipping');
+      }).toBe(true);
       const beforeReload = requests;
       await page.reload();
       await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready', 'true', { timeout: 60_000 });

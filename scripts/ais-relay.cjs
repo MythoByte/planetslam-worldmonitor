@@ -10462,10 +10462,10 @@ const MAX_TANKER_REPORTS_PER_RESPONSE = 200;
  * Validates:
  *   - 4 comma-separated finite numbers
  *   - sw <= ne (after normalization)
- *   - bbox size ≤ 10° on both lat and lon (10° max per parity-push plan U7;
- *     prevents pulling every vessel through one query)
+ *   - bbox size bounded on both axes (10° by default for live tanker queries)
  *
  * @param {string | null | undefined} raw
+ * @param {number} [maxSpan]
  * @returns {{ sw: {lat:number, lon:number}, ne: {lat:number, lon:number} } | null}
  */
 function parseBbox(raw, maxSpan = 10) {
