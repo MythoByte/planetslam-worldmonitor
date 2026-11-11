@@ -10468,14 +10468,16 @@ const MAX_TANKER_REPORTS_PER_RESPONSE = 200;
  * @param {string | null | undefined} raw
  * @returns {{ sw: {lat:number, lon:number}, ne: {lat:number, lon:number} } | null}
  */
-function parseBbox(raw) {
+function parseBbox(raw, maxSpan = 10) {
   if (!raw) return null;
-  const parts = String(raw).split(',').map(Number);
+  const fields = String(raw).split(',');
+  if (fields.some((field) => !field.trim())) return null;
+  const parts = fields.map(Number);
   if (parts.length !== 4 || parts.some((v) => !Number.isFinite(v))) return null;
   const [swLat, swLon, neLat, neLon] = parts;
   if (swLat > neLat || swLon > neLon) return null;
   if (swLat < -90 || neLat > 90 || swLon < -180 || neLon > 180) return null;
-  if (neLat - swLat > 10 || neLon - swLon > 10) return null; // 10° guard
+  if (neLat - swLat > maxSpan || neLon - swLon > maxSpan) return null;
   return { sw: { lat: swLat, lon: swLon }, ne: { lat: neLat, lon: neLon } };
 }
 
@@ -13024,7 +13026,15 @@ async function handleRelayRequest(req, res) {
     const url = new URL(req.url, `http://localhost:${PORT}`);
     if (url.searchParams.get('commercial') === 'true') {
       const { selectCommercialVessels } = require('./_commercial-shipping.cjs');
-      const commercial = selectCommercialVessels(vessels, vesselMeta, candidateReports);
+      const area = url.searchParams.get('bbox');
+      // Country searches can span more than the live tanker query's 10° viewport.
+      const bbox = parseBbox(area, 360);
+      if (area !== null && (!bbox || bbox.sw.lat === bbox.ne.lat || bbox.sw.lon === bbox.ne.lon)) {
+        return sendCompressed(req, res, 400, {
+          'Content-Type': 'application/json', 'Cache-Control': 'no-store',
+        }, JSON.stringify({ error: 'Invalid commercial shipping area' }));
+      }
+      const commercial = selectCommercialVessels(vessels, vesselMeta, candidateReports, Date.now(), { bbox, chokepoints: vesselChokepoints });
       return sendCompressed(req, res, 200, {
         'Content-Type': 'application/json',
         'Cache-Control': 'private, max-age=15',

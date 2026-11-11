@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import handler from '../api/commercial-shipping.js';
 
-test('commercial map endpoint uses fixed authenticated relay request and preserves failures', async () => {
+test('commercial map endpoint forwards only the area to the authenticated relay and preserves failures', async () => {
   const oldFetch = globalThis.fetch;
   const saved = { ...process.env };
   process.env.WS_RELAY_URL = 'wss://relay.example.test';
@@ -25,6 +25,11 @@ test('commercial map endpoint uses fixed authenticated relay request and preserv
     assert.deepEqual(await response.json(), { vessels: [], available: true, limited: false });
     assert.equal(requests.at(-1).url, 'https://relay.example.test/ais/snapshot?commercial=true');
     assert.equal(requests.at(-1).headers['x-relay-key'], 'synthetic-relay-secret');
+    const area = await handler(new Request('https://planetslam.com/api/commercial-shipping?bbox=24,54,28,58&commercial=false&candidates=true', {
+      headers: { 'X-WorldMonitor-Key': 'synthetic-map-key' },
+    }));
+    assert.equal(area.status, 200);
+    assert.equal(requests.at(-1).url, 'https://relay.example.test/ais/snapshot?commercial=true&bbox=24%2C54%2C28%2C58');
     upstreamStatus = 503;
     const failure = await handler(request());
     assert.equal(failure.status, 503);

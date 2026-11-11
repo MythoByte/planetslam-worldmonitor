@@ -15,8 +15,14 @@ for (const width of [1440, 390]) {
     await page.route('**/api/**', route => route.fulfill({ json: {} }));
     let state: 'vessels' | 'empty' | 'unavailable' = 'vessels';
     let requests = 0;
-    await page.route('**/api/commercial-shipping', route => {
+    let areaBounds: string | null = null;
+    await page.route(/\/api\/commercial-shipping(?:\?|$)/, route => {
       requests++;
+      areaBounds = new URL(route.request().url()).searchParams.get('bbox');
+      if (areaBounds) return route.fulfill({ json: { available: true, limited: false, vessels: [
+        { mmsi: '211000004', name: 'Synthetic Hormuz Tanker', shipType: 80, lat: 26.5, lon: 56.5, timestamp: Date.now() },
+        { mmsi: '211000005', name: 'Outside search', shipType: 70, lat: -10, lon: -30, timestamp: Date.now() },
+      ] } });
       return route.fulfill({ json: { available: state !== 'unavailable', limited: false, vessels: state === 'vessels' ? [
         { mmsi: '211000001', name: 'Synthetic Cargo', shipType: 70, lat: 28, lon: 15, speed: 12.5, course: 90, heading: 90, timestamp: Date.now() },
         { mmsi: '211000002', name: 'Synthetic Tanker', shipType: 80, lat: 10, lon: 35, speed: 9, course: 180, heading: 180, timestamp: Date.now() },
@@ -26,10 +32,37 @@ for (const width of [1440, 390]) {
     await page.goto('/dashboard');
     await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready', 'true', { timeout: 60_000 });
     await expect(page.locator('.commercial-shipping-marker')).toHaveCount(2);
-    await expect(page.locator('.commercial-shipping-status')).toContainText('2 recent positions');
+    const shipping = page.locator('.commercial-shipping-status');
+    await expect(shipping).toContainText('Chokepoint focus · 2 recent positions');
     await expect(page.locator('[data-mmsi="211000001"] title')).toContainText('Synthetic Cargo · Cargo · MMSI 211000001');
     await expect(page.locator('[data-mmsi="211000003"]')).toHaveCount(0);
-    await page.screenshot({ path: info.outputPath(`commercial-shipping-${width}.png`) });
+    await shipping.locator('summary').click();
+    const search = shipping.getByLabel('Search shipping area');
+    await search.fill('unknown test location');
+    await search.press('Enter');
+    await expect(shipping).toContainText('Area not found');
+    await search.fill('Strait of Hormuz');
+    await shipping.getByRole('button', { name: 'Search', exact: true }).click();
+    await expect(shipping).toContainText('Strait of Hormuz · 1 recent position');
+    expect(areaBounds).toBe('24.5,54.5,28.5,58.5');
+    await expect(page.locator('[data-mmsi="211000004"]')).toHaveCount(1);
+    await expect(page.locator('.commercial-shipping-marker')).toHaveCount(1);
+    await page.locator('#timeSlider .time-btn.active').click({ trial: true });
+    await shipping.getByRole('button', { name: 'Reset area' }).scrollIntoViewIfNeeded();
+    await page.locator('#mapSection').screenshot({ path: info.outputPath(`commercial-shipping-${width}.png`) });
+    if (width === 1440) {
+      await search.fill('Bandar Abbas');
+      await search.press('Enter');
+      await expect(shipping.locator('summary')).toContainText('Bandar Abbas · 1 recent position');
+      await search.fill('Iran');
+      await search.press('Enter');
+      await expect(shipping.locator('summary')).toContainText(/Iran.*1 recent position/i);
+      expect(areaBounds).not.toBe('24.5,54.5,28.5,58.5');
+    }
+    await shipping.getByRole('button', { name: 'Reset area' }).click();
+    await expect(shipping).toContainText('Chokepoint focus · 2 recent positions');
+    await expect(page.locator('.commercial-shipping-marker')).toHaveCount(2);
+    expect(areaBounds).toBeNull();
     if (width === 1440) {
       const toggle = page.locator('.layer-toggle[data-layer="commercialShipping"]');
       await toggle.click();
