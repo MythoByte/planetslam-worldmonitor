@@ -1352,6 +1352,7 @@ export class PanelLayoutManager implements AppModule {
             </div>
           </div>
           <div class="map-container" id="mapContainer"></div>
+          ${IS_PLANETSLAM ? '<div class="planetslam-map-details" id="mapLayerDetails" role="group" aria-label="Map layer details"></div>' : ''}
           ${SITE_VARIANT === 'happy' ? '<button class="tv-exit-btn" id="tvExitBtn">Exit TV Mode</button>' : ''}
           <div class="map-resize-handle" id="mapResizeHandle"></div>
           <div class="map-bottom-grid" id="mapBottomGrid"></div>
@@ -3786,6 +3787,7 @@ export class PanelLayoutManager implements AppModule {
       timeRange: DEFAULT_MAP_TIME_RANGE,
     }, preferGlobe, {
       isFreeTierFallbackActive: this.callbacks.isFreeTierFallbackActive,
+      layerDetailsMount: document.getElementById('mapLayerDetails') ?? undefined,
     });
 
     const eagerSupplyChainPanel = this.ctx.panels['supply-chain'] as SupplyChainPanel | undefined;

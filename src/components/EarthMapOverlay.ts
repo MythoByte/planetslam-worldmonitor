@@ -30,7 +30,8 @@ export class EarthMapOverlay {
   private playback: ReturnType<typeof setInterval> | null = null;
 
   constructor(private container: HTMLElement, private paint: (snapshot: EarthMapSnapshot) => void,
-    private center: (latitude: number, longitude: number) => void, private readonly global = false) {
+    private center: (latitude: number, longitude: number) => void, private readonly global = false,
+    private readonly controlsMount = container) {
     const saved = loadFromStorage<string[]>(PREFS_KEY, [...EARTH_HAZARDS, 'camera']);
     this.enabled = new Set(Array.isArray(saved) ? saved.filter(v => [...EARTH_HAZARDS, 'camera'].includes(v as typeof EARTH_HAZARDS[number])) : [...EARTH_HAZARDS, 'camera']);
     if (!loadFromStorage<boolean>('planetslam-earth-map-extended-v1', false)) {
@@ -84,11 +85,11 @@ export class EarthMapOverlay {
     window.addEventListener(EARTH_MARKER_EVENT, select, { signal: this.abort.signal });
     window.addEventListener('planetslam:earth-history-select', select, { signal: this.abort.signal });
     this.observer = new MutationObserver(() => this.attach());
-    this.observer.observe(container, { childList: true });
+    this.observer.observe(controlsMount, { childList: true });
     this.render(); this.attach();
     this.poll = startSmartPollLoop(() => this.refresh(), { intervalMs: 60_000, pauseWhenHidden: true, refreshOnVisible: true, runImmediately: true });
   }
-  private attach(): void { if (!this.destroyed && this.controls.parentElement !== this.container) this.container.append(this.controls); }
+  private attach(): void { if (!this.destroyed && this.controls.parentElement !== this.controlsMount) this.controlsMount.append(this.controls); }
   private frames(): EarthHistoryFrame[] { return this.history ? ageEarthEnvelope(this.history).data?.items ?? [] : []; }
   private frame(): EarthHistoryFrame | null { return this.frames().find(frame => frame.recordedAt === this.frameTime) ?? null; }
   private events(): EarthEvent[] {

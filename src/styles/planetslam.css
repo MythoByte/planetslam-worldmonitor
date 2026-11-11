@@ -283,3 +283,42 @@ html[data-brand="planetslam"] .gdelt-attack-status a { color: var(--ps-cyan); }
 }
 html[data-brand="planetslam"] .gdelt-attack-report { border-top: 1px solid var(--border-color); padding-block: 5px; }
 html[data-brand="planetslam"] .gdelt-attack-report[data-selected="true"] { border-inline-start: 2px solid var(--ps-amber); padding-inline-start: 5px; }
+
+.planetslam-map-details {
+  display: grid;
+  /* Two readable columns when space permits, including in the narrow map pane. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, max(170px, (100% - 6px) / 2)), 1fr));
+  grid-auto-rows: max-content;
+  align-content: start;
+  align-items: start;
+  flex: none;
+  gap: 6px;
+  max-height: 45%;
+  overflow: auto;
+  padding: 6px 10px 10px;
+  border-top: 1px solid var(--border);
+}
+
+.planetslam-map-details:not(:has(> :not([hidden]))) {
+  display: none;
+}
+
+/* Leave room for the time range, including when its buttons wrap. */
+.map-container:has(+ .planetslam-map-details):has(> .deckgl-time-slider) > .deckgl-layer-toggles {
+  max-height: min(50vh, max(42px, calc(100% - 136px)));
+}
+
+html[data-brand="planetslam"] .planetslam-map-details > :is(.weather-radar-status, .commercial-shipping-status, .gdelt-attack-status, .earth-map-controls) {
+  position: static;
+  width: auto;
+  max-width: none;
+  overflow-wrap: anywhere;
+}
+
+html[data-brand="planetslam"] .planetslam-map-details > :is(.gdelt-attack-status, .earth-map-controls) {
+  max-height: min(190px, 25vh);
+}
+
+@media (max-width: 768px) {
+  .map-section.collapsed:not(.live-news-fullscreen) .planetslam-map-details { display: none; }
+}
