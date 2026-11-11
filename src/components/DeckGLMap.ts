@@ -250,6 +250,7 @@ interface DeckMapState {
 
 interface DeckGLMapOptions {
   chrome?: boolean;
+  layerDetailsMount?: HTMLElement;
   mapLibreWorkerUrl?: string;
   /**
    * Fired when MapLibre cannot be (re)constructed after the initial ready
@@ -922,6 +923,7 @@ export class DeckGLMap {
   private destroyed = false;
   private usedFallbackStyle = false;
   private readonly chrome: boolean;
+  private readonly layerDetailsMount?: HTMLElement;
   private readonly mapLibreWorkerUrl: string | undefined;
   private readonly onFatalError: ((error: unknown) => void) | null;
   private initPromise: Promise<void> = Promise.resolve();
@@ -1008,6 +1010,7 @@ export class DeckGLMap {
   constructor(container: HTMLElement, initialState: DeckMapState, options: DeckGLMapOptions = {}) {
     this.container = container;
     this.chrome = options.chrome ?? true;
+    this.layerDetailsMount = options.layerDetailsMount;
     this.mapLibreWorkerUrl = options.mapLibreWorkerUrl;
     this.onFatalError = options.onFatalError ?? null;
     this.state = {
@@ -1188,7 +1191,8 @@ export class DeckGLMap {
       const credit = document.createElement('a'); credit.href = 'https://www.rainviewer.com/';
       credit.textContent = 'RainViewer'; credit.target = '_blank'; credit.rel = 'noopener noreferrer';
       status.append(label, credit, retry); this.radarStatus = status;
-      (this.container.querySelector('.deckgl-map-wrapper') ?? this.container).append(status);
+      if (this.layerDetailsMount) this.layerDetailsMount.prepend(status);
+      else (this.container.querySelector('.deckgl-map-wrapper') ?? this.container).append(status);
     }
     const state = this.radarTilesFailed ? 'unavailable' : !this.radarFrame ? this.radarRefreshFailed ? 'unavailable' : 'loading'
       : this.radarRefreshFailed || this.radarTileSlow ? 'delayed' : this.radarTilesReady ? 'ready' : 'loading';

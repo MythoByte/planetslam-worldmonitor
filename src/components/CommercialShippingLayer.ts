@@ -16,7 +16,7 @@ export class CommercialShippingLayer {
   }
 
   setEnabled(enabled: boolean): void {
-    if (enabled && !this.status.isConnected) this.container.append(this.status);
+    if (enabled && !this.status.isConnected) this.container.prepend(this.status);
     if (enabled === this.enabled) return;
     this.enabled = enabled;
     const generation = ++this.generation;

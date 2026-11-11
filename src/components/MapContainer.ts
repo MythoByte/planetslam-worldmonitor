@@ -139,6 +139,7 @@ export interface MapContainerState {
 
 export interface MapContainerOptions {
   chrome?: boolean;
+  layerDetailsMount?: HTMLElement;
   mapLibreWorkerUrl?: string;
   preferDesktopRenderer?: boolean;
   isFreeTierFallbackActive?: () => boolean;
@@ -248,6 +249,7 @@ export class MapContainer {
   private useDeckGL: boolean;
   private useGlobe: boolean;
   private readonly chrome: boolean;
+  private readonly layerDetailsMount?: HTMLElement;
   private readonly mapLibreWorkerUrl: string | undefined;
   private readonly svgLayerToggleGuard: NonNullable<MapComponentOptions['canToggleLayer']>;
   private readonly isFreeTierFallbackActive: (() => boolean) | null;
@@ -374,8 +376,10 @@ export class MapContainer {
 
   constructor(container: HTMLElement, initialState: MapContainerState, preferGlobe = false, options: MapContainerOptions = {}) {
     this.container = container;
-    this.commercialShippingLayer = new CommercialShippingLayer(container, vessels => this.setCommercialVessels(vessels));
-    this.attackReportLayer = new AttackReportLayer(container, reports => this.setAttackReports(reports));
+    this.layerDetailsMount = options.layerDetailsMount;
+    const layerDetails = this.layerDetailsMount ?? container;
+    this.commercialShippingLayer = new CommercialShippingLayer(layerDetails, vessels => this.setCommercialVessels(vessels));
+    this.attackReportLayer = new AttackReportLayer(layerDetails, reports => this.setAttackReports(reports));
     this.emergencyLayer = new AircraftEmergencyLayer(container, markers => {
       if (this.useDeckGL) this.deckGLMap?.setAircraftEmergencies(markers);
       else this.svgMap?.setAircraftEmergencies(markers);
@@ -419,7 +423,10 @@ export class MapContainer {
     void this.init();
     if (SITE_VARIANT === 'earth' || (IS_PLANETSLAM && SITE_VARIANT === 'full')) {
       void import('./EarthMapOverlay').then(({ EarthMapOverlay }) => {
-        if (!this.destroyed) this.earthMapController = new EarthMapOverlay(this.container, snapshot => this.setEarthMap(snapshot), (lat, lon) => this.setCenter(lat, lon, 4), IS_PLANETSLAM && SITE_VARIANT === 'full');
+        if (!this.destroyed) this.earthMapController = new EarthMapOverlay(
+          container, snapshot => this.setEarthMap(snapshot), (lat, lon) => this.setCenter(lat, lon, 4),
+          IS_PLANETSLAM && SITE_VARIANT === 'full', layerDetails,
+        );
       });
     }
     if (SITE_VARIANT === 'cyber' || IS_PLANETSLAM) {
@@ -857,6 +864,7 @@ export class MapContainer {
         view: this.initialState.view as DeckMapView,
       }, {
         chrome: this.chrome,
+        layerDetailsMount: this.layerDetailsMount,
         // Mid-session MapLibre rebuilds (fallback basemap after WebGL loss)
         // can throw GPUInitializationError outside whenReady(); degrade to SVG.
         onFatalError: (error) => this.handleDeckGLRuntimeFailure(token, error),
