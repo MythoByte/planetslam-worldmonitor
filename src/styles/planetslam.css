@@ -259,8 +259,30 @@ html[data-brand="planetslam"] .commercial-shipping-status {
   background: var(--panel-bg);
   color: var(--text-secondary);
   font-size: 10px;
-  pointer-events: none;
 }
+html[data-brand="planetslam"] .commercial-shipping-status summary { cursor: pointer; }
+html[data-brand="planetslam"] .commercial-shipping-status form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+html[data-brand="planetslam"] .commercial-shipping-status :is(label, form > [role="status"]) { flex-basis: 100%; }
+html[data-brand="planetslam"] .commercial-shipping-status input {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+}
+html[data-brand="planetslam"] .commercial-shipping-status :is(input, button) {
+  padding: 5px 8px;
+  min-height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+html[data-brand="planetslam"] .commercial-shipping-status button { cursor: pointer; }
 html[data-brand="planetslam"] .gdelt-attack-status {
   position: absolute;
   top: 100px;
@@ -308,6 +330,13 @@ html[data-brand="planetslam"] .gdelt-attack-report[data-selected="true"] { borde
   max-height: min(50vh, max(42px, calc(100% - 136px)));
 }
 
+@media (min-width: 769px) {
+  .map-container.svg-mode:has(+ .planetslam-map-details) > .planetslam-layer-picker {
+    max-height: calc(100% - 64px);
+    overflow-y: auto;
+  }
+}
+
 html[data-brand="planetslam"] .planetslam-map-details > :is(.weather-radar-status, .commercial-shipping-status, .gdelt-attack-status, .earth-map-controls) {
   position: static;
   width: auto;
@@ -315,9 +344,10 @@ html[data-brand="planetslam"] .planetslam-map-details > :is(.weather-radar-statu
   overflow-wrap: anywhere;
 }
 
-html[data-brand="planetslam"] .planetslam-map-details > :is(.gdelt-attack-status, .earth-map-controls) {
+html[data-brand="planetslam"] .planetslam-map-details > :is(.commercial-shipping-status, .gdelt-attack-status, .earth-map-controls) {
   max-height: min(190px, 25vh);
 }
+html[data-brand="planetslam"] .planetslam-map-details > .commercial-shipping-status { overflow: auto; }
 
 @media (max-width: 768px) {
   .map-section.collapsed:not(.live-news-fullscreen) .planetslam-map-details { display: none; }

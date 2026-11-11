@@ -378,7 +378,9 @@ export class MapContainer {
     this.container = container;
     this.layerDetailsMount = options.layerDetailsMount;
     const layerDetails = this.layerDetailsMount ?? container;
-    this.commercialShippingLayer = new CommercialShippingLayer(layerDetails, vessels => this.setCommercialVessels(vessels));
+    this.commercialShippingLayer = new CommercialShippingLayer(
+      layerDetails, vessels => this.setCommercialVessels(vessels), (lat, lon, zoom) => this.setCenter(lat, lon, zoom),
+    );
     this.attackReportLayer = new AttackReportLayer(layerDetails, reports => this.setAttackReports(reports));
     this.emergencyLayer = new AircraftEmergencyLayer(container, markers => {
       if (this.useDeckGL) this.deckGLMap?.setAircraftEmergencies(markers);

@@ -38,3 +38,33 @@ test('browser expires cached positions and preserves ship identity and source in
   assert.equal(freshCommercialVessels([report('invalid', 70)], now).length, 0);
   assert.match(commercialVesselLabel(row), /Synthetic cargo.*Cargo.*211000001.*12.0 kn.*AISStream/);
 });
+
+test('the default sample favors chokepoints and keeps Hormuz when another chokepoint is busy', () => {
+  const rows = [report('211000001', 80, { lat: 26.5, lon: 56.5, timestamp: now - 1000 })];
+  const chokepoints = new Map([['211000001', new Set(['Strait of Hormuz'])]]);
+  for (let i = 0; i < 250; i++) {
+    const busy = report(String(300000000 + i), 70);
+    const other = report(String(400000000 + i), 70);
+    rows.push(busy, other);
+    chokepoints.set(busy.mmsi, new Set(['Malacca Strait']));
+  }
+  const vessels = new Map(rows.map(row => [row.mmsi, row]));
+  const result = selectCommercialVessels(vessels, new Map(), new Map(), now, { chokepoints });
+  const ids = result.vessels.map((row: { mmsi: string }) => row.mmsi);
+  assert.ok(ids.includes('211000001'));
+  assert.equal(ids.filter((id: string) => chokepoints.has(id)).length, 121);
+  assert.equal(ids.length, 181);
+  assert.equal(result.limited, true);
+  const fallback = selectCommercialVessels(vessels, new Map(), new Map(), now, { chokepoints: new Map() });
+  assert.equal(fallback.vessels.length, 100);
+});
+
+test('an area search filters before sampling and applies the same freshness and class rules', () => {
+  const rows = [report('211000001', 70), report('211000002', 80, { lat: 26.5, lon: 57 }),
+    report('211000003', 35, { lat: 26.5, lon: 57 }), report('211000004', 80, { lat: 26.5, lon: 57, timestamp: now - MAX_AGE_MS - 1 })];
+  const bbox = { sw: { lat: 26, lon: 56 }, ne: { lat: 27, lon: 58 } };
+  const result = selectCommercialVessels(new Map(rows.map(row => [row.mmsi, row])), new Map(), new Map(), now,
+    { bbox, chokepoints: new Map() });
+  assert.deepEqual(result.vessels.map((row: { mmsi: string }) => row.mmsi), ['211000002']);
+  assert.equal(result.limited, false);
+});

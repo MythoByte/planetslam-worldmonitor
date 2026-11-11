@@ -16,6 +16,8 @@ export interface CommercialShippingSnapshot {
   limited: boolean;
 }
 
+export type CommercialShippingBounds = [south: number, west: number, north: number, east: number];
+
 export function commercialVesselCategory(type: number): string {
   if (type >= 80 && type <= 89) return 'Tanker';
   if (type >= 70 && type <= 79) return 'Cargo';
