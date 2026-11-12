@@ -77,56 +77,70 @@ export function normalizeTabsState(parsed: unknown): TabsState | null {
   return { activeTabId, tabs };
 }
 
+/** A corrupt edition must not prevent recovery of the remaining editions. */
+function parseStoredTabs(raw: string | null): TabsState | null {
+  try {
+    return raw ? normalizeTabsState(JSON.parse(raw)) : null;
+  } catch {
+    return null;
+  }
+}
+
+function restoreLegacyMapLayers(dashboard: PlanetSlamWorkspace | undefined, legacyVariant: string | null): void {
+  // The legacy app only persisted one live map selection across editions.
+  // Keep it with the workspace that owned it before the upgrade.
+  if (!dashboard || (legacyVariant && dashboard.preset !== legacyVariant)) return;
+  try {
+    const stored = JSON.parse(safeStorageGet('worldmonitor-layers') ?? '{}') as Record<string, unknown>;
+    for (const key of Object.keys(dashboard.layers) as Array<keyof typeof dashboard.layers>) {
+      if (typeof stored[key] === 'boolean') dashboard.layers[key] = stored[key] as boolean;
+    }
+  } catch { /* Use the preset map when legacy storage is malformed. */ }
+}
+
+function migratePlanetSlamWorkspaces(raw: string | null, current: TabsState | null): TabsState | null {
+  // Archive the old World payload before consolidating edition-specific tabs.
+  if (raw && !safeStorageGet('planetslam-workspaces-legacy-world-v1')) {
+    if (!isStorageAvailable() || !safeStorageSetChecked('planetslam-workspaces-legacy-world-v1', raw)) return current;
+  }
+  const legacyVariant = safeStorageGet('worldmonitor-panel-layout-variant');
+  const tabs: PanelTab[] = (current?.tabs ?? []).map(tab => ({ ...tab, dashboard: tab.dashboard ?? {
+    preset: 'full' as const, customized: true,
+    layers: buildPlanetSlamDashboard('full', tab.panelSettings, DEFAULT_MAP_LAYERS).layers,
+    view: 'global' as const, timeRange: '24h' as const, zoom: 1,
+  } }));
+  let activeTabId = current?.activeTabId;
+  const ids = new Set(tabs.map(tab => tab.id));
+  for (const preset of PLANETSLAM_DASHBOARDS) {
+    if (preset.id === 'full') continue;
+    const stored = safeStorageGet(`worldmonitor-tabs-v1:${preset.id}`);
+    const edition = parseStoredTabs(stored);
+    if (!edition) continue;
+    for (const old of edition.tabs) {
+      const id = ids.has(old.id) ? generateTabId() : old.id;
+      ids.add(id);
+      tabs.push({ ...old, id, name: `${preset.label}: ${old.name}`, dashboard: {
+        preset: preset.id, customized: true,
+        layers: buildPlanetSlamDashboard(preset.id, old.panelSettings, DEFAULT_MAP_LAYERS).layers,
+        view: 'global', timeRange: '24h', zoom: 1,
+      } });
+      if (legacyVariant === preset.id && edition.activeTabId === old.id) activeTabId = id;
+    }
+  }
+  if (!tabs.length) return current;
+  const merged = { tabs, activeTabId: activeTabId ?? tabs[0]!.id };
+  const active = tabs.find(tab => tab.id === merged.activeTabId);
+  restoreLegacyMapLayers(active?.dashboard, legacyVariant);
+  if (saveTabsState(merged).persisted) safeStorageSetChecked('planetslam-workspaces-migrated-v1', '1');
+  return merged;
+}
+
 export function loadTabsState(): TabsState | null {
   try {
     const raw = safeStorageGet(TABS_STORAGE_KEY);
-    let current: TabsState | null = null;
-    try { current = raw ? normalizeTabsState(JSON.parse(raw)) : null; } catch { /* Keep other legacy workspaces recoverable. */ }
+    const current = parseStoredTabs(raw);
     if (!IS_PLANETSLAM || safeStorageGet('planetslam-workspaces-migrated-v1')) return current;
-    // Archive the old World payload before consolidating edition-specific tabs.
-    if (raw && !safeStorageGet('planetslam-workspaces-legacy-world-v1')) {
-      if (!isStorageAvailable() || !safeStorageSetChecked('planetslam-workspaces-legacy-world-v1', raw)) return current;
-    }
-    const legacyVariant = safeStorageGet('worldmonitor-panel-layout-variant');
-    const tabs: PanelTab[] = (current?.tabs ?? []).map(tab => ({ ...tab, dashboard: tab.dashboard ?? {
-      preset: 'full' as const, customized: true,
-      layers: buildPlanetSlamDashboard('full', tab.panelSettings, DEFAULT_MAP_LAYERS).layers,
-      view: 'global' as const, timeRange: '24h' as const, zoom: 1,
-    } }));
-    let activeTabId = current?.activeTabId;
-    const ids = new Set(tabs.map(tab => tab.id));
-    for (const preset of PLANETSLAM_DASHBOARDS) {
-      if (preset.id === 'full') continue;
-      const stored = safeStorageGet(`worldmonitor-tabs-v1:${preset.id}`);
-      let edition: TabsState | null = null;
-      try { edition = stored ? normalizeTabsState(JSON.parse(stored)) : null; } catch { continue; }
-      if (!edition) continue;
-      for (const old of edition.tabs) {
-        const id = ids.has(old.id) ? generateTabId() : old.id;
-        ids.add(id);
-        tabs.push({ ...old, id, name: `${preset.label}: ${old.name}`, dashboard: {
-          preset: preset.id, customized: true,
-          layers: buildPlanetSlamDashboard(preset.id, old.panelSettings, DEFAULT_MAP_LAYERS).layers,
-          view: 'global', timeRange: '24h', zoom: 1,
-        } });
-        if (legacyVariant === preset.id && edition.activeTabId === old.id) activeTabId = id;
-      }
-    }
-    if (!tabs.length) return current;
-    const merged = { tabs, activeTabId: activeTabId ?? tabs[0]!.id };
-    const active = tabs.find(tab => tab.id === merged.activeTabId);
-    // The legacy app only persisted one live map selection across editions.
-    // Keep it with the workspace that owned it before the upgrade.
-    if (active?.dashboard && (!legacyVariant || active.dashboard.preset === legacyVariant)) {
-      try {
-        const stored = JSON.parse(safeStorageGet('worldmonitor-layers') ?? '{}') as Record<string, unknown>;
-        for (const key of Object.keys(active.dashboard.layers) as Array<keyof typeof active.dashboard.layers>) {
-          if (typeof stored[key] === 'boolean') active.dashboard.layers[key] = stored[key] as boolean;
-        }
-      } catch { /* Use the preset map when legacy storage is malformed. */ }
-    }
-    if (saveTabsState(merged).persisted) safeStorageSetChecked('planetslam-workspaces-migrated-v1', '1');
-    return merged;
+    return migratePlanetSlamWorkspaces(raw, current);
   } catch {
     return null;
   }
