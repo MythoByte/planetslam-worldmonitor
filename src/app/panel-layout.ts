@@ -1449,6 +1449,12 @@ export class PanelLayoutManager implements AppModule {
     if (requested && requested !== active?.dashboard?.preset) this.applyPlanetSlamDashboard(requested);
     else if (this.planetSlamNewWorkspace && !requested) this.applyPlanetSlamDashboard('full');
     else this.refreshPlanetSlamDashboardMenu();
+    // Consume entry commands after applying them. Routine menu refreshes must
+    // leave navigation alone, and reloads should restore the saved workspace.
+    const url = new URL(location.href);
+    url.searchParams.delete('variant');
+    url.searchParams.delete('dashboard');
+    history.replaceState(history.state, '', url);
     this.ctx.container.addEventListener('ps-panel-size-changed', () => this.markPlanetSlamCustomized(true), { signal: this.checkoutReturnFocusController.signal });
     for (const mount of this.ctx.container.querySelectorAll('.ps-saved-workspaces')) {
       mount.addEventListener('click', event => {
@@ -1564,12 +1570,6 @@ export class PanelLayoutManager implements AppModule {
       setTrustedHtml(mount, trustedHtml(html, 'Escaped local workspace names and ids'));
       mount.dataset.rendered = html;
     }
-    // Preset entry links are consumed once. Customizations and reloads use the
-    // live workspace state, rather than reapplying that preset on every visit.
-    const url = new URL(location.href);
-    url.searchParams.delete('variant');
-    url.searchParams.delete('dashboard');
-    history.replaceState(history.state, '', url);
   }
 
   // ============================================

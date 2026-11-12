@@ -14,6 +14,31 @@ async function choosePreset(page: Page, width: number, id: string) {
   }
 }
 
+for (const width of [1440, 390]) {
+  test(`consumes a preset deep link once and restores later choices at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await seedAnonymousDashboard(page, 'full', {
+      initializeOnce: { sessionKey: 'ps-preset-entry', clearStorage: true, localStorage: {
+        'mobile-map-collapsed': 'false',
+      } },
+    });
+    await page.route('**/api/**', route => route.fulfill({ json: {} }));
+    await page.route('**/api/bootstrap*', route => route.fulfill({ json: { missing: [], data: {} } }));
+    await installCyberFixtures(page);
+    await page.goto('/dashboard?dashboard=tech');
+    await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready', 'true', { timeout: 60_000 });
+    const label = page.locator(width > 768 ? '.ps-dashboard-picker > summary' : '.ps-mobile-dashboard');
+    await expect(label).toContainText('Tech');
+    await expect(page).not.toHaveURL(/dashboard=|variant=/);
+    await choosePreset(page, width, 'finance');
+    await expect(label).toContainText('Finance');
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-wm-event-handlers-ready', 'true', { timeout: 60_000 });
+    await expect(label).toContainText('Finance');
+    await expect(page).not.toHaveURL(/dashboard=|variant=/);
+  });
+}
+
 for (const width of [1440, 900, 390]) {
   test(`one World workspace with editable dashboard presets at ${width}px`, async ({ page }) => {
     const errors: string[] = [];
