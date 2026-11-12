@@ -41,6 +41,79 @@ describe('PlanetSlam shared workspace migration', () => {
     expect(loadTabsState()).toEqual(world);
   });
 
+  it('renames colliding edition IDs and keeps the selected edition active', () => {
+    const collidingTech = structuredClone(tech);
+    collidingTech.activeTabId = world.activeTabId;
+    collidingTech.tabs[0]!.id = world.activeTabId;
+    localStorage.setItem('worldmonitor-tabs-v1:full', JSON.stringify(world));
+    localStorage.setItem('worldmonitor-tabs-v1:tech', JSON.stringify(collidingTech));
+    localStorage.setItem('worldmonitor-panel-layout-variant', 'tech');
+    const merged = loadTabsState()!;
+    expect(merged.tabs[0]?.id).toBe(world.activeTabId);
+    expect(merged.tabs[1]?.id).not.toBe(world.activeTabId);
+    expect(merged.activeTabId).toBe(merged.tabs[1]?.id);
+    expect(merged.tabs[1]?.name).toBe('Tech: <My desk>');
+    expect(loadTabsState()).toEqual(merged);
+  });
+
+  it('restores boolean map settings only on the edition that owned them', () => {
+    localStorage.setItem('worldmonitor-tabs-v1:full', JSON.stringify(world));
+    localStorage.setItem('worldmonitor-tabs-v1:tech', JSON.stringify(tech));
+    localStorage.setItem('worldmonitor-panel-layout-variant', 'tech');
+    localStorage.setItem('worldmonitor-layers', JSON.stringify({ hotspots: false, datacenters: false, cables: 'invalid', unknown: true }));
+    const merged = loadTabsState()!;
+    expect(merged.tabs[0]?.dashboard?.layers.hotspots).toBe(true);
+    expect(merged.tabs[1]?.dashboard?.layers.hotspots).toBe(false);
+    expect(merged.tabs[1]?.dashboard?.layers.datacenters).toBe(false);
+    expect(merged.tabs[1]?.dashboard?.layers.cables).toBe(true);
+    expect(merged.tabs[1]?.dashboard?.layers).not.toHaveProperty('unknown');
+  });
+
+  it('keeps preset layers when legacy map settings are malformed', () => {
+    localStorage.setItem('worldmonitor-tabs-v1:tech', JSON.stringify(tech));
+    localStorage.setItem('worldmonitor-panel-layout-variant', 'tech');
+    localStorage.setItem('worldmonitor-layers', 'null');
+    expect(loadTabsState()?.tabs[0]?.dashboard?.layers.datacenters).toBe(true);
+  });
+
+  it('recovers other editions even when the World payload is malformed', () => {
+    localStorage.setItem('worldmonitor-tabs-v1:full', '{broken');
+    localStorage.setItem('worldmonitor-tabs-v1:tech', JSON.stringify(tech));
+    expect(loadTabsState()?.tabs[0]?.panelSettings).toEqual(tech.tabs[0]!.panelSettings);
+    expect(localStorage.getItem('planetslam-workspaces-legacy-world-v1')).toBe('{broken');
+  });
+
+  it('preserves the original archive and skips migration after it completes', () => {
+    localStorage.setItem('planetslam-workspaces-legacy-world-v1', 'original archive');
+    localStorage.setItem('worldmonitor-tabs-v1:full', JSON.stringify(world));
+    const migrated = loadTabsState()!;
+    expect(localStorage.getItem('planetslam-workspaces-legacy-world-v1')).toBe('original archive');
+    expect(localStorage.getItem('planetslam-workspaces-migrated-v1')).toBe('1');
+    localStorage.setItem('worldmonitor-tabs-v1:tech', JSON.stringify(tech));
+    expect(loadTabsState()).toEqual(migrated);
+  });
+
+  it('returns recovered tabs but does not mark migration complete when saving fails', () => {
+    const values: Record<string, string> = { 'worldmonitor-tabs-v1:tech': JSON.stringify(tech) };
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => values[key] ?? null,
+      setItem: (key: string, value: string) => {
+        if (key === 'worldmonitor-tabs-v1:full') throw new Error('Synthetic quota failure');
+        values[key] = value;
+      },
+      removeItem: (key: string) => { delete values[key]; },
+    });
+    expect(loadTabsState()?.tabs[0]?.id).toBe(tech.activeTabId);
+    expect(values['planetslam-workspaces-migrated-v1']).toBeUndefined();
+    expect(values['worldmonitor-tabs-v1:tech']).toBe(JSON.stringify(tech));
+  });
+
+  it('leaves migration pending when there are no usable tabs', () => {
+    localStorage.setItem('worldmonitor-tabs-v1:tech', '{broken');
+    expect(loadTabsState()).toBeNull();
+    expect(localStorage.getItem('planetslam-workspaces-migrated-v1')).toBeNull();
+  });
+
   it('rejects invalid map metadata without discarding a usable panel workspace', () => {
     const state = structuredClone(world);
     Object.assign(state.tabs[0]!, { dashboard: { preset: 'energy', customized: true, view: 'evil', zoom: 2, timeRange: '24h', layers: {} } });
