@@ -1,0 +1,62 @@
+name: PlanetSlam CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: planetslam-ci-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  validation:
+    name: PlanetSlam validation
+    if: github.repository == 'MythoByte/planetslam-worldmonitor'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VITEST_MAX_THREADS: '2'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run inventory:facts
+      - run: npm run typecheck
+      - run: npm run typecheck:api
+      - run: npm run typecheck:dom-tests
+      - run: npm run lint:boundaries
+      - run: npm run docs:check
+      - run: npm run generate:check
+      - run: node --import tsx --test tests/planetslam-ci-workflow.test.mts tests/tab-store-persist.test.mts
+      - run: npm run test:dom
+
+  browser:
+    name: PlanetSlam browser
+    if: github.repository == 'MythoByte/planetslam-worldmonitor'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VITE_BRAND: planetslam
+      VITE_VARIANT: full
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run inventory:facts
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test e2e/planetslam-navigation.spec.ts --project=chromium --workers=1
