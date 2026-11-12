@@ -34,6 +34,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run typecheck:api
       - run: npm run typecheck:dom-tests
+      - run: npm run typecheck:e2e
       - run: npm run lint:boundaries
       - run: npm run docs:check
       - run: npm run generate:check
