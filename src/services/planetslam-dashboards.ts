@@ -41,16 +41,28 @@ export function buildPlanetSlamDashboard(
   return { panelSettings, panelOrder: preset.panels.filter(key => key in ALL_PANELS), layers };
 }
 
+function hasValidPanelSpans(value: unknown, max: number): boolean {
+  if (value === undefined) return true;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  return Object.values(value).every(span => Number.isInteger(span) && span >= 1 && span <= max);
+}
+
 export function isPlanetSlamWorkspace(value: unknown): value is PlanetSlamWorkspace {
   if (!value || typeof value !== 'object') return false;
-  const s = value as PlanetSlamWorkspace;
-  const sizes = (value: unknown, max: number) => value === undefined || (!!value && typeof value === 'object' && !Array.isArray(value)
-    && Object.values(value).every(span => Number.isInteger(span) && span >= 1 && span <= max));
-  return sizes(s.panelRows, 4) && sizes(s.panelColumns, 3) && isPlanetSlamDashboardId(s.preset) && typeof s.customized === 'boolean'
-    && ['global', 'america', 'mena', 'eu', 'asia', 'latam', 'africa', 'oceania'].includes(s.view)
-    && ['1h', '6h', '24h', '48h', '7d', 'all'].includes(s.timeRange)
-    && Number.isFinite(s.zoom) && s.zoom >= 0 && s.zoom <= 24
-    && !!s.layers && typeof s.layers === 'object' && !Array.isArray(s.layers)
-    && Object.values(s.layers).every(value => typeof value === 'boolean')
-    && (s.center === undefined || (!!s.center && Number.isFinite(s.center.lat) && Math.abs(s.center.lat) <= 90 && Number.isFinite(s.center.lon) && Math.abs(s.center.lon) <= 180));
+  const workspace = value as PlanetSlamWorkspace;
+
+  if (!hasValidPanelSpans(workspace.panelRows, 4) || !hasValidPanelSpans(workspace.panelColumns, 3)) return false;
+  if (!isPlanetSlamDashboardId(workspace.preset) || typeof workspace.customized !== 'boolean') return false;
+  if (!['global', 'america', 'mena', 'eu', 'asia', 'latam', 'africa', 'oceania'].includes(workspace.view)) return false;
+  if (!['1h', '6h', '24h', '48h', '7d', 'all'].includes(workspace.timeRange)) return false;
+  if (!Number.isFinite(workspace.zoom) || workspace.zoom < 0 || workspace.zoom > 24) return false;
+
+  const { layers, center } = workspace;
+  if (!layers || typeof layers !== 'object' || Array.isArray(layers)) return false;
+  if (!Object.values(layers).every(enabled => typeof enabled === 'boolean')) return false;
+
+  if (center === undefined) return true;
+  return !!center
+    && Number.isFinite(center.lat) && Math.abs(center.lat) <= 90
+    && Number.isFinite(center.lon) && Math.abs(center.lon) <= 180;
 }
