@@ -1480,11 +1480,14 @@ export class PanelLayoutManager implements AppModule {
     this.ctx.dashboardFeedVariant = this.planetSlamWorkspace.preset;
     this.callbacks.invalidateNewsHydration?.();
     this.applyingPlanetSlamDashboard = true;
-    if (saved) {
-      this.restorePlanetSlamSizes(saved);
-      this.planetSlamWorkspace.layers = this.callbacks.applyDashboardMap?.(saved) ?? saved.layers;
+    try {
+      if (saved) {
+        this.restorePlanetSlamSizes(saved);
+        this.planetSlamWorkspace.layers = this.callbacks.applyDashboardMap?.(saved) ?? saved.layers;
+      }
+    } finally {
+      this.applyingPlanetSlamDashboard = false;
     }
-    this.applyingPlanetSlamDashboard = false;
   }
 
   private restorePlanetSlamSizes(state: PlanetSlamWorkspace): void {
@@ -1500,16 +1503,19 @@ export class PanelLayoutManager implements AppModule {
     // Snapshot the active workspace before replacing its live layout.
     this.snapshotActiveTab();
     this.applyingPlanetSlamDashboard = true;
-    const preset = buildPlanetSlamDashboard(id, this.ctx.panelSettings, DEFAULT_MAP_LAYERS);
-    const state: PlanetSlamWorkspace = { preset: id, customized: false, layers: preset.layers, view: 'global', timeRange: '24h', zoom: 1, panelRows: {}, panelColumns: {} };
-    this.planetSlamWorkspace = state;
-    this.restorePlanetSlamSizes(state);
-    this.ctx.dashboardFeedVariant = id;
-    this.callbacks.invalidateNewsHydration?.();
-    state.layers = this.callbacks.applyDashboardMap?.(state) ?? state.layers;
-    this.applyTabPanelState(preset.panelSettings, [...preset.panelOrder], []);
-    this.snapshotActiveTab();
-    this.applyingPlanetSlamDashboard = false;
+    try {
+      const preset = buildPlanetSlamDashboard(id, this.ctx.panelSettings, DEFAULT_MAP_LAYERS);
+      const state: PlanetSlamWorkspace = { preset: id, customized: false, layers: preset.layers, view: 'global', timeRange: '24h', zoom: 1, panelRows: {}, panelColumns: {} };
+      this.planetSlamWorkspace = state;
+      this.restorePlanetSlamSizes(state);
+      this.ctx.dashboardFeedVariant = id;
+      this.callbacks.invalidateNewsHydration?.();
+      state.layers = this.callbacks.applyDashboardMap?.(state) ?? state.layers;
+      this.applyTabPanelState(preset.panelSettings, [...preset.panelOrder], []);
+      this.snapshotActiveTab();
+    } finally {
+      this.applyingPlanetSlamDashboard = false;
+    }
     if (this.tabsState && !saveTabsState(this.tabsState).persisted) showToast('Dashboard applied for this session; storage is unavailable.');
     this.refreshPlanetSlamDashboardMenu();
     document.querySelector<HTMLDetailsElement>('.ps-dashboard-picker')?.removeAttribute('open');
@@ -2094,8 +2100,11 @@ export class PanelLayoutManager implements AppModule {
     this.tabsState.activeTabId = tab.id;
     const persist = saveTabsState(this.tabsState);
     this.applyingPlanetSlamDashboard = IS_PLANETSLAM;
-    this.applyTabPanelState(tab.panelSettings, tab.panelOrder, tab.bottomSet);
-    this.applyingPlanetSlamDashboard = false;
+    try {
+      this.applyTabPanelState(tab.panelSettings, tab.panelOrder, tab.bottomSet);
+    } finally {
+      this.applyingPlanetSlamDashboard = false;
+    }
     if (IS_PLANETSLAM) this.refreshPlanetSlamDashboardMenu();
     this.panelTabBar?.refresh();
     this.updateTabCapLock();
@@ -2205,8 +2214,11 @@ export class PanelLayoutManager implements AppModule {
 
     if (IS_PLANETSLAM) this.restorePlanetSlamWorkspace(target.dashboard);
     this.applyingPlanetSlamDashboard = IS_PLANETSLAM;
-    this.applyTabPanelState(target.panelSettings, target.panelOrder, target.bottomSet);
-    this.applyingPlanetSlamDashboard = false;
+    try {
+      this.applyTabPanelState(target.panelSettings, target.panelOrder, target.bottomSet);
+    } finally {
+      this.applyingPlanetSlamDashboard = false;
+    }
     if (IS_PLANETSLAM) this.refreshPlanetSlamDashboardMenu();
     this.panelTabBar?.refresh();
     return persist;
@@ -2284,8 +2296,11 @@ export class PanelLayoutManager implements AppModule {
       persist = saveTabsState(this.tabsState);
       if (IS_PLANETSLAM) this.restorePlanetSlamWorkspace(fallback.dashboard);
       this.applyingPlanetSlamDashboard = IS_PLANETSLAM;
-      this.applyTabPanelState(fallback.panelSettings, fallback.panelOrder, fallback.bottomSet);
-      this.applyingPlanetSlamDashboard = false;
+      try {
+        this.applyTabPanelState(fallback.panelSettings, fallback.panelOrder, fallback.bottomSet);
+      } finally {
+        this.applyingPlanetSlamDashboard = false;
+      }
     } else {
       persist = saveTabsState(this.tabsState);
     }
