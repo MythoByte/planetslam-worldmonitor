@@ -45,6 +45,8 @@ import { MapComponent } from '@/components/Map';
 const LAYER_STEPS = [
   'renderSpaceOverlay',
   'renderSpaceOrbits',
+  'renderCommercialShipping',
+  'renderAttackReports',
   'renderCables',
   'renderPipelines',
   'renderConflicts',
