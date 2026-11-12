@@ -36,7 +36,7 @@ describe('PlanetSlam required PR checks', () => {
 
   it('retains the type, persistence, full DOM, documentation, and browser proofs', () => {
     const commands = workflow.jobs.validation.steps.map((step: { run?: string }) => step.run);
-    for (const command of ['npm run typecheck', 'npm run typecheck:api', 'npm run typecheck:dom-tests',
+    for (const command of ['npm run typecheck', 'npm run typecheck:api', 'npm run typecheck:dom-tests', 'npm run typecheck:e2e',
       'npm run lint:boundaries', 'npm run docs:check', 'npm run generate:check', 'npm run test:dom',
       'node --import tsx --test tests/planetslam-ci-workflow.test.mts tests/tab-store-persist.test.mts']) {
       assert.ok(commands.includes(command), command);

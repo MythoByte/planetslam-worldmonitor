@@ -72,11 +72,13 @@ for (const { renderer, width } of [
           if (count.props.getText(count.props.data[0]) !== (kind === 'flight' ? '4' : '3')) throw Error('Cluster count lost');
         }
         // Check actual GPU picking after the platform artwork has loaded.
-        const point = map.maplibreMap.project([flights[0].lon, flights[0].lat]);
+        const pickedFlight = flights[0];
+        if (!pickedFlight) throw Error('Missing aircraft fixture for GPU picking');
+        const point = map.maplibreMap.project([pickedFlight.lon, pickedFlight.lat]);
         await new Promise<void>((resolve, reject) => {
           const timeout = setTimeout(() => reject(Error('Aircraft artwork did not become pickable')), 15000);
           const check = () => {
-            if (map.deckOverlay._deck.pickObject({ x: point.x, y: point.y, radius: 8 })?.object?.id === flights[0].id) { clearTimeout(timeout); resolve(); }
+            if (map.deckOverlay._deck.pickObject({ x: point.x, y: point.y, radius: 8 })?.object?.id === pickedFlight.id) { clearTimeout(timeout); resolve(); }
             else { map.maplibreMap.triggerRepaint(); requestAnimationFrame(check); }
           }; check();
         });
